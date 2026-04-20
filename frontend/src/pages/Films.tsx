@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Upload, Play } from 'lucide-react';
+import { Search, Upload, Play, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,17 +16,35 @@ import { IMAGES } from '@/assets/images';
 export default function Films() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
   const filmFileInputRef = useRef<HTMLInputElement | null>(null);
+  const posterFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [selectedFilm, setSelectedFilm] = useState<Film | null>(null);
   const [uploadFormVisible, setUploadFormVisible] = useState(false);
 
-  const filteredFilms = FILMS_DATA.filter(film => {
-    const matchesSearch = film.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         film.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All Categories' || film.category === selectedCategory;
+  const [filmTitle, setFilmTitle] = useState('');
+  const [filmCategory, setFilmCategory] = useState<string>('');
+  const [filmDescription, setFilmDescription] = useState('');
+  const [filmFile, setFilmFile] = useState<File | null>(null);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [uploadedFilms, setUploadedFilms] = useState<Film[]>(() => {
+    const saved = localStorage.getItem('uploaded_films');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const allFilms = useMemo(() => [...uploadedFilms, ...FILMS_DATA], [uploadedFilms]);
+
+  const filteredFilms = allFilms.filter(film => {
+    const matchesSearch =
+      film.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      film.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === 'All Categories' || film.category === selectedCategory;
+
     return matchesSearch && matchesCategory;
   });
 
@@ -46,11 +64,56 @@ export default function Films() {
     filmFileInputRef.current?.click();
   };
 
+  const handlePosterFileBoxClick = () => {
+    posterFileInputRef.current?.click();
+  };
+
   const handleFilmFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log('Selected film file:', file);
+    const file = e.target.files?.[0] || null;
+    setFilmFile(file);
+  };
+
+  const handlePosterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setPosterFile(file);
+  };
+
+  const resetForm = () => {
+    setFilmTitle('');
+    setFilmCategory('');
+    setFilmDescription('');
+    setFilmFile(null);
+    setPosterFile(null);
+    setUploadFormVisible(false);
+
+    if (filmFileInputRef.current) filmFileInputRef.current.value = '';
+    if (posterFileInputRef.current) posterFileInputRef.current.value = '';
+  };
+
+  const handleSubmitFilm = () => {
+    if (!filmTitle || !filmCategory || !filmDescription || !filmFile || !posterFile) {
+      alert('Please fill all fields and upload both the film file and poster image.');
+      return;
     }
+
+    const newFilm: Film = {
+      id: `uploaded-${Date.now()}`,
+      title: filmTitle,
+      description: filmDescription,
+      category: filmCategory,
+      posterUrl: URL.createObjectURL(posterFile),
+      duration: 'New Upload',
+      releaseYear: new Date().getFullYear()   ,
+      director: 'Uploaded by User',
+      tags: ['Uploaded'],
+    };
+
+    const updatedFilms = [newFilm, ...uploadedFilms];
+    setUploadedFilms(updatedFilms);
+    localStorage.setItem('uploaded_films', JSON.stringify(updatedFilms));
+
+    resetForm();
+    alert('Film uploaded successfully.');
   };
 
   return (
@@ -104,10 +167,7 @@ export default function Films() {
               </div>
             </div>
 
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/50 transition-all duration-300"
@@ -176,14 +236,21 @@ export default function Films() {
               className="mb-12 p-8 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm"
             >
               <h3 className="text-2xl font-bold mb-6">Upload Your Film</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">Film Title</label>
-                  <Input placeholder="Enter film title" className="bg-background/50" />
+                  <Input
+                    placeholder="Enter film title"
+                    className="bg-background/50"
+                    value={filmTitle}
+                    onChange={(e) => setFilmTitle(e.target.value)}
+                  />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-2">Category</label>
-                  <Select>
+                  <Select value={filmCategory} onValueChange={setFilmCategory}>
                     <SelectTrigger className="bg-background/50">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -196,14 +263,18 @@ export default function Films() {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-2">Description</label>
                   <textarea
                     placeholder="Describe your film"
                     rows={4}
+                    value={filmDescription}
+                    onChange={(e) => setFilmDescription(e.target.value)}
                     className="w-full px-3 py-2 rounded-md bg-background/50 border border-input focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-2">Film File</label>
                   <div
@@ -211,7 +282,9 @@ export default function Films() {
                     className="border-2 border-dashed border-border/50 rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
                   >
                     <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
+                    <p className="text-sm text-muted-foreground">
+                      {filmFile ? filmFile.name : 'Click to upload or drag and drop'}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-2">MP4, MOV, AVI (max 500MB)</p>
                   </div>
 
@@ -223,10 +296,51 @@ export default function Films() {
                     className="hidden"
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Film Poster / Background Picture</label>
+                  <div
+                    onClick={handlePosterFileBoxClick}
+                    className="border-2 border-dashed border-border/50 rounded-lg p-8 text-center hover:border-accent/50 transition-colors cursor-pointer"
+                  >
+                    <ImageIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {posterFile ? posterFile.name : 'Click to upload poster image'}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WEBP</p>
+                  </div>
+
+                  <input
+                    ref={posterFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePosterFileChange}
+                    className="hidden"
+                  />
+                </div>
+
+                {posterFile && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-2">Poster Preview</label>
+                    <img
+                      src={URL.createObjectURL(posterFile)}
+                      alt="Poster Preview"
+                      className="w-full max-w-md h-56 object-cover rounded-xl border border-border/20"
+                    />
+                  </div>
+                )}
               </div>
+
               <div className="flex gap-4 mt-6">
-                <Button className="bg-primary hover:bg-primary/90">Submit Film</Button>
-                <Button variant="outline" onClick={() => setUploadFormVisible(false)}>Cancel</Button>
+                <Button
+                  onClick={handleSubmitFilm}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Submit Film
+                </Button>
+                <Button variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
               </div>
             </motion.div>
           )}
@@ -270,7 +384,6 @@ export default function Films() {
         open={!!selectedFilm}
         onClose={() => setSelectedFilm(null)}
       />
-
     </div>
   );
 }

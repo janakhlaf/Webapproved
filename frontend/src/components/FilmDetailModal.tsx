@@ -6,7 +6,8 @@ import { ShoppingCart, Clock, Calendar, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-
+import { useCart } from "../hooks/useCart";
+import { CartProvider } from "@/hooks/CartContext";
 interface FilmDetailModalProps {
   film: Film | null;
   open: boolean;
@@ -16,8 +17,12 @@ interface FilmDetailModalProps {
 export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { addToCart, cartItems } = useCart();
 
   if (!film) return null;
+
+  const filmCartId = `film-${film.id}`;
+  const isAdded = cartItems.some((item) => item.id === filmCartId);
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -26,7 +31,14 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
       return;
     }
 
-    console.log("Add film to cart:", film.id);
+    addToCart({
+      id: filmCartId,
+      title: film.title,
+      category: film.category,
+      price: 19.99,
+      image: film.posterUrl,
+      itemType: "film",
+    });
   };
 
   return (
@@ -90,8 +102,6 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
             </p>
           </div>
 
-        
-
           <div className="pt-4 space-y-3">
             <div>
               <p className="text-sm text-muted-foreground">Price</p>
@@ -104,7 +114,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200"
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
+                {isAdded ? "Added to Cart" : "Add to Cart"}
               </Button>
               <Button
                 onClick={onClose}

@@ -27,4 +27,5 @@ C:\Users\اسم جهازكم\Webapproved
 لما بدي اعمل backup واقدر انزلها كاملة :
 git tag backup-v1
 git push origin backup-v1
-********************************8
+********************************
+all edits done without the payment issus.****

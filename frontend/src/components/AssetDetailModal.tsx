@@ -5,6 +5,7 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { Asset3DViewer } from '@/components/Asset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/CartContext';
 import { formatPrice, type Asset, ROUTE_PATHS } from '@/lib/index';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -18,11 +19,14 @@ interface AssetDetailModalProps {
 export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps) {
   const { isAssetFavorite, toggleAssetFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const { addToCart, cartItems } = useCart();
   const navigate = useNavigate();
 
   if (!asset) return null;
 
   const isFavorite = isAssetFavorite(asset.id);
+  const assetCartId = `asset-${asset.id}`;
+  const isAdded = cartItems.some((item) => item.id === assetCartId);
 
   const handlePurchase = () => {
     if (!isAuthenticated) {
@@ -31,7 +35,14 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
       return;
     }
 
-    console.log('Purchase asset:', asset.id);
+    addToCart({
+      id: assetCartId,
+      title: asset.title,
+      category: asset.category,
+      price: asset.price,
+      image: '/placeholder.png',
+      itemType: 'asset',
+    });
   };
 
   return (
@@ -131,7 +142,7 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
                 className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
               >
                 <ShoppingCart className="h-5 w-5" />
-                Add to Chart
+                {isAdded ? 'Added to Cart' : 'Add to Cart'}
               </Button>
             </div>
           </div>

@@ -6,6 +6,7 @@ export const ROUTE_PATHS = {
   PROFILE: '/profile',
   SIGNIN: '/signin',
   REGISTER: '/register',
+    CART: '/cart',
 } as const;
 
 export interface Film {

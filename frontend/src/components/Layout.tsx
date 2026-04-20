@@ -4,6 +4,9 @@ import { Menu, X, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ShoppingCart } from 'lucide-react';
+import { CartProvider } from "@/hooks/CartContext";
+import { useCart } from '../hooks/useCart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +27,7 @@ const navLinks = [
 export function Layout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, signOut } = useAuth();
+  const { cartCount } = useCart();
 
   const handleSignOut = () => {
     signOut();
@@ -58,81 +62,96 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated && user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full border border-primary/20 hover:border-primary/40 transition-colors"
-                  >
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-56 bg-card/95 backdrop-blur-xl border-border/40"
-                >
-                  <div className="flex items-center gap-3 p-2">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator className="bg-border/40" />
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to={ROUTE_PATHS.PROFILE}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-border/40" />
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Link to={ROUTE_PATHS.SIGNIN}>
-                    Sign In
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  asChild
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
-                >
-                  <Link to={ROUTE_PATHS.REGISTER}>
-                    Register
-                  </Link>
-                </Button>
-              </>
-            )}
+  {isAuthenticated && (
+    <Link
+      to={ROUTE_PATHS.CART}
+      className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+    >
+      <ShoppingCart className="w-5 h-5 text-foreground" />
+
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+          {cartCount}
+        </span>
+      )}
+    </Link>
+  )}
+
+  {isAuthenticated && user ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="relative h-10 w-10 rounded-full border border-primary/20 hover:border-primary/40 transition-colors"
+        >
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="bg-primary/10 text-primary">
+              {user.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-56 bg-card/95 backdrop-blur-xl border-border/40"
+      >
+        <div className="flex items-center gap-3 p-2">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="bg-primary/10 text-primary">
+              {user.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <p className="text-sm font-medium">{user.name}</p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
+        </div>
+        <DropdownMenuSeparator className="bg-border/40" />
+        <DropdownMenuItem asChild>
+          <Link
+            to={ROUTE_PATHS.PROFILE}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <User className="h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-border/40" />
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Sign Out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <Link to={ROUTE_PATHS.SIGNIN}>
+          Sign In
+        </Link>
+      </Button>
+      <Button
+        size="sm"
+        asChild
+        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+      >
+        <Link to={ROUTE_PATHS.REGISTER}>
+          Register
+        </Link>
+      </Button>
+    </>
+  )}
+</div>
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

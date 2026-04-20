@@ -14,6 +14,8 @@ import Profile from "@/pages/Profile";
 import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
 import { AuthProvider } from "@/hooks/useAuth";
+import Cart from "@/pages/Cart";
+import { CartProvider } from "@/hooks/CartContext";
 
 const queryClient = new QueryClient();
 
@@ -21,20 +23,23 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <HashRouter>
-        <Routes>
-          <Route path={ROUTE_PATHS.HOME} element={<Layout><Home /></Layout>} />
-          <Route path={ROUTE_PATHS.FILMS} element={<Layout><Films /></Layout>} />
-          <Route path={ROUTE_PATHS.ASSETS} element={<Layout><Assets /></Layout>} />
-          <Route path={ROUTE_PATHS.ABOUT} element={<Layout><About /></Layout>} />
-          <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
-          <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
-          <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
-        </Routes>
-        <Chatbot />
-      </HashRouter>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <Routes>
+              <Route path={ROUTE_PATHS.HOME} element={<Layout><Home /></Layout>} />
+              <Route path={ROUTE_PATHS.FILMS} element={<Layout><Films /></Layout>} />
+              <Route path={ROUTE_PATHS.ASSETS} element={<Layout><Assets /></Layout>} />
+              <Route path={ROUTE_PATHS.ABOUT} element={<Layout><About /></Layout>} />
+              <Route path={ROUTE_PATHS.CART} element={<Layout><Cart /></Layout>} />
+              <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
+              <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
+              <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
+            </Routes>
+            <Chatbot />
+          </HashRouter>
+        </CartProvider>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
