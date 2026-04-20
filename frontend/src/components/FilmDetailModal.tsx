@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Film, ROUTE_PATHS } from "@/lib/index";
-import { Download, Clock, Calendar, User } from "lucide-react";
+import { ShoppingCart, Clock, Calendar, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,14 +19,14 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
 
   if (!film) return null;
 
-  const handleDownload = () => {
+  const handleAddToCart = () => {
     if (!isAuthenticated) {
       onClose();
       navigate(ROUTE_PATHS.SIGNIN);
       return;
     }
 
-    console.log("Download film:", film.id);
+    console.log("Add film to cart:", film.id);
   };
 
   return (
@@ -90,38 +90,30 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
             </p>
           </div>
 
-          {film.tags && film.tags.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold text-foreground">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {film.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="px-3 py-1 text-xs bg-muted/30 border-border/50 hover:bg-muted/50"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+        
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              onClick={handleDownload}
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download Film
-            </Button>
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="px-8 border-border/50 hover:bg-muted/50"
-            >
-              Close
-            </Button>
+          <div className="pt-4 space-y-3">
+            <div>
+              <p className="text-sm text-muted-foreground">Price</p>
+              <p className="text-3xl font-bold text-primary">$19.99</p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="px-8 border-border/50 hover:bg-muted/50"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </motion.div>
       </DialogContent>

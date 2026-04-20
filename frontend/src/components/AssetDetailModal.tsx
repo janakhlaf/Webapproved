@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingCart, Download } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { Asset3DViewer } from '@/components/Asset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,10 +34,6 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
     console.log('Purchase asset:', asset.id);
   };
 
-  const handleDownload = () => {
-    console.log('Download asset:', asset.id);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border border-primary/20">
@@ -61,14 +57,6 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
               >
                 <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
                 {isFavorite ? 'Saved' : 'Save to Favorites'}
-              </Button>
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                size="icon"
-                className="transition-all duration-200 hover:scale-[1.02]"
-              >
-                <Download className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -143,12 +131,8 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
                 className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
               >
                 <ShoppingCart className="h-5 w-5" />
-                Purchase Asset
+                Add to Chart
               </Button>
-
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Instant download after purchase
-              </p>
             </div>
           </div>
         </div>
