@@ -1,0 +1,19 @@
+Navigate to the backend directory : 
+## cd backend
+Create virtual environment : 
+## python -m venv venv
+Activate virtual environment :
+## venv\Scripts\activate
+Install all backend dependencies from requirements file:
+## pip install -r requirements.txt
+Install backend libraries :
+## pip install fastapi uvicorn sqlalchemy psycopg[binary]
+▶️ Run Backend:
+## uvicorn main:app --reload
+
+ ## ⚠️ VS Code Interpreter Issue
+If FastAPI shows as not recognized, select the virtual environment manually:
+- Open Command Palette (Ctrl + Shift + P)
+- Select: Python: Select Interpreter
+- Choose: backend/venv/Scripts/python.exe
+This ensures VS Code uses the correct environment.

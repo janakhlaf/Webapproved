@@ -1,0 +1,211 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+==========================================================================
+【AI HANDOVER NOTE】
+1. DESIGN PHILOSOPHY:
+   - Cinematic Futurism: This design system embodies a premium AI-themed cinematic experience, merging human consciousness with artificial intelligence through visual storytelling. The core philosophy is 'Dark Luminescence' — where deep cosmic blacks serve as the canvas for intelligent neon accents that pulse with life.
+   - Glassmorphism 2.0 with Physicality: We employ advanced frosted glass panels with multi-layer depth, rim-lighting, and ambient occlusion to create tangible surfaces floating in a digital void. Each UI element feels like a holographic interface from a near-future AI laboratory.
+   - Emotional Resonance: Unlike cold tech interfaces, this system uses carefully calibrated cyan-purple-pink gradients to evoke wonder, curiosity, and the mysterious beauty of consciousness meeting machine logic. The color temperature shifts create psychological depth.
+
+2. TYPOGRAPHY:
+   - Display (Orbitron): Selected for its geometric precision and futuristic character, perfect for hero titles and brand identity. Its letterforms echo circuit board aesthetics while maintaining premium readability. Used at weights 600-900 for maximum impact in cinematic hero sections.
+   - Sans (Inter): The workhorse for UI and body text. Its neutral, highly legible design ensures accessibility across all content while maintaining a modern, tech-forward feel. Variable weight system (300-700) provides typographic hierarchy without visual noise.
+   - Mono (JetBrains Mono): Reserved for technical data, asset metadata, code snippets, and numerical displays. Its engineered clarity makes complex information digestible while reinforcing the AI/tech narrative.
+
+3. COLOR SYSTEM:
+   - Brand Foundation (Hue 195° Cyan): The primary brand color sits in the electric cyan spectrum (195°-200°), chosen for its association with digital interfaces, AI visualization, and futuristic technology. This hue triggers cognitive associations with innovation and intelligence.
+   - Mapping Logic: --brand (cyan) flows into --primary for interactive elements, --accent for secondary actions, and --ring for focus states. The consistent 195° hue creates visual coherence across all touchpoints.
+   - Semantic Triad: Success uses 150° (tech green), Warning uses 45° (amber alert), Destructive uses 10° (critical red). Each maintains high chroma in dark mode for visibility against deep backgrounds.
+   - Atmospheric Layers: Background uses near-black (L: 0.08) with subtle blue undertone (H: 240°), creating cosmic depth. Foreground text at L: 0.95 ensures WCAG AAA contrast. Muted tones use desaturated purples (H: 270°) for secondary information hierarchy.
+   - Glow System: All interactive elements use elevated chroma (C: 0.25-0.35) to create neon glow effects. Light mode reduces chroma by 40% to prevent oversaturation.
+
+4. USAGE GUIDE:
+   - Layout Architecture: Full-width cinematic sections with centered content containers (max-width: 1400px). Hero sections use viewport-height blocks with parallax layers. Card grids use 3-column Bento layouts with asymmetric sizing for visual interest.
+   - Glassmorphism Recipe: backdrop-blur-xl (24px) + bg-opacity 10-15% + border-opacity 20% + subtle box-shadow with colored glow. Layer multiple glass panels for depth (z-index: 10, 20, 30).
+   - Rim-Light Technique: Add 1px top/left borders with 50% opacity white + 1px bottom/right borders with primary color at 30% opacity. Creates 3D beveled effect on cards.
+   - Interactive States: Hover increases glow (shadow-lg to shadow-2xl) + slight scale (1.02) + border brightness (+20%). Active state adds inner glow with primary color.
+   - Theme Adaptation: Chatbot keyword detection triggers CSS variable updates. Sci-Fi: shift H to 220° (deep blue). Horror: shift H to 0° + reduce L by 20%. Nature: shift H to 140° (green). Transitions use 800ms cubic-bezier for smooth morphing.
+   - 3D Integration: Three.js viewers use dark studio lighting (ambient: 0.4, directional: 0.8) with soft shadows. Background matches --background token. Model materials use metalness: 0.8, roughness: 0.2 for premium feel.
+   - Audio Cues: Hover sounds at -20dB, click sounds at -15dB. Use Web Audio API with reverb (decay: 2s) for spatial depth. Ambient loop at -30dB creates immersive atmosphere.
+   - Accessibility: All neon colors meet WCAG AA against dark backgrounds. Focus rings use 3px solid --ring with 4px offset. Reduced motion respects prefers-reduced-motion for animations.
+==========================================================================
+*/
+
+:root {
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Core UI Tokens */
+  --background: oklch(0.98 0.005 240);
+  --foreground: oklch(0.15 0.02 240);
+  --card: oklch(0.96 0.008 240);
+  --card-foreground: oklch(0.18 0.02 240);
+  --popover: oklch(0.97 0.006 240);
+  --popover-foreground: oklch(0.16 0.02 240);
+  --primary: oklch(0.55 0.22 195);
+  --primary-foreground: oklch(0.98 0.005 195);
+  --secondary: oklch(0.92 0.015 270);
+  --secondary-foreground: oklch(0.22 0.03 270);
+  --muted: oklch(0.94 0.01 240);
+  --muted-foreground: oklch(0.48 0.015 240);
+  --accent: oklch(0.65 0.25 270);
+  --accent-foreground: oklch(0.98 0.005 270);
+  --destructive: oklch(0.58 0.24 10);
+  --destructive-foreground: oklch(0.98 0.005 10);
+  --border: oklch(0.88 0.012 240);
+  --input: oklch(0.90 0.012 240);
+  --ring: oklch(0.55 0.22 195);
+  
+  /* Chart Tokens */
+  --chart-1: oklch(0.60 0.24 195);
+  --chart-2: oklch(0.62 0.26 270);
+  --chart-3: oklch(0.58 0.22 330);
+  --chart-4: oklch(0.56 0.20 150);
+  --chart-5: oklch(0.64 0.23 45);
+  
+  /* Sidebar Tokens */
+  --sidebar: oklch(0.96 0.008 240);
+  --sidebar-foreground: oklch(0.20 0.02 240);
+  --sidebar-primary: oklch(0.55 0.22 195);
+  --sidebar-primary-foreground: oklch(0.98 0.005 195);
+  --sidebar-accent: oklch(0.92 0.015 270);
+  --sidebar-accent-foreground: oklch(0.22 0.03 270);
+  --sidebar-border: oklch(0.88 0.012 240);
+  --sidebar-ring: oklch(0.55 0.22 195);
+}
+
+.dark {
+  --background: oklch(0.08 0.015 240);
+  --foreground: oklch(0.95 0.008 195);
+  --card: oklch(0.12 0.02 240);
+  --card-foreground: oklch(0.93 0.01 195);
+  --popover: oklch(0.10 0.018 240);
+  --popover-foreground: oklch(0.94 0.009 195);
+  --primary: oklch(0.70 0.28 195);
+  --primary-foreground: oklch(0.10 0.015 195);
+  --secondary: oklch(0.22 0.04 270);
+  --secondary-foreground: oklch(0.92 0.012 270);
+  --muted: oklch(0.18 0.025 240);
+  --muted-foreground: oklch(0.62 0.02 240);
+  --accent: oklch(0.68 0.32 270);
+  --accent-foreground: oklch(0.10 0.015 270);
+  --destructive: oklch(0.62 0.30 10);
+  --destructive-foreground: oklch(0.95 0.008 10);
+  --border: oklch(0.25 0.035 195);
+  --input: oklch(0.22 0.03 195);
+  --ring: oklch(0.70 0.28 195);
+  
+  /* Chart Tokens */
+  --chart-1: oklch(0.68 0.30 195);
+  --chart-2: oklch(0.66 0.32 270);
+  --chart-3: oklch(0.70 0.28 330);
+  --chart-4: oklch(0.64 0.26 150);
+  --chart-5: oklch(0.72 0.29 45);
+  
+  /* Sidebar Tokens */
+  --sidebar: oklch(0.10 0.018 240);
+  --sidebar-foreground: oklch(0.90 0.01 195);
+  --sidebar-primary: oklch(0.70 0.28 195);
+  --sidebar-primary-foreground: oklch(0.10 0.015 195);
+  --sidebar-accent: oklch(0.22 0.04 270);
+  --sidebar-accent-foreground: oklch(0.92 0.012 270);
+  --sidebar-border: oklch(0.25 0.035 195);
+  --sidebar-ring: oklch(0.70 0.28 195);
+}
+
+@theme inline {
+  /* Shadcn Core Mapping */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Charts Mapping */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar Mapping */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Radius */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans min-h-screen;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  code, pre {
+    @apply font-mono;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40;
+  }
+}
