@@ -28,7 +28,6 @@ export default function Cart() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-10">
-
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <ShoppingCart /> My Cart
         </h1>
@@ -37,11 +36,7 @@ export default function Cart() {
           <p>Your cart is empty</p>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-            {/* LEFT SIDE */}
             <div className="xl:col-span-2 space-y-6">
-
-              {/* FILMS */}
               {films.length > 0 && (
                 <section>
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -63,7 +58,6 @@ export default function Cart() {
                 </section>
               )}
 
-              {/* ASSETS */}
               {assets.length > 0 && (
                 <section>
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -84,12 +78,9 @@ export default function Cart() {
                   ))}
                 </section>
               )}
-
             </div>
 
-            {/* RIGHT SIDE */}
             <div className="border p-5 rounded-lg">
-
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
               <p>Films: {films.length}</p>
@@ -110,10 +101,8 @@ export default function Cart() {
                 Clear Cart
               </Button>
 
-              {/* CHECKOUT FORM */}
               {showCheckout && (
                 <div className="mt-6 border p-4 rounded space-y-4">
-
                   <h3 className="font-semibold text-lg">Credit Card Details</h3>
 
                   <input
@@ -150,7 +139,6 @@ export default function Cart() {
                     />
                   </div>
 
-                  {/* BILLING */}
                   <h3 className="font-semibold text-lg mt-4">Billing Details</h3>
 
                   <input
@@ -203,9 +191,17 @@ export default function Cart() {
                           return;
                         }
 
-                        alert("Payment Successful 🎉");
-                        clearCart();
-                        setShowCheckout(false);
+                        if (cardNumber === "4242424242424242") {
+                          alert("✅ Payment Successful 🎉");
+                          clearCart();
+                          setShowCheckout(false);
+                        } else if (cardNumber === "4000000000009995") {
+                          alert("❌ Insufficient Funds");
+                        } else if (cardNumber === "4000000000000002") {
+                          alert("❌ Card Declined");
+                        } else {
+                          alert("❌ Invalid Card Details");
+                        }
                       }}
                     >
                       Confirm Payment
@@ -219,12 +215,9 @@ export default function Cart() {
                       Cancel
                     </Button>
                   </div>
-
                 </div>
               )}
-
             </div>
-
           </div>
         )}
       </div>

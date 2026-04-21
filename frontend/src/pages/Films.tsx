@@ -37,7 +37,7 @@ export default function Films() {
 
   const allFilms = useMemo(() => [...uploadedFilms, ...FILMS_DATA], [uploadedFilms]);
 
-  const filteredFilms = allFilms.filter(film => {
+  const filteredFilms = allFilms.filter((film) => {
     const matchesSearch =
       film.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       film.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -102,8 +102,9 @@ export default function Films() {
       description: filmDescription,
       category: filmCategory,
       posterUrl: URL.createObjectURL(posterFile),
+      videoUrl: URL.createObjectURL(filmFile),
       duration: 'New Upload',
-      releaseYear: new Date().getFullYear()   ,
+      releaseYear: new Date().getFullYear(),
       director: 'Uploaded by User',
       tags: ['Uploaded'],
     };
@@ -294,6 +295,7 @@ export default function Films() {
                     accept=".mp4,.mov,.avi,video/*"
                     onChange={handleFilmFileChange}
                     className="hidden"
+                    title="Upload Film"
                   />
                 </div>
 
@@ -316,6 +318,7 @@ export default function Films() {
                     accept="image/*"
                     onChange={handlePosterFileChange}
                     className="hidden"
+                    title="Upload Poster"
                   />
                 </div>
 

@@ -1,12 +1,9 @@
 import { useState, ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, ShoppingCart, Library } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ShoppingCart } from 'lucide-react';
-import { CartProvider } from "@/hooks/CartContext";
-import { useCart } from '../hooks/useCart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ROUTE_PATHS } from '@/lib/index';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '../hooks/useCart';
 
 const navLinks = [
   { name: 'Home', path: ROUTE_PATHS.HOME },
@@ -62,96 +60,108 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-  {isAuthenticated && (
-    <Link
-      to={ROUTE_PATHS.CART}
-      className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
-    >
-      <ShoppingCart className="w-5 h-5 text-foreground" />
+            <div className="flex items-center gap-3">
+              <Link
+                to={ROUTE_PATHS.MY_LIBRARY}
+                className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                aria-label="My Library"
+                title="My Library"
+              >
+                <Library className="w-5 h-5 text-foreground" />
+              </Link>
 
-      {cartCount > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-          {cartCount}
-        </span>
-      )}
-    </Link>
-  )}
+              <Link
+                to={ROUTE_PATHS.CART}
+                className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                aria-label="Shopping Cart"
+                title="Cart"
+              >
+                <ShoppingCart className="w-5 h-5 text-foreground" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </div>
 
-  {isAuthenticated && user ? (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="relative h-10 w-10 rounded-full border border-primary/20 hover:border-primary/40 transition-colors"
-        >
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-56 bg-card/95 backdrop-blur-xl border-border/40"
-      >
-        <div className="flex items-center gap-3 p-2">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <p className="text-sm font-medium">{user.name}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full border border-primary/20 hover:border-primary/40 transition-colors"
+                  >
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 bg-card/95 backdrop-blur-xl border-border/40"
+                >
+                  <div className="flex items-center gap-3 p-2">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+
+                  <DropdownMenuSeparator className="bg-border/40" />
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to={ROUTE_PATHS.PROFILE}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="bg-border/40" />
+
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Link to={ROUTE_PATHS.SIGNIN}>Sign In</Link>
+                </Button>
+
+                <Button
+                  size="sm"
+                  asChild
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+                >
+                  <Link to={ROUTE_PATHS.REGISTER}>Register</Link>
+                </Button>
+              </>
+            )}
           </div>
-        </div>
-        <DropdownMenuSeparator className="bg-border/40" />
-        <DropdownMenuItem asChild>
-          <Link
-            to={ROUTE_PATHS.PROFILE}
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <User className="h-4 w-4" />
-            <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/40" />
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  ) : (
-    <>
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        className="text-muted-foreground hover:text-foreground"
-      >
-        <Link to={ROUTE_PATHS.SIGNIN}>
-          Sign In
-        </Link>
-      </Button>
-      <Button
-        size="sm"
-        asChild
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
-      >
-        <Link to={ROUTE_PATHS.REGISTER}>
-          Register
-        </Link>
-      </Button>
-    </>
-  )}
-</div>
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -187,6 +197,31 @@ export function Layout({ children }: { children: ReactNode }) {
                   </NavLink>
                 ))}
 
+                <div className="pt-2 flex flex-col gap-3">
+                  <Link
+                    to={ROUTE_PATHS.MY_LIBRARY}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
+                  >
+                    <Library className="h-5 w-5" />
+                    <span className="text-sm font-medium">My Library</span>
+                  </Link>
+
+                  <Link
+                    to={ROUTE_PATHS.CART}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    <span className="text-sm font-medium">Cart</span>
+                    {cartCount > 0 && (
+                      <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Link>
+                </div>
+
                 <div className="pt-4 border-t border-border/20 flex flex-col gap-3">
                   {isAuthenticated && user ? (
                     <>
@@ -206,6 +241,7 @@ export function Layout({ children }: { children: ReactNode }) {
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </Link>
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -225,19 +261,16 @@ export function Layout({ children }: { children: ReactNode }) {
                         className="w-full"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link to={ROUTE_PATHS.SIGNIN}>
-                          Sign In
-                        </Link>
+                        <Link to={ROUTE_PATHS.SIGNIN}>Sign In</Link>
                       </Button>
+
                       <Button
                         size="sm"
                         asChild
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link to={ROUTE_PATHS.REGISTER}>
-                          Register
-                        </Link>
+                        <Link to={ROUTE_PATHS.REGISTER}>Register</Link>
                       </Button>
                     </>
                   )}
@@ -248,9 +281,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </AnimatePresence>
       </header>
 
-      <main className="flex-1 pt-16">
-        {children}
-      </main>
+      <main className="flex-1 pt-16">{children}</main>
 
       <footer className="border-t border-border/20 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-12">
@@ -260,7 +291,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 Human Mind & AI Logic
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Exploring the cinematic intersection of AI, memory, creativity, and interactive 3D experiences.
+                Exploring the cinematic intersection of AI, memory, creativity, and
+                interactive 3D experiences.
               </p>
             </div>
 

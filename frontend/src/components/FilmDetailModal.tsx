@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "../hooks/useCart";
-import { CartProvider } from "@/hooks/CartContext";
+
 interface FilmDetailModalProps {
   film: Film | null;
   open: boolean;
@@ -38,6 +38,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
       price: 19.99,
       image: film.posterUrl,
       itemType: "film",
+      videoUrl: film.videoUrl,
     });
   };
 
@@ -57,12 +58,25 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
           className="space-y-6"
         >
           <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/20 border border-border/30">
-            <img
-              src={film.posterUrl}
-              alt={film.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+            {film.videoUrl ? (
+              <video
+                controls
+                preload="metadata"
+                className="w-full h-full object-cover"
+              >
+                <source src={film.videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <>
+                <img
+                  src={film.posterUrl}
+                  alt={film.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+              </>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -116,6 +130,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 {isAdded ? "Added to Cart" : "Add to Cart"}
               </Button>
+
               <Button
                 onClick={onClose}
                 variant="outline"

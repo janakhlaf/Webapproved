@@ -5,9 +5,8 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { Asset3DViewer } from '@/components/Asset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/CartContext';
+import { useCart } from '@/hooks/useCart';
 import { formatPrice, type Asset, ROUTE_PATHS } from '@/lib/index';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 interface AssetDetailModalProps {
@@ -16,7 +15,11 @@ interface AssetDetailModalProps {
   onClose: () => void;
 }
 
-export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps) {
+export function AssetDetailModal({
+  asset,
+  open,
+  onClose,
+}: AssetDetailModalProps) {
   const { isAssetFavorite, toggleAssetFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
   const { addToCart, cartItems } = useCart();
@@ -35,14 +38,16 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
       return;
     }
 
-    addToCart({
-      id: assetCartId,
-      title: asset.title,
-      category: asset.category,
-      price: asset.price,
-      image: '/placeholder.png',
-      itemType: 'asset',
-    });
+    if (!isAdded) {
+      addToCart({
+        id: assetCartId,
+        title: asset.title,
+        category: asset.category,
+        price: asset.price,
+        image: 'asset-preview',
+        itemType: 'asset',
+      });
+    }
   };
 
   return (
@@ -77,11 +82,19 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
               <Badge variant="secondary" className="text-sm px-3 py-1">
                 {asset.type}
               </Badge>
-              <Badge variant="outline" className="text-sm px-3 py-1 border-primary/30">
+
+              <Badge
+                variant="outline"
+                className="text-sm px-3 py-1 border-primary/30"
+              >
                 {asset.category}
               </Badge>
+
               {asset.format && (
-                <Badge variant="outline" className="text-sm px-3 py-1 border-accent/30">
+                <Badge
+                  variant="outline"
+                  className="text-sm px-3 py-1 border-accent/30"
+                >
                   {asset.format}
                 </Badge>
               )}
@@ -91,48 +104,38 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                 Description
               </h3>
-              <p className="text-foreground/90 leading-relaxed">{asset.description}</p>
+              <p className="text-foreground/90 leading-relaxed">
+                {asset.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               {asset.fileSize && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">File Size</p>
-                  <p className="text-lg font-semibold text-foreground">{asset.fileSize}</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {asset.fileSize}
+                  </p>
                 </div>
               )}
+
               {asset.format && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Format</p>
-                  <p className="text-lg font-semibold text-foreground">{asset.format}</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {asset.format}
+                  </p>
                 </div>
               )}
             </div>
-
-            {asset.tags && asset.tags.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  Tags
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {asset.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="text-xs px-2 py-1 border-muted-foreground/20"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="pt-6 border-t border-border">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="text-4xl font-bold text-primary">{formatPrice(asset.price)}</p>
+                  <p className="text-4xl font-bold text-primary">
+                    {formatPrice(asset.price)}
+                  </p>
                 </div>
               </div>
 

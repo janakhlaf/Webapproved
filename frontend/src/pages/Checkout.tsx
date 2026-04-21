@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ROUTE_PATHS } from '@/lib/index';
+import { useCart } from '@/hooks/useCart';
 
 const TEST_CARD = {
   number: '4242424242424242',
@@ -9,6 +12,9 @@ const TEST_CARD = {
 };
 
 export default function Checkout() {
+  const navigate = useNavigate();
+  const { cartItems, clearCart } = useCart();
+
   const [cardData, setCardData] = useState({
     number: '',
     name: '',
@@ -32,12 +38,30 @@ export default function Checkout() {
   const handlePayment = () => {
     setStatus('processing');
 
-    // محاكاة عملية الدفع
     setTimeout(() => {
       if (isTestCard()) {
+        const existingPurchased = JSON.parse(
+          localStorage.getItem('purchased_items') || '[]'
+        );
+
+        const purchasedFromCart = cartItems.map((item) => ({
+          ...item,
+          downloadUrl: item.videoUrl || item.image,
+        }));
+
+        localStorage.setItem(
+          'purchased_items',
+          JSON.stringify([...existingPurchased, ...purchasedFromCart])
+        );
+
+        clearCart();
         setStatus('success');
+
+        setTimeout(() => {
+          navigate(ROUTE_PATHS.MY_LIBRARY);
+        }, 1000);
       } else {
-        setStatus('failed'); // فشل بسبب الرصيد
+        setStatus('failed');
       }
     }, 2000);
   };
@@ -47,7 +71,6 @@ export default function Checkout() {
       <div className="w-full max-w-md p-6 bg-card rounded-2xl shadow-xl space-y-5 border border-border/30">
         <h2 className="text-2xl font-bold text-center">Checkout</h2>
 
-        {/* Card Number */}
         <input
           type="text"
           placeholder="Card Number"
@@ -58,7 +81,6 @@ export default function Checkout() {
           }
         />
 
-        {/* Name */}
         <input
           type="text"
           placeholder="Cardholder Name"
@@ -69,7 +91,6 @@ export default function Checkout() {
           }
         />
 
-        {/* Expiry & CVV */}
         <div className="flex gap-3">
           <input
             type="text"
@@ -92,7 +113,6 @@ export default function Checkout() {
           />
         </div>
 
-        {/* Pay Button */}
         <Button
           onClick={handlePayment}
           className="w-full"
@@ -101,7 +121,6 @@ export default function Checkout() {
           {status === 'processing' ? 'Processing...' : 'Pay Now'}
         </Button>
 
-        {/* Status Messages */}
         {status === 'success' && (
           <div className="text-center text-green-500 font-medium">
             ✅ Payment Successful
