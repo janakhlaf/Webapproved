@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 import { ShoppingCart, Film, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CartProvider } from "@/hooks/CartContext";
 import { useCart } from '../hooks/useCart';
-
+import { useNavigate } from "react-router-dom";
 import { Badge } from '@/components/ui/badge';
+
 export default function Cart() {
   const { cartItems, removeFromCart, clearCart } = useCart();
+  const navigate = useNavigate();
 
   const films = cartItems.filter((item) => item.itemType === 'film');
   const assets = cartItems.filter((item) => item.itemType === 'asset');
@@ -45,6 +46,7 @@ export default function Cart() {
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 space-y-6">
+
               {films.length > 0 && (
                 <section className="rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/10">
                   <div className="flex items-center gap-2 mb-5">
@@ -128,6 +130,7 @@ export default function Cart() {
                   </div>
                 </section>
               )}
+
             </div>
 
             <div className="rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/10 h-fit">
@@ -144,17 +147,40 @@ export default function Cart() {
                 </div>
                 <div className="border-t border-border/20 pt-3 flex items-center justify-between">
                   <span className="font-medium">Total</span>
-                  <span className="text-2xl font-bold text-primary">${totalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${totalPrice.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Button className="w-full">Proceed to Checkout</Button>
-                <Button variant="outline" className="w-full" onClick={clearCart}>
+                <Button
+                  className="w-full"
+                  disabled={cartItems.length === 0}
+                  onClick={() => {
+                    localStorage.setItem("cart", JSON.stringify(cartItems));
+                    navigate("/checkout");
+                  }}
+                >
+                  Proceed to Checkout
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={clearCart}
+                >
                   Clear Cart
                 </Button>
+
+                {cartItems.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Add items to enable checkout
+                  </p>
+                )}
               </div>
             </div>
+
           </div>
         )}
       </div>

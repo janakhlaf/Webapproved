@@ -82,20 +82,6 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
             </div>
           </div>
 
-          {film.tags && film.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {film.tags.slice(0, 3).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="text-xs border-border/40 text-muted-foreground"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
           <Button
             onClick={() => onViewDetails(film)}
             className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all duration-200 group/btn"
