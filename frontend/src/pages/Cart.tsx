@@ -1,11 +1,24 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Film, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '../hooks/useCart';
+import { ROUTE_PATHS } from '@/lib/index';
+
+type PurchasedItem = {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  image: string;
+  itemType: 'film' | 'asset';
+  videoUrl?: string;
+  downloadUrl?: string;
+};
 
 export default function Cart() {
+  const navigate = useNavigate();
   const { cartItems, removeFromCart, clearCart } = useCart();
 
   const [showCheckout, setShowCheckout] = useState(false);
@@ -24,6 +37,38 @@ export default function Cart() {
   const assets = cartItems.filter((item) => item.itemType === 'asset');
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+
+  const handleSuccessfulPayment = () => {
+    try {
+      const existingPurchased: PurchasedItem[] = JSON.parse(
+        localStorage.getItem('purchased_items') || '[]'
+      );
+
+      const purchasedFromCart: PurchasedItem[] = cartItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        price: item.price,
+        image: item.image,
+        itemType: item.itemType,
+        videoUrl: item.itemType === 'film' ? item.image : undefined,
+        downloadUrl: item.image,
+      }));
+
+      localStorage.setItem(
+        'purchased_items',
+        JSON.stringify([...existingPurchased, ...purchasedFromCart])
+      );
+
+      clearCart();
+      setShowCheckout(false);
+      alert('✅ Payment Successful 🎉');
+      navigate(ROUTE_PATHS.MY_LIBRARY);
+    } catch (error) {
+      console.error('Payment save error:', error);
+      alert('❌ Something went wrong while saving your purchase.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,14 +89,18 @@ export default function Cart() {
                   </h2>
 
                   {films.map((item) => (
-                    <div key={item.id} className="flex justify-between p-3 border rounded mb-3">
+                    <div
+                      key={item.id}
+                      className="flex justify-between p-3 border rounded mb-3"
+                    >
                       <div>
                         <h3>{item.title}</h3>
                         <p>${item.price}</p>
                       </div>
 
                       <Button onClick={() => removeFromCart(item.id)}>
-                        <Trash2 /> Remove
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remove
                       </Button>
                     </div>
                   ))}
@@ -65,14 +114,18 @@ export default function Cart() {
                   </h2>
 
                   {assets.map((item) => (
-                    <div key={item.id} className="flex justify-between p-3 border rounded mb-3">
+                    <div
+                      key={item.id}
+                      className="flex justify-between p-3 border rounded mb-3"
+                    >
                       <div>
                         <h3>{item.title}</h3>
                         <p>${item.price}</p>
                       </div>
 
                       <Button onClick={() => removeFromCart(item.id)}>
-                        <Trash2 /> Remove
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remove
                       </Button>
                     </div>
                   ))}
@@ -187,20 +240,18 @@ export default function Cart() {
                           !addressLine ||
                           !postalCode
                         ) {
-                          alert("Please fill all fields");
+                          alert('Please fill all fields');
                           return;
                         }
 
-                        if (cardNumber === "4242424242424242") {
-                          alert("✅ Payment Successful 🎉");
-                          clearCart();
-                          setShowCheckout(false);
-                        } else if (cardNumber === "4000000000009995") {
-                          alert("❌ Insufficient Funds");
-                        } else if (cardNumber === "4000000000000002") {
-                          alert("❌ Card Declined");
+                        if (cardNumber === '4242424242424242') {
+                          handleSuccessfulPayment();
+                        } else if (cardNumber === '4000000000009995') {
+                          alert('❌ Insufficient Funds');
+                        } else if (cardNumber === '4000000000000002') {
+                          alert('❌ Card Declined');
                         } else {
-                          alert("❌ Invalid Card Details");
+                          alert('❌ Invalid Card Details');
                         }
                       }}
                     >

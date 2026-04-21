@@ -1,27 +1,36 @@
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Play, Download, Library } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Play, Download, Library } from 'lucide-react';
 
 type LibraryItem = {
   id: string;
   title: string;
-  category?: string;
-  image?: string;
-  itemType: "film" | "asset";
+  category: string;
+  price: number;
+  image: string;
+  itemType: 'film' | 'asset';
   videoUrl?: string;
   downloadUrl?: string;
 };
 
 export default function MyLibrary() {
-  const purchasedItems: LibraryItem[] = useMemo(() => {
-    const saved = localStorage.getItem("purchased_items");
-    return saved ? JSON.parse(saved) : [];
+  const [purchasedItems, setPurchasedItems] = useState<LibraryItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('purchased_items');
+      const parsed: LibraryItem[] = saved ? JSON.parse(saved) : [];
+      setPurchasedItems(parsed);
+    } catch (error) {
+      console.error('Library load error:', error);
+      setPurchasedItems([]);
+    }
   }, []);
 
-  const films = purchasedItems.filter((item) => item.itemType === "film");
-  const assets = purchasedItems.filter((item) => item.itemType === "asset");
+  const films = purchasedItems.filter((item) => item.itemType === 'film');
+  const assets = purchasedItems.filter((item) => item.itemType === 'asset');
 
   return (
     <div className="min-h-screen bg-background text-foreground py-12">
@@ -44,47 +53,43 @@ export default function MyLibrary() {
                     key={film.id}
                     className="overflow-hidden bg-card/60 border border-border/40"
                   >
-                    {film.image && (
-                      <img
-                        src={film.image}
-                        alt={film.title}
-                        className="w-full h-56 object-cover"
-                      />
-                    )}
+                    <img
+                      src={film.image}
+                      alt={film.title}
+                      className="w-full h-56 object-cover"
+                    />
 
                     <div className="p-4 space-y-4">
                       <div className="space-y-2">
                         <h3 className="text-xl font-semibold">{film.title}</h3>
-                        {film.category && (
+                        <div className="flex gap-2 items-center flex-wrap">
                           <Badge variant="secondary">{film.category}</Badge>
-                        )}
+                          <Badge variant="outline">${film.price}</Badge>
+                        </div>
                       </div>
 
-                      {film.videoUrl ? (
-                        <div className="flex gap-2">
-                          <Button asChild className="flex-1">
-                            <a
-                              href={film.videoUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <Play className="w-4 h-4 mr-2" />
-                              Play
-                            </a>
-                          </Button>
+                      <div className="flex gap-2">
+                        <Button asChild className="flex-1">
+                          <a
+                            href={film.videoUrl || film.image}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Watch
+                          </a>
+                        </Button>
 
-                          <Button asChild variant="outline" className="flex-1">
-                            <a href={film.videoUrl} download={film.title}>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download
-                            </a>
-                          </Button>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          This film is currently unavailable.
-                        </p>
-                      )}
+                        <Button asChild variant="outline" className="flex-1">
+                          <a
+                            href={film.downloadUrl || film.image}
+                            download={film.title}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </a>
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
@@ -104,34 +109,30 @@ export default function MyLibrary() {
                     key={asset.id}
                     className="overflow-hidden bg-card/60 border border-border/40"
                   >
-                    {asset.image && (
-                      <img
-                        src={asset.image}
-                        alt={asset.title}
-                        className="w-full h-56 object-cover"
-                      />
-                    )}
+                    <img
+                      src={asset.image}
+                      alt={asset.title}
+                      className="w-full h-56 object-cover"
+                    />
 
                     <div className="p-4 space-y-4">
                       <div className="space-y-2">
                         <h3 className="text-xl font-semibold">{asset.title}</h3>
-                        {asset.category && (
+                        <div className="flex gap-2 items-center flex-wrap">
                           <Badge variant="secondary">{asset.category}</Badge>
-                        )}
+                          <Badge variant="outline">${asset.price}</Badge>
+                        </div>
                       </div>
 
-                      {asset.downloadUrl ? (
-                        <Button asChild variant="outline" className="w-full">
-                          <a href={asset.downloadUrl} download={asset.title}>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </a>
-                        </Button>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          This asset is currently unavailable.
-                        </p>
-                      )}
+                      <Button asChild variant="outline" className="w-full">
+                        <a
+                          href={asset.downloadUrl || asset.image}
+                          download={asset.title}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </a>
+                      </Button>
                     </div>
                   </Card>
                 ))}

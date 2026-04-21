@@ -60,30 +60,32 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <div className="flex items-center gap-3">
-              <Link
-                to={ROUTE_PATHS.MY_LIBRARY}
-                className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
-                aria-label="My Library"
-                title="My Library"
-              >
-                <Library className="w-5 h-5 text-foreground" />
-              </Link>
+            {isAuthenticated && user && (
+              <div className="flex items-center gap-3">
+                <Link
+                  to={ROUTE_PATHS.MY_LIBRARY}
+                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                  aria-label="My Library"
+                  title="My Library"
+                >
+                  <Library className="w-5 h-5 text-foreground" />
+                </Link>
 
-              <Link
-                to={ROUTE_PATHS.CART}
-                className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
-                aria-label="Shopping Cart"
-                title="Cart"
-              >
-                <ShoppingCart className="w-5 h-5 text-foreground" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
-            </div>
+                <Link
+                  to={ROUTE_PATHS.CART}
+                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border/30 bg-card/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                  aria-label="Shopping Cart"
+                  title="Cart"
+                >
+                  <ShoppingCart className="w-5 h-5 text-foreground" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            )}
 
             {isAuthenticated && user ? (
               <DropdownMenu>
@@ -197,30 +199,32 @@ export function Layout({ children }: { children: ReactNode }) {
                   </NavLink>
                 ))}
 
-                <div className="pt-2 flex flex-col gap-3">
-                  <Link
-                    to={ROUTE_PATHS.MY_LIBRARY}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
-                  >
-                    <Library className="h-5 w-5" />
-                    <span className="text-sm font-medium">My Library</span>
-                  </Link>
+                {isAuthenticated && user && (
+                  <div className="pt-2 flex flex-col gap-3">
+                    <Link
+                      to={ROUTE_PATHS.MY_LIBRARY}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
+                    >
+                      <Library className="h-5 w-5" />
+                      <span className="text-sm font-medium">My Library</span>
+                    </Link>
 
-                  <Link
-                    to={ROUTE_PATHS.CART}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span className="text-sm font-medium">Cart</span>
-                    {cartCount > 0 && (
-                      <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Link>
-                </div>
+                    <Link
+                      to={ROUTE_PATHS.CART}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/40 hover:border-primary/40 transition-colors"
+                    >
+                      <ShoppingCart className="h-5 w-5" />
+                      <span className="text-sm font-medium">Cart</span>
+                      {cartCount > 0 && (
+                        <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </Link>
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-border/20 flex flex-col gap-3">
                   {isAuthenticated && user ? (
