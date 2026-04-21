@@ -92,20 +92,7 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
             </Button>
           </div>
 
-          {asset.tags && asset.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {asset.tags.slice(0, 3).map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="text-xs border-border/40 text-muted-foreground"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
+          
           {(asset.fileSize || asset.format) && (
             <div className="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
               {asset.format && (
