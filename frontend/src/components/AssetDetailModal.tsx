@@ -39,13 +39,32 @@ export function AssetDetailModal({
     }
 
     if (!isAdded) {
+      const assetData = asset as Asset & {
+        image?: string;
+        previewUrl?: string;
+        thumbnail?: string;
+        downloadUrl?: string;
+        fileUrl?: string;
+      };
+
       addToCart({
         id: assetCartId,
         title: asset.title,
         category: asset.category,
         price: asset.price,
-        image: 'asset-preview',
+        image:
+          assetData.image ||
+          assetData.previewUrl ||
+          assetData.thumbnail ||
+          'asset-preview',
         itemType: 'asset',
+        downloadUrl:
+          assetData.downloadUrl ||
+          assetData.fileUrl ||
+          assetData.image ||
+          assetData.previewUrl ||
+          assetData.thumbnail ||
+          '',
       });
     }
   };
@@ -62,7 +81,10 @@ export function AssetDetailModal({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
           <div className="space-y-6">
             <div className="relative aspect-square rounded-xl overflow-hidden bg-card border border-primary/20">
-              <Asset3DViewer modelType={asset.modelType} className="w-full h-full" />
+              <Asset3DViewer
+                modelType={asset.modelType}
+                className="w-full h-full"
+              />
             </div>
 
             <div className="flex gap-3">
@@ -71,7 +93,9 @@ export function AssetDetailModal({
                 variant={isFavorite ? 'default' : 'outline'}
                 className="flex-1 gap-2 transition-all duration-200 hover:scale-[1.02]"
               >
-                <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
+                <Heart
+                  className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`}
+                />
                 {isFavorite ? 'Saved' : 'Save to Favorites'}
               </Button>
             </div>

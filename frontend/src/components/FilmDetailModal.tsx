@@ -2,11 +2,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Film, ROUTE_PATHS } from "@/lib/index";
-import { ShoppingCart, Clock, Calendar, User } from "lucide-react";
+import { ShoppingCart, Clock, Calendar, User, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "../hooks/useCart";
+import { useEffect, useRef, useState } from "react";
 
 interface FilmDetailModalProps {
   film: Film | null;
@@ -18,6 +19,27 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { addToCart, cartItems } = useCart();
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setStarted(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setStarted(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [film]);
 
   if (!film) return null;
 
@@ -42,6 +64,16 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
     });
   };
 
+  const handleStartVideo = async () => {
+    setStarted(true);
+
+    try {
+      await videoRef.current?.play();
+    } catch (error) {
+      console.error("Video play failed:", error);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl">
@@ -59,14 +91,31 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
         >
           <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/20 border border-border/30">
             {film.videoUrl ? (
-              <video
-                controls
-                preload="metadata"
-                className="w-full h-full object-cover"
-              >
-                <source src={film.videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <>
+                <video
+                  ref={videoRef}
+                  controls={started}
+                  preload="metadata"
+                  poster={film.posterUrl}
+                  className="w-full h-full object-cover"
+                >
+                  <source src={film.videoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+
+                {!started && (
+                  <button
+                    type="button"
+                    onClick={handleStartVideo}
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors duration-200"
+                    aria-label={`Play ${film.title}`}
+                  >
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/20 shadow-xl">
+                      <Play className="w-8 h-8 text-white fill-white ml-1" />
+                    </div>
+                  </button>
+                )}
+              </>
             ) : (
               <>
                 <img
