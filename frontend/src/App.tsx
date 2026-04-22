@@ -37,7 +37,8 @@ const App = () => (
               <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
               <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
             </Routes>
-            <Chatbot />
+
+             <Chatbot />
           </HashRouter>
         </CartProvider>
       </TooltipProvider>
