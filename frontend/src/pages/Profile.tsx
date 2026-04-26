@@ -1,43 +1,57 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   User, Settings, Film, Package, Heart, Upload,
-  ShoppingBag, Edit2, Bell, Palette, Globe, Bot,
-  Star, Lock, ChevronRight, BarChart3
+  Edit2, Star, ChevronRight, BarChart3
 } from 'lucide-react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+
 import { FilmCard } from '@/components/FilmCard';
 import { AssetCard } from '@/components/AssetCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
+
 import { FILMS_DATA } from '@/data/films';
-import { ASSETS_DATA } from '@/data/assets';
+import { getAssetsFromDatabase } from '@/api/assetsApi';
+
 import type { Film as FilmType, Asset } from '@/lib/index';
 import { ROUTE_PATHS } from '@/lib/index';
 import { IMAGES } from '@/assets/images';
+
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { springPresets } from '@/lib/motion';
 
 export default function Profile() {
   const { user } = useAuth();
   const { favoriteFilms, favoriteAssets } = useFavorites();
+
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedFilm, setSelectedFilm] = useState<FilmType | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [isFilmModalOpen, setIsFilmModalOpen] = useState(false);
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('uploaded-films');
 
-  const savedFilmsData = FILMS_DATA.filter(film => favoriteFilms.includes(film.id));
-  const savedAssetsData = ASSETS_DATA.filter(asset => favoriteAssets.includes(asset.id));
+  useEffect(() => {
+    getAssetsFromDatabase()
+      .then(setAssets)
+      .catch(console.error);
+  }, []);
+
+  const savedFilmsData = FILMS_DATA.filter((film) =>
+    favoriteFilms.includes(film.id)
+  );
+
+  const savedAssetsData = assets.filter((asset) =>
+    favoriteAssets.includes(asset.id)
+  );
 
   const handleFilmClick = (film: FilmType) => {
     setSelectedFilm(film);
@@ -49,6 +63,10 @@ export default function Profile() {
     setIsAssetModalOpen(true);
   };
 
+  if (!user) {
+    return null;
+  }
+
   const dashboardStats = [
     {
       title: 'Total Uploads',
@@ -59,7 +77,6 @@ export default function Profile() {
       iconColor: 'text-primary',
       border: 'border-primary/20',
     },
-    
     {
       title: 'Saved Items',
       value: `${favoriteFilms.length + favoriteAssets.length}`,
@@ -80,36 +97,25 @@ export default function Profile() {
     },
   ];
 
-  // Redirect to home if not signed in
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Subtle background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,217,255,0.03),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.03),transparent_50%)] pointer-events-none" />
 
       <div className="container mx-auto px-4 py-10 relative z-10">
-
-        {/* ── PROFILE HEADER ── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={springPresets.gentle}
           className="relative rounded-3xl overflow-hidden mb-8 border border-border/20 bg-card/40 backdrop-blur-xl shadow-2xl shadow-black/20"
         >
-          {/* Banner */}
           <div className="h-36 bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,217,255,0.15),transparent_70%)]" />
             <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card/40 to-transparent" />
           </div>
 
-          {/* Profile info */}
           <div className="px-8 pb-8">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-14">
-              {/* Avatar */}
               <div className="relative">
                 <Avatar className="w-28 h-28 border-4 border-background shadow-xl ring-2 ring-primary/20">
                   <AvatarImage src={user.avatar || IMAGES.DEFAULT_AVATAR_3} alt={user.name} />
@@ -120,7 +126,6 @@ export default function Profile() {
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-background" />
               </div>
 
-              {/* Name / email / bio */}
               <div className="flex-1 pt-2 space-y-1">
                 <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
@@ -135,11 +140,7 @@ export default function Profile() {
                 </p>
               </div>
 
-              {/* Edit button */}
-              <Button
-                variant="outline"
-                className="gap-2 border-border/30 hover:border-primary/30 hover:bg-primary/5 transition-all"
-              >
+              <Button variant="outline" className="gap-2 border-border/30 hover:border-primary/30 hover:bg-primary/5 transition-all">
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
               </Button>
@@ -147,7 +148,6 @@ export default function Profile() {
           </div>
         </motion.div>
 
-        {/* ── DASHBOARD STATS ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {dashboardStats.map((stat, index) => {
             const Icon = stat.icon;
@@ -172,7 +172,6 @@ export default function Profile() {
           })}
         </div>
 
-        {/* ── MAIN TABS ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -180,7 +179,6 @@ export default function Profile() {
           className="rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl overflow-hidden shadow-xl shadow-black/10"
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Tab bar */}
             <div className="border-b border-border/20 px-6 pt-4">
               <TabsList className="h-auto bg-transparent gap-1 p-0 flex-wrap">
                 {[
@@ -203,40 +201,26 @@ export default function Profile() {
             </div>
 
             <div className="p-6">
-
-              {/* Uploaded Films */}
               <TabsContent value="uploaded-films" className="mt-0">
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-8 h-8 text-muted-foreground/50" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">No Uploaded Films Yet</h3>
-                  <p className="text-muted-foreground text-sm mb-6">
-                    Your uploaded films will appear here once you start sharing your work.
-                  </p>
-                  <Button asChild variant="outline" className="border-border/30 hover:border-primary/30 hover:bg-primary/5">
-                    <Link to={ROUTE_PATHS.FILMS}>Browse Films</Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={Upload}
+                  title="No Uploaded Films Yet"
+                  description="Your uploaded films will appear here once you start sharing your work."
+                  link={ROUTE_PATHS.FILMS}
+                  button="Browse Films"
+                />
               </TabsContent>
 
-              {/* Uploaded Assets */}
               <TabsContent value="uploaded-assets" className="mt-0">
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl bg-accent/5 border border-accent/10 flex items-center justify-center mx-auto mb-4">
-                    <Package className="w-8 h-8 text-muted-foreground/50" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">No Uploaded Assets Yet</h3>
-                  <p className="text-muted-foreground text-sm mb-6">
-                    3D assets and models you upload will be showcased here.
-                  </p>
-                  <Button asChild variant="outline" className="border-border/30 hover:border-accent/30 hover:bg-accent/5">
-                    <Link to={ROUTE_PATHS.ASSETS}>Browse Assets</Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={Package}
+                  title="No Uploaded Assets Yet"
+                  description="3D assets and models you upload will be showcased here."
+                  link={ROUTE_PATHS.ASSETS}
+                  button="Browse Assets"
+                />
               </TabsContent>
 
-              {/* Favorite Films */}
               <TabsContent value="favorite-films" className="mt-0">
                 {savedFilmsData.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -245,22 +229,16 @@ export default function Profile() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 rounded-2xl bg-pink-500/5 border border-pink-500/10 flex items-center justify-center mx-auto mb-4">
-                      <Heart className="w-8 h-8 text-muted-foreground/50" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">No Favorite Films Yet</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
-                      Films you heart will be saved here for easy access.
-                    </p>
-                    <Button asChild variant="outline" className="border-border/30 hover:border-pink-500/20">
-                      <Link to={ROUTE_PATHS.FILMS}>Explore Films</Link>
-                    </Button>
-                  </div>
+                  <EmptyState
+                    icon={Heart}
+                    title="No Favorite Films Yet"
+                    description="Films you heart will be saved here for easy access."
+                    link={ROUTE_PATHS.FILMS}
+                    button="Explore Films"
+                  />
                 )}
               </TabsContent>
 
-              {/* Favorite Assets */}
               <TabsContent value="favorite-assets" className="mt-0">
                 {savedAssetsData.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -269,31 +247,24 @@ export default function Profile() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 rounded-2xl bg-pink-500/5 border border-pink-500/10 flex items-center justify-center mx-auto mb-4">
-                      <Star className="w-8 h-8 text-muted-foreground/50" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">No Favorite Assets Yet</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
-                      Save 3D assets you love and find them here instantly.
-                    </p>
-                    <Button asChild variant="outline" className="border-border/30 hover:border-pink-500/20">
-                      <Link to={ROUTE_PATHS.ASSETS}>Explore Assets</Link>
-                    </Button>
-                  </div>
+                  <EmptyState
+                    icon={Star}
+                    title="No Favorite Assets Yet"
+                    description="Save 3D assets you love and find them here instantly."
+                    link={ROUTE_PATHS.ASSETS}
+                    button="Explore Assets"
+                  />
                 )}
               </TabsContent>
 
-              {/* Settings */}
               <TabsContent value="settings" className="mt-0">
                 <div className="max-w-2xl space-y-8">
-
-                  {/* Profile Information */}
                   <div>
                     <div className="flex items-center gap-2 mb-5">
                       <User className="w-4 h-4 text-primary" />
                       <h3 className="text-base font-semibold">Profile Information</h3>
                     </div>
+
                     <div className="rounded-2xl border border-border/20 bg-background/30 divide-y divide-border/20">
                       {[
                         { label: 'Full Name', value: user.name },
@@ -310,6 +281,7 @@ export default function Profile() {
                           </Button>
                         </div>
                       ))}
+
                       <div className="px-5 py-4">
                         <p className="text-sm font-medium mb-2">Bio</p>
                         <Input
@@ -319,10 +291,8 @@ export default function Profile() {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </TabsContent>
-
             </div>
           </Tabs>
         </motion.div>
@@ -333,11 +303,39 @@ export default function Profile() {
         open={isFilmModalOpen}
         onClose={() => setIsFilmModalOpen(false)}
       />
+
       <AssetDetailModal
         asset={selectedAsset}
         open={isAssetModalOpen}
         onClose={() => setIsAssetModalOpen(false)}
       />
+    </div>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  link,
+  button,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  link: string;
+  button: string;
+}) {
+  return (
+    <div className="text-center py-16">
+      <div className="w-16 h-16 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mx-auto mb-4">
+        <Icon className="w-8 h-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground text-sm mb-6">{description}</p>
+      <Button asChild variant="outline" className="border-border/30 hover:border-primary/30 hover:bg-primary/5">
+        <Link to={link}>{button}</Link>
+      </Button>
     </div>
   );
 }

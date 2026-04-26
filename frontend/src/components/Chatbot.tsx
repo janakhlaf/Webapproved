@@ -4,8 +4,6 @@ import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/hooks/useTheme';
-import { ROUTE_PATHS } from '@/lib/index';
-import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -13,13 +11,6 @@ interface Message {
   sender: 'user' | 'bot';
   timestamp: Date;
 }
-
-const QUICK_ACTIONS = [
-  { label: 'Explore Films', path: ROUTE_PATHS.FILMS },
-  { label: 'Browse Assets', path: ROUTE_PATHS.ASSETS },
-  { label: 'Learn About the Project', path: ROUTE_PATHS.ABOUT },
-  { label: 'Start Exploring', path: ROUTE_PATHS.HOME },
-];
 
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
@@ -34,7 +25,6 @@ export function Chatbot() {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { detectAndApplyTheme, resetTheme } = useTheme();
-  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,31 +46,9 @@ export function Chatbot() {
 
     setMessages((prev) => [...prev, userMessage]);
 
-    const detectedKeyword = detectAndApplyTheme(inputValue);
-
-    setTimeout(() => {
-      let botResponse = 'Thank you for your message! I\'m here to help you explore our cinematic AI experience.';
-
-      if (detectedKeyword) {
-        botResponse = `I detected you\'re interested in ${detectedKeyword}. I\'ve adjusted the visual theme to match your interest. Feel free to explore our ${detectedKeyword}-related content!`;
-      }
-
-      const botMessage: Message = {
-        id: `bot-${Date.now()}`,
-        text: botResponse,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-    }, 800);
+    detectAndApplyTheme(inputValue);
 
     setInputValue('');
-  };
-
-  const handleQuickAction = (path: string) => {
-    navigate(path);
-    setIsOpen(false);
   };
 
   const handleClose = () => {
@@ -153,21 +121,7 @@ export function Chatbot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t border-border/50 bg-card/50 space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  {QUICK_ACTIONS.map((action) => (
-                    <Button
-                      key={action.label}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAction(action.path)}
-                      className="text-xs hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-
+              <div className="p-4 border-t border-border/50 bg-card/50">
                 <div className="flex gap-2">
                   <Input
                     value={inputValue}

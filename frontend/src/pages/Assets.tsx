@@ -1,11 +1,16 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Search, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AssetCard } from '@/components/AssetCard';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
-import { ASSETS_DATA } from '@/data/assets';
+import { getAssetsFromDatabase } from '@/api/assetsApi';
 import { useAuth } from '@/hooks/useAuth';
-import { Asset, ASSET_CATEGORIES, AssetCategory, ROUTE_PATHS } from '@/lib/index';
+import {
+  Asset,
+  ASSET_CATEGORIES,
+  AssetCategory,
+  ROUTE_PATHS,
+} from '@/lib/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,27 +27,37 @@ export default function Assets() {
 
   const assetFileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<AssetCategory>('All');
+  const [selectedCategory, setSelectedCategory] =
+    useState<AssetCategory>('All');
   const [sortOrder, setSortOrder] = useState<'highest' | 'lowest'>('highest');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [uploadFormVisible, setUploadFormVisible] = useState(false);
 
-  const filteredAssets = ASSETS_DATA.filter((asset) => {
-    const matchesSearch =
-      asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.tags?.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  useEffect(() => {
+    getAssetsFromDatabase()
+      .then(setAssets)
+      .catch(console.error);
+  }, []);
 
-    const matchesCategory =
-      selectedCategory === 'All' || asset.category === selectedCategory;
+  const filteredAssets = assets
+    .filter((asset) => {
+      const matchesSearch =
+        asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        asset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        asset.tags?.some((tag) =>
+          tag.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
-    return sortOrder === 'highest' ? b.price - a.price : a.price - b.price;
-  });
+      const matchesCategory =
+        selectedCategory === 'All' || asset.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      return sortOrder === 'highest' ? b.price - a.price : a.price - b.price;
+    });
 
   const handleUploadClick = () => {
     if (!isAuthenticated) {
@@ -138,10 +153,7 @@ export default function Assets() {
                 <label className="block text-sm font-medium mb-2">
                   Asset Name
                 </label>
-                <Input
-                  placeholder="Enter asset name"
-                  title="Asset Name"
-                />
+                <Input placeholder="Enter asset name" title="Asset Name" />
               </div>
 
               <div>
@@ -175,9 +187,7 @@ export default function Assets() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Price
-                </label>
+                <label className="block text-sm font-medium mb-2">Price</label>
                 <Input
                   type="number"
                   placeholder="Enter asset price"

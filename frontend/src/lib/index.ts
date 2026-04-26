@@ -36,6 +36,7 @@ export interface Asset {
   tags?: string[];
   fileSize?: string;
   format?: string;
+  modelUrl?: string;
 }
 
 export interface User {

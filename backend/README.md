@@ -21,3 +21,9 @@ This ensures VS Code uses the correct environment.
 ## cd backend
 ## venv\Scripts\activate
 ## uvicorn main:app --reload
+.....................
+📌 Required Libraries (must be installed):
+## pip install python-dotenv==1.2.2
+## pip install requests==2.33.1 
+## pip install python-multipart==0.0.26
+## pip install openai==2.32.0

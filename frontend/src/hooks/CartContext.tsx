@@ -7,6 +7,7 @@ export interface CartItem {
   price: number;
   image: string;
   itemType: 'film' | 'asset';
+  downloadUrl?: string;
 }
 
 interface CartContextType {

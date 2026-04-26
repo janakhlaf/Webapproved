@@ -82,9 +82,10 @@ export function AssetDetailModal({
           <div className="space-y-6">
             <div className="relative aspect-square rounded-xl overflow-hidden bg-card border border-primary/20">
               <Asset3DViewer
-                modelType={asset.modelType}
-                className="w-full h-full"
-              />
+  modelType={asset.modelType}
+  modelUrl={asset.modelUrl}   // ✅ هذا السطر الناقص
+  className="w-full h-full"
+/>
             </div>
 
             <div className="flex gap-3">

@@ -1,13 +1,17 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 interface Asset3DViewerProps {
   modelType: string;
+  modelUrl?: string;
   className?: string;
+  viewMode?: 'card' | 'modal';
+
 }
 
-export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps) {
+export function Asset3DViewer({ modelType, modelUrl, className = '', viewMode = 'modal' }: Asset3DViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -25,7 +29,7 @@ export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps)
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 2, 5);
+    camera.position.set(0, 1, 4);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -59,7 +63,37 @@ export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps)
 
     let geometry: THREE.BufferGeometry;
     let material: THREE.Material;
+    // ✅ تحميل موديل حقيقي من Supabase
+if (modelType.toLowerCase() === 'glb' && modelUrl) {
+  const loader = new GLTFLoader();
 
+  loader.load(
+    modelUrl,
+    (gltf) => {
+      const model = gltf.scene;
+
+// ✅ Auto fit للموديل داخل نفس مساحة العرض
+const box = new THREE.Box3().setFromObject(model);
+const size = box.getSize(new THREE.Vector3());
+const center = box.getCenter(new THREE.Vector3());
+
+const maxDim = Math.max(size.x, size.y, size.z);
+const scale = viewMode === 'card' ? 2.4 / maxDim : 2.2 / maxDim;
+model.scale.setScalar(scale);
+model.position.set(
+  -center.x * scale,
+ -center.y * scale + (viewMode === 'card' ? -0.15 : -0.1),
+  -center.z * scale
+);
+
+scene.add(model);
+    },
+    undefined,
+    (error) => {
+      console.error('Error loading GLB:', error);
+    }
+  );
+}
     switch (modelType.toLowerCase()) {
       case 'character':
         geometry = new THREE.CapsuleGeometry(0.5, 1.5, 16, 32);
@@ -112,10 +146,12 @@ export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps)
         });
     }
 
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
+    if (modelType.toLowerCase() !== 'glb') {
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
 
     const groundGeometry = new THREE.PlaneGeometry(20, 20);
     const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });
@@ -130,7 +166,7 @@ export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps)
     controls.dampingFactor = 0.05;
     controls.minDistance = 2;
     controls.maxDistance = 10;
-    controls.maxPolarAngle = Math.PI / 2;
+    controls.maxPolarAngle = Math.PI;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 1.5;
 
@@ -165,8 +201,7 @@ export function Asset3DViewer({ modelType, className = '' }: Asset3DViewerProps)
         container.removeChild(renderer.domElement);
       }
     };
-  }, [modelType]);
-
+  }, [modelType, modelUrl, viewMode]);
   return (
     <div
       ref={containerRef}

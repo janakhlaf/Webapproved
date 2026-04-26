@@ -7,21 +7,31 @@ interface FavoritesState {
 
 const STORAGE_KEY = 'human-mind-ai-favorites';
 
+const normalizeFavorites = (favorites: FavoritesState): FavoritesState => ({
+  films: [...new Set(favorites.films || [])],
+  assets: [...new Set(favorites.assets || [])],
+});
+
 const getStoredFavorites = (): FavoritesState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
+
     if (stored) {
-      return JSON.parse(stored);
+      return normalizeFavorites(JSON.parse(stored));
     }
   } catch (error) {
     console.error('Failed to parse favorites from localStorage:', error);
   }
+
   return { films: [], assets: [] };
 };
 
 const setStoredFavorites = (favorites: FavoritesState): void => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(normalizeFavorites(favorites))
+    );
   } catch (error) {
     console.error('Failed to save favorites to localStorage:', error);
   }
@@ -31,15 +41,34 @@ export const useFavorites = () => {
   const [favorites, setFavorites] = useState<FavoritesState>(getStoredFavorites);
 
   useEffect(() => {
-    setStoredFavorites(favorites);
-  }, [favorites]);
+    const syncFavorites = () => {
+      setFavorites(getStoredFavorites());
+    };
+
+    window.addEventListener('favorites-updated', syncFavorites);
+
+    return () => {
+      window.removeEventListener('favorites-updated', syncFavorites);
+    };
+  }, []);
+
+  const updateFavorites = (updater: (prev: FavoritesState) => FavoritesState) => {
+    const latest = getStoredFavorites();
+    const updated = normalizeFavorites(updater(latest));
+
+    setFavorites(updated);
+    setStoredFavorites(updated);
+
+    window.dispatchEvent(new Event('favorites-updated'));
+  };
 
   const toggleFilmFavorite = (filmId: string) => {
-    setFavorites((prev) => {
-      const isCurrentlyFavorite = prev.films.includes(filmId);
+    updateFavorites((prev) => {
+      const isFavorite = prev.films.includes(filmId);
+
       return {
         ...prev,
-        films: isCurrentlyFavorite
+        films: isFavorite
           ? prev.films.filter((id) => id !== filmId)
           : [...prev.films, filmId],
       };
@@ -47,11 +76,12 @@ export const useFavorites = () => {
   };
 
   const toggleAssetFavorite = (assetId: string) => {
-    setFavorites((prev) => {
-      const isCurrentlyFavorite = prev.assets.includes(assetId);
+    updateFavorites((prev) => {
+      const isFavorite = prev.assets.includes(assetId);
+
       return {
         ...prev,
-        assets: isCurrentlyFavorite
+        assets: isFavorite
           ? prev.assets.filter((id) => id !== assetId)
           : [...prev.assets, assetId],
       };
@@ -67,7 +97,11 @@ export const useFavorites = () => {
   };
 
   const clearAllFavorites = () => {
-    setFavorites({ films: [], assets: [] });
+   const empty: FavoritesState = { films: [], assets: [] };
+    setFavorites(empty);
+    setStoredFavorites(empty);
+
+    window.dispatchEvent(new Event('favorites-updated'));
   };
 
   return {

@@ -1,31 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Sparkles, Box, ArrowRight } from 'lucide-react';
-import { Hero3D } from '@/components/Hero3D';
+import { Play, Box, ArrowRight } from 'lucide-react';
+
 import { FilmCard } from '@/components/FilmCard';
 import { AssetCard } from '@/components/AssetCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
+
 import { ROUTE_PATHS, Film, Asset } from '@/lib/index';
 import { FILMS_DATA } from '@/data/films';
-import { ASSETS_DATA } from '@/data/assets';
+import { getAssetsFromDatabase } from '@/api/assetsApi';
+
 import { Button } from '@/components/ui/button';
 import { IMAGES } from '@/assets/images';
 
 export default function Home() {
   const [selectedFilm, setSelectedFilm] = useState<Film | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [assets, setAssets] = useState<Asset[]>([]);
+
+  useEffect(() => {
+    getAssetsFromDatabase()
+      .then(setAssets)
+      .catch(console.error);
+  }, []);
 
   const featuredFilms = FILMS_DATA.slice(0, 3);
-  const featuredAssets = ASSETS_DATA.slice(0, 3);
+  const featuredAssets = assets.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* <Hero3D /> */}
-
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
+
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -36,7 +44,9 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
               <Play className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Featured Films</span>
+              <span className="text-sm font-medium text-primary">
+                Featured Films
+              </span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent">
@@ -44,8 +54,8 @@ export default function Home() {
             </h2>
 
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Discover our collection of films exploring the intersection of human
-              consciousness and artificial intelligence
+              Discover our collection of films exploring the intersection of
+              human consciousness and artificial intelligence
             </p>
           </motion.div>
 
@@ -100,7 +110,9 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
               <Box className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium text-accent">3D Assets</span>
+              <span className="text-sm font-medium text-accent">
+                3D Assets
+              </span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -108,8 +120,8 @@ export default function Home() {
             </h2>
 
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Explore our premium collection of 3D models, environments, and effects
-              for your creative projects
+              Explore our premium collection of 3D models, environments, and
+              effects for your creative projects
             </p>
           </motion.div>
 

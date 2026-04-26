@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, DollarSign, Tag } from 'lucide-react';
+import { Heart, Tag } from 'lucide-react';
 import { Asset, formatPrice } from '@/lib/index';
 import { Asset3DViewer } from '@/components/Asset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -38,7 +38,12 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         <div className="relative aspect-square bg-background/80 overflow-hidden">
-          <Asset3DViewer modelType={asset.modelType} className="w-full h-full" />
+          <Asset3DViewer
+            modelType={asset.modelType}
+            modelUrl={asset.modelUrl}
+            viewMode="card"
+            className="w-full h-full"
+          />
           
           <motion.button
             onClick={handleFavoriteClick}
@@ -77,7 +82,6 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
 
           <div className="flex items-center justify-between pt-2 border-t border-border/40">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-primary" />
               <span className="text-xl font-bold text-primary">
                 {formatPrice(asset.price)}
               </span>
@@ -92,7 +96,6 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
             </Button>
           </div>
 
-          
           {(asset.fileSize || asset.format) && (
             <div className="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
               {asset.format && (
