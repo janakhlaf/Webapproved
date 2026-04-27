@@ -35,10 +35,11 @@ export default function Assets() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [uploadFormVisible, setUploadFormVisible] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
   useEffect(() => {
-    getAssetsFromDatabase()
-      .then(setAssets)
-      .catch(console.error);
+    getAssetsFromDatabase().then(setAssets).catch(console.error);
   }, []);
 
   const filteredAssets = assets
@@ -58,6 +59,21 @@ export default function Assets() {
     .sort((a, b) => {
       return sortOrder === 'highest' ? b.price - a.price : a.price - b.price;
     });
+
+  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentAssets = filteredAssets.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, sortOrder]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   const handleUploadClick = () => {
     if (!isAuthenticated) {
@@ -233,7 +249,7 @@ export default function Assets() {
 
         {/* Assets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredAssets.map((asset) => (
+          {currentAssets.map((asset) => (
             <AssetCard
               key={asset.id}
               asset={asset}
@@ -241,6 +257,49 @@ export default function Assets() {
             />
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-3 mt-12">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="border-primary/40 text-primary hover:bg-primary/10"
+            >
+              ←
+            </Button>
+
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <Button
+                key={index}
+                size="sm"
+                variant={currentPage === index + 1 ? 'default' : 'outline'}
+                onClick={() => setCurrentPage(index + 1)}
+                className={
+                  currentPage === index + 1
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border-primary/40 text-primary hover:bg-primary/10'
+                }
+              >
+                {index + 1}
+              </Button>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              className="border-primary/40 text-primary hover:bg-primary/10"
+            >
+              →
+            </Button>
+          </div>
+        )}
       </div>
 
       <AssetDetailModal

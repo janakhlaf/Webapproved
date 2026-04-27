@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Heart, Tag } from 'lucide-react';
 import { Asset, formatPrice } from '@/lib/index';
-import { Asset3DViewer } from '@/components/Asset3DViewer';
+import { LazyAsset3DViewer } from '@/components/LazyAsset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,15 +36,15 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
     >
       <Card className="relative overflow-hidden bg-card/50 backdrop-blur-xl border-border/20 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
+
         <div className="relative aspect-square bg-background/80 overflow-hidden">
-          <Asset3DViewer
+          <LazyAsset3DViewer
             modelType={asset.modelType}
             modelUrl={asset.modelUrl}
             viewMode="card"
             className="w-full h-full"
           />
-          
+
           <motion.button
             onClick={handleFavoriteClick}
             whileHover={{ scale: 1.1 }}
@@ -86,7 +86,7 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
                 {formatPrice(asset.price)}
               </span>
             </div>
-            
+
             <Button
               size="sm"
               className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/40 hover:border-primary/60 transition-all duration-200"
@@ -104,6 +104,7 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
                   {asset.format}
                 </span>
               )}
+
               {asset.fileSize && (
                 <span className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent/60" />
