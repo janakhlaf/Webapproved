@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from assets import router as assets_router
-from ai.intent_classifier import classify_intent  # 🔥 إضافة
+from films import router as films_router
+
+from ai.intent_classifier import classify_intent
 from orchestrator import get_response_by_intent
 
 app = FastAPI()
@@ -16,28 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 👇 هذا موجود عندك (ما لمسناه)
 app.include_router(assets_router)
+app.include_router(films_router)
 
 
-# =========================
-# 🔥 إضافة الشات
-# =========================
-
-# شكل الريكويست
 class ChatRequest(BaseModel):
     message: str
 
 
-# endpoint جديد للشات
 @app.post("/chat")
 async def chat(request: ChatRequest):
     user_message = request.message
-
-    # 🧠 تصنيف النية
     intent = classify_intent(user_message)
-
-    # 🔀 اختيار الرد حسب النية
     reply = get_response_by_intent(intent, user_message)
 
     return {

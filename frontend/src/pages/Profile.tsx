@@ -14,7 +14,7 @@ import { AssetCard } from '@/components/AssetCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
 
-import { FILMS_DATA } from '@/data/films';
+import { getFilmsFromDatabase } from '@/api/films';
 import { getAssetsFromDatabase } from '@/api/assetsApi';
 
 import type { Film as FilmType, Asset } from '@/lib/index';
@@ -32,6 +32,7 @@ export default function Profile() {
   const { user } = useAuth();
   const { favoriteFilms, favoriteAssets } = useFavorites();
 
+  const [films, setFilms] = useState<FilmType[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedFilm, setSelectedFilm] = useState<FilmType | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -40,12 +41,16 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('uploaded-films');
 
   useEffect(() => {
+    getFilmsFromDatabase()
+      .then(setFilms)
+      .catch(console.error);
+
     getAssetsFromDatabase()
       .then(setAssets)
       .catch(console.error);
   }, []);
 
-  const savedFilmsData = FILMS_DATA.filter((film) =>
+  const savedFilmsData = films.filter((film) =>
     favoriteFilms.includes(film.id)
   );
 

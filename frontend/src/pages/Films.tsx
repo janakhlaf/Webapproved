@@ -1,8 +1,6 @@
-// UPDATED Films.tsx (Upload button styled like Assets theme)
-
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Upload, Play, Image as ImageIcon } from 'lucide-react';
+import { Search, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +9,8 @@ import { FILM_CATEGORIES, ROUTE_PATHS } from '@/lib/index';
 import type { Film } from '@/lib/index';
 import { FilmCard } from '@/components/FilmCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
-import { GRADUATION_TRAILER, FILMS_DATA } from '@/data/films';
 import { useAuth } from '@/hooks/useAuth';
-import { IMAGES } from '@/assets/images';
+import { getFilmsFromDatabase } from '@/api/films';
 
 export default function Films() {
   const { isAuthenticated } = useAuth();
@@ -32,12 +29,23 @@ export default function Films() {
   const [filmDescription, setFilmDescription] = useState('');
   const [filmFile, setFilmFile] = useState<File | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
+
+  const [databaseFilms, setDatabaseFilms] = useState<Film[]>([]);
   const [uploadedFilms, setUploadedFilms] = useState<Film[]>(() => {
     const saved = localStorage.getItem('uploaded_films');
     return saved ? JSON.parse(saved) : [];
   });
 
-  const allFilms = useMemo(() => [...uploadedFilms, ...FILMS_DATA], [uploadedFilms]);
+  useEffect(() => {
+    getFilmsFromDatabase()
+      .then(setDatabaseFilms)
+      .catch(console.error);
+  }, []);
+
+  const allFilms = useMemo(
+    () => [...uploadedFilms, ...databaseFilms],
+    [uploadedFilms, databaseFilms]
+  );
 
   const filteredFilms = allFilms.filter((film) => {
     const matchesSearch =
@@ -121,30 +129,102 @@ export default function Films() {
 
   return (
     <div className="min-h-screen bg-background">
-
-      {/* HEADER */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-2">Film Marketplace</h2>
               <p className="text-muted-foreground">Explore our collection of cinematic experiences</p>
             </div>
 
-            {/* ✅ UPDATED BUTTON */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-  onClick={handleUploadClick}
-  className="rounded-full px-5 self-start"
->
-  <Upload className="w-4 h-4 mr-2" />
-  Upload Film
-</Button>
+              <Button onClick={handleUploadClick} className="rounded-full px-5 self-start">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Film
+              </Button>
             </motion.div>
           </div>
 
-          {/* SEARCH */}
+          {uploadFormVisible && (
+            <div className="mb-10 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <Input
+                  placeholder="Film title"
+                  value={filmTitle}
+                  onChange={(e) => setFilmTitle(e.target.value)}
+                  className="bg-background/50 border-border/50"
+                />
+
+                <Select value={filmCategory} onValueChange={setFilmCategory}>
+                  <SelectTrigger className="bg-background/50 border-border/50">
+                    <SelectValue placeholder="Film category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FILM_CATEGORIES.filter((category) => category !== 'All Categories').map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Input
+                placeholder="Film description"
+                value={filmDescription}
+                onChange={(e) => setFilmDescription(e.target.value)}
+                className="bg-background/50 border-border/50 mb-4"
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <button
+                  type="button"
+                  onClick={handleFilmFileBoxClick}
+                  className="rounded-xl border border-dashed border-border/60 bg-background/30 p-4 text-left hover:border-primary/50 transition-colors"
+                >
+                  <p className="text-sm font-medium">Film File</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {filmFile ? filmFile.name : 'Click to upload film file'}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePosterFileBoxClick}
+                  className="rounded-xl border border-dashed border-border/60 bg-background/30 p-4 text-left hover:border-primary/50 transition-colors"
+                >
+                  <p className="text-sm font-medium">Poster Image</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {posterFile ? posterFile.name : 'Click to upload poster image'}
+                  </p>
+                </button>
+              </div>
+
+              <input
+                ref={filmFileInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleFilmFileChange}
+                className="hidden"
+              />
+
+              <input
+                ref={posterFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePosterFileChange}
+                className="hidden"
+              />
+
+              <div className="flex gap-3">
+                <Button onClick={handleSubmitFilm}>Submit Film</Button>
+                <Button variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row gap-4 mb-10">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -170,13 +250,11 @@ export default function Films() {
             </Select>
           </div>
 
-          {/* FILMS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredFilms.map((film) => (
               <FilmCard key={film.id} film={film} onViewDetails={handleViewDetails} />
             ))}
           </div>
-
         </div>
       </section>
 

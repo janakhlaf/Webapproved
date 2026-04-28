@@ -12,15 +12,30 @@ export const ROUTE_PATHS = {
 
 export type Film = {
   id: string;
+  userId?: string;
+
   title: string;
   description: string;
   category: string;
+
   posterUrl: string;
+  detailPosterUrl?: string;
+
   videoUrl?: string;
+  downloadUrl?: string;
+
+  price?: number;
+  fileSize?: string;
+  mimeType?: string;
+  sourceType?: string;
+  status?: string;
+  rejectionReason?: string;
+
   downloadable?: boolean;
+
   duration: string;
-  releaseYear: number;
-  director: string;
+  releaseYear?: number;
+  director?: string;
   tags: string[];
 };
 
@@ -52,19 +67,19 @@ export interface User {
 export const THEME_KEYWORDS: Record<string, { hue: number; saturation: number; lightness: number }> = {
   'sci-fi': { hue: 220, saturation: 0.35, lightness: 0.12 },
   'science fiction': { hue: 220, saturation: 0.35, lightness: 0.12 },
-  'technology': { hue: 195, saturation: 0.32, lightness: 0.10 },
-  'ai': { hue: 195, saturation: 0.32, lightness: 0.10 },
+  technology: { hue: 195, saturation: 0.32, lightness: 0.10 },
+  ai: { hue: 195, saturation: 0.32, lightness: 0.10 },
   'artificial intelligence': { hue: 195, saturation: 0.32, lightness: 0.10 },
-  'horror': { hue: 0, saturation: 0.25, lightness: 0.06 },
-  'thriller': { hue: 10, saturation: 0.20, lightness: 0.08 },
-  'nature': { hue: 140, saturation: 0.28, lightness: 0.10 },
-  'memory': { hue: 240, saturation: 0.30, lightness: 0.10 },
+  horror: { hue: 0, saturation: 0.25, lightness: 0.06 },
+  thriller: { hue: 10, saturation: 0.20, lightness: 0.08 },
+  nature: { hue: 140, saturation: 0.28, lightness: 0.10 },
+  memory: { hue: 240, saturation: 0.30, lightness: 0.10 },
   'human mind': { hue: 240, saturation: 0.30, lightness: 0.10 },
-  'consciousness': { hue: 270, saturation: 0.32, lightness: 0.10 },
-  'drama': { hue: 330, saturation: 0.25, lightness: 0.10 },
-  'action': { hue: 30, saturation: 0.30, lightness: 0.10 },
-  'documentary': { hue: 180, saturation: 0.20, lightness: 0.12 },
-  'art': { hue: 290, saturation: 0.28, lightness: 0.11 },
+  consciousness: { hue: 270, saturation: 0.32, lightness: 0.10 },
+  drama: { hue: 330, saturation: 0.25, lightness: 0.10 },
+  action: { hue: 30, saturation: 0.30, lightness: 0.10 },
+  documentary: { hue: 180, saturation: 0.20, lightness: 0.12 },
+  art: { hue: 290, saturation: 0.28, lightness: 0.11 },
 };
 
 export const FILM_CATEGORIES = [

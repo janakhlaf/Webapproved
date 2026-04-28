@@ -9,7 +9,7 @@ import { FilmDetailModal } from '@/components/FilmDetailModal';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
 
 import { ROUTE_PATHS, Film, Asset } from '@/lib/index';
-import { FILMS_DATA } from '@/data/films';
+import { getFilmsFromDatabase } from '@/api/films';
 import { getAssetsFromDatabase } from '@/api/assetsApi';
 
 import { Button } from '@/components/ui/button';
@@ -18,15 +18,20 @@ import { IMAGES } from '@/assets/images';
 export default function Home() {
   const [selectedFilm, setSelectedFilm] = useState<Film | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [films, setFilms] = useState<Film[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
 
   useEffect(() => {
+    getFilmsFromDatabase()
+      .then(setFilms)
+      .catch(console.error);
+
     getAssetsFromDatabase()
       .then(setAssets)
       .catch(console.error);
   }, []);
 
-  const featuredFilms = FILMS_DATA.slice(0, 3);
+  const featuredFilms = films.slice(0, 3);
   const featuredAssets = assets.slice(0, 3);
 
   return (

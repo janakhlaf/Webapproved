@@ -43,6 +43,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
 
   if (!film) return null;
 
+  const detailImage = film.detailPosterUrl || film.posterUrl;
   const filmCartId = `film-${film.id}`;
   const isAdded = cartItems.some((item) => item.id === filmCartId);
 
@@ -57,10 +58,9 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
       id: filmCartId,
       title: film.title,
       category: film.category,
-      price: 19.99,
+      price: film.price || 19.99,
       image: film.posterUrl,
       itemType: "film",
-      videoUrl: film.videoUrl,
     });
   };
 
@@ -96,7 +96,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
                   ref={videoRef}
                   controls={started}
                   preload="metadata"
-                  poster={film.posterUrl}
+                  poster={detailImage}
                   className="w-full h-full object-cover"
                 >
                   <source src={film.videoUrl} type="video/mp4" />
@@ -119,7 +119,7 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
             ) : (
               <>
                 <img
-                  src={film.posterUrl}
+                  src={detailImage}
                   alt={film.title}
                   className="w-full h-full object-cover"
                 />
@@ -168,7 +168,9 @@ export function FilmDetailModal({ film, open, onClose }: FilmDetailModalProps) {
           <div className="pt-4 space-y-3">
             <div>
               <p className="text-sm text-muted-foreground">Price</p>
-              <p className="text-3xl font-bold text-primary">$19.99</p>
+              <p className="text-3xl font-bold text-primary">
+                ${film.price || 19.99}
+              </p>
             </div>
 
             <div className="flex gap-3">
