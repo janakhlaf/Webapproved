@@ -4,6 +4,7 @@ import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: string;
@@ -25,6 +26,7 @@ export function Chatbot() {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { detectAndApplyTheme, resetTheme } = useTheme();
+  const { isAuthenticated } = useAuth();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,21 +36,54 @@ export function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
+
+    const currentMessage = inputValue;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
-      text: inputValue,
+      text: currentMessage,
       sender: 'user',
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-
-    detectAndApplyTheme(inputValue);
-
+    detectAndApplyTheme(currentMessage);
     setInputValue('');
+
+    try {
+      const response = await fetch('http://localhost:8000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: currentMessage,
+          isAuthenticated: isAuthenticated,
+        }),
+      });
+
+      const data = await response.json();
+
+      const botMessage: Message = {
+        id: `bot-${Date.now()}`,
+        text: data.reply,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: `bot-error-${Date.now()}`,
+        text: 'Sorry, I could not connect to the chatbot server.',
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    }
   };
 
   const handleClose = () => {

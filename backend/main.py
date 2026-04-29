@@ -24,16 +24,23 @@ app.include_router(films_router)
 
 class ChatRequest(BaseModel):
     message: str
+    isAuthenticated: bool = False
 
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
     user_message = request.message
     intent = classify_intent(user_message)
-    reply = get_response_by_intent(intent, user_message)
+
+    reply = get_response_by_intent(
+        intent,
+        user_message,
+        request.isAuthenticated
+    )
 
     return {
         "message": user_message,
         "intent": intent,
+        "isAuthenticated": request.isAuthenticated,
         "reply": reply
     }
