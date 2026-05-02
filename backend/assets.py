@@ -5,6 +5,12 @@ import requests
 import os
 import uuid
 
+from ai.embedding_service import (
+    create_embedding,
+    embedding_to_pgvector,
+    build_asset_embedding_text
+)
+
 load_dotenv()
 
 router = APIRouter()
@@ -62,6 +68,8 @@ def upload_asset(
 ):
     supabase_url = os.getenv("SUPABASE_URL")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    # هذا خليه للعرض public
     bucket = os.getenv("SUPABASE_BUCKET")
 
     file_extension = file.filename.split(".")[-1].lower()
@@ -94,6 +102,16 @@ def upload_asset(
 
     file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
 
+    embedding_text = build_asset_embedding_text(
+        title,
+        description,
+        category,
+        file_extension
+    )
+
+    embedding = create_embedding(embedding_text)
+    pg_vector = embedding_to_pgvector(embedding)
+
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -106,9 +124,10 @@ def upload_asset(
                     file_type,
                     file_size,
                     price,
-                    status
+                    status,
+                    embedding
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'approved')
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'approved', %s::vector)
                 RETURNING id
             """, (
                 title,
@@ -118,7 +137,8 @@ def upload_asset(
                 bucket_path,
                 file_extension,
                 file_size_mb,
-                price
+                price,
+                pg_vector
             ))
 
             asset_id = cur.fetchone()[0]
