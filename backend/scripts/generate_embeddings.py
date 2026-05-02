@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 👇 هاي أهم إضافة (عشان Python يشوف db.py)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from openai import OpenAI
@@ -27,37 +26,52 @@ def embedding_to_pgvector(embedding):
     return "[" + ",".join(str(x) for x in embedding) + "]"
 
 
-def build_film_text(title, description, category):
+def tags_to_text(tags):
+    if not tags:
+        return ""
+
+    if isinstance(tags, list):
+        return ", ".join(tags)
+
+    return str(tags)
+
+
+def build_film_text(title, description, category, tags):
+    tags_text = tags_to_text(tags)
+
     return f"""
 Title: {title}
 Category: {category}
+Tags: {tags_text}
 Description: {description}
 """.strip()
 
 
-def build_asset_text(name, description, category, file_type):
+def build_asset_text(name, description, category, file_type, tags):
+    tags_text = tags_to_text(tags)
+
     return f"""
 Asset Name: {name}
 Category: {category}
 File Type: {file_type}
+Tags: {tags_text}
 Description: {description}
 """.strip()
 
 
 def update_films(cur):
     cur.execute("""
-        SELECT id, title, description, category
+        SELECT id, title, description, category, tags
         FROM films
-        WHERE embedding IS NULL
-        AND status = 'approved';
+        WHERE status = 'approved';
     """)
 
     films = cur.fetchall()
 
     for film in films:
-        film_id, title, description, category = film
+        film_id, title, description, category, tags = film
 
-        text = build_film_text(title, description, category)
+        text = build_film_text(title, description, category, tags)
         embedding = create_embedding(text)
         pg_vector = embedding_to_pgvector(embedding)
 
@@ -72,18 +86,17 @@ def update_films(cur):
 
 def update_assets(cur):
     cur.execute("""
-        SELECT id, name, description, category, file_type
+        SELECT id, name, description, category, file_type, tags
         FROM assets
-        WHERE embedding IS NULL
-        AND status = 'approved';
+        WHERE status = 'approved';
     """)
 
     assets = cur.fetchall()
 
     for asset in assets:
-        asset_id, name, description, category, file_type = asset
+        asset_id, name, description, category, file_type, tags = asset
 
-        text = build_asset_text(name, description, category, file_type)
+        text = build_asset_text(name, description, category, file_type, tags)
         embedding = create_embedding(text)
         pg_vector = embedding_to_pgvector(embedding)
 
@@ -107,7 +120,7 @@ def main():
     cur.close()
     conn.close()
 
-    print("All embeddings generated successfully.")
+    print("All embeddings regenerated successfully.")
 
 
 if __name__ == "__main__":
