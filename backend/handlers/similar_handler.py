@@ -28,7 +28,7 @@ Schema:
 
 Rules:
 - Translate any language to English.
-- If user asks for 3D assets, models, resources, characters, objects, cities, vehicles, buildings, animals, robots → asset.
+- If user asks for 3D assets, models, resources, characters, objects, cities, vehicles, buildings, animals, robots, drones, props, environments → asset.
 - If user asks for movies, films, videos, cinematic stories, or watchable content → film.
 - Children, kids, boys, girls, human characters → humanoid_character.
 - Return ONLY JSON.
@@ -70,8 +70,16 @@ def force_correct_result_type(message: str, result_type: str) -> str:
         "است", "استس", "اسيتش", "استيش",
         "مودل", "موديل", "مجسم", "مجسمات",
         "3d", "glb", "gltf",
-        "شخصية", "شخصيات", "ولد", "اولاد", "أولاد", "اطفال", "أطفال",
-        "روبوت", "درون", "مدينة", "مبنى", "سيارة", "حيوان"
+        "شخصية", "شخصيات",
+        "ولد", "اولاد", "أولاد", "اطفال", "أطفال",
+        "روبوت", "روبوتات",
+        "درون", "درونات",
+        "مدينة", "مدن",
+        "مبنى", "مباني",
+        "سيارة", "سيارات",
+        "حيوان", "حيوانات",
+        "وحش", "وحوش",
+        "بروب", "props", "prop"
     ]
 
     film_words = [
@@ -140,6 +148,8 @@ User request:
 
 You are selecting 3D assets from a marketplace.
 
+All items are 3D assets/models.
+
 Choose ONLY assets that truly match the user's request.
 
 Use ALL fields:
@@ -149,20 +159,41 @@ Use ALL fields:
 - tags
 - similarity
 
-Very important rules:
-- If user asks for children, kids, boys, girls, or اولاد / اطفال:
-  choose human child/character assets only.
-  Good matches include tags like child, human, character.
-  Do NOT choose monsters, cities, environments, buildings, robots, vehicles, drones, or animals.
-- If user asks for animals:
-  choose animal assets only.
-- If user asks for robots:
-  choose robot assets only.
-- If user asks for cities/environments:
-  choose environment/city assets only.
-- If user asks for vehicles:
-  choose vehicle assets only.
-- Do not select unrelated items even if similarity is high.
+IMPORTANT RULES:
+
+- Exact tag matches are extremely important.
+- Prioritize assets that share the same tags as the request.
+- Never recommend unrelated categories even if similarity is high.
+
+Asset tag meanings:
+- boy / kids / children / اولاد / اطفال → character, boy, cartoon
+- cartoon characters → character, cartoon
+- robots → robot, humanoid, mech, scifi
+- drones → drone, aircraft, scifi
+- vehicles / cars → vehicle, car, racing
+- environments / cities → environment, city, architecture, building, interior
+- animals → animal, cartoon, character
+- monsters → monster, character, cartoon
+- props → prop, medieval, food, campfire, urban, infrastructure
+- nature → environment, nature, forest
+- sci-fi / scifi → scifi, robot, drone, environment, interior
+
+Do NOT choose:
+- robots when the user asks for boys/kids/children.
+- drones when the user asks for boys/kids/children.
+- environments or cities when the user asks for characters.
+- monsters when the user asks for boys/kids/children.
+- vehicles when the user asks for characters.
+- animals when the user asks for robots/drones/cities unless the user asked for animals.
+
+Examples:
+- "اعطيني اولاد" → choose assets with tags: character, boy, cartoon.
+- "اعطيني اطفال" → choose assets with tags: character, boy, cartoon.
+- "اعطيني درونات" → choose assets with tags: drone, aircraft, scifi.
+- "اعطيني روبوتات" → choose assets with tags: robot, humanoid/mech, scifi.
+- "اعطيني مدينة" → choose assets with tags: environment, city.
+- "اعطيني حيوانات" → choose assets with tags: character, animal, cartoon.
+- "اعطيني بروبس" → choose assets with tags: prop.
 
 Return ONLY item numbers separated by commas.
 If none match, return NONE.
@@ -217,9 +248,11 @@ Use ALL fields:
 - tags
 - similarity
 
-Rules:
+IMPORTANT RULES:
+- Exact tag matches are very important.
+- Prioritize films that share the same tags or theme as the request.
 - If user asks for cooking, chef, food, rat, or mouse → choose cooking/chef/rat related films.
-- If user asks for robots, future, space, sci-fi → choose sci-fi/robot films.
+- If user asks for robots, future, space, sci-fi, scifi → choose sci-fi/robot films.
 - If user asks for family or animation → choose animated/family films.
 - Do not select unrelated films even if similarity is high.
 
@@ -249,7 +282,7 @@ def format_asset_results(rows):
     reply = "🧊 أقرب الأسيتس المناسبة لطلبك:\n\n"
 
     for name, category, description, tags, similarity in rows[:5]:
-        reply += f"- {name} ({round(similarity * 100, 1)}%)\n"
+        reply += f"- {name}\n"
 
     return reply
 
@@ -261,7 +294,7 @@ def format_film_results(rows):
     reply = "🎬 أقرب الأفلام المناسبة لطلبك:\n\n"
 
     for title, category, description, tags, similarity in rows[:5]:
-        reply += f"- {title} ({round(similarity * 100, 1)}%)\n"
+        reply += f"- {title}\n"
 
     return reply
 
