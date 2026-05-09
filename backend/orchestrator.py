@@ -19,19 +19,10 @@ def get_response_by_intent(
         return handle_assets(message, is_authenticated)
 
     # 🔥 بحث مشابه / اقتراحات
+    # مهم: لا نضيف platform context هنا
+    # لأنه يخرب فهم الطلب ويخلي similar_handler يقرأ كلمات مثل all/assets/robots/drones/cities
     if intent == "SIMILAR_REQUEST":
-        enhanced_message = f"""
-User request:
-{message}
-
-Important platform context:
-All assets on Human Mind & AI Logic are 3D assets/models.
-Assets can include characters, kids, boys, robots, drones, vehicles, environments,
-cities, buildings, props, animals, monsters, interiors, and sci-fi models.
-The user is asking about 3D assets, not images or ordinary files.
-""".strip()
-
-        return handle_similar(enhanced_message, is_authenticated)
+        return handle_similar(message, is_authenticated)
 
     # 👋 تحية
     if intent == "GREETING":
@@ -46,7 +37,7 @@ The user is asking about 3D assets, not images or ordinary files.
             "عنا أفلام وأصول 3D تفاعلية تقدر تستعرضها داخل المنصة."
         )
 
-    # 🤖 أي شيء ثاني → يروح على AI
+    # 🤖 أي شيء ثاني → يروح على AI العام
     enhanced_message = f"""
 User request:
 {message}

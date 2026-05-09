@@ -11,26 +11,32 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+ALLOWED_ASSET_TAGS = [
+    "character", "boy", "cartoon",
+    "robot", "humanoid", "machine", "mech",
+    "drone", "aircraft",
+    "vehicle", "car", "racing",
+    "environment", "city", "architecture", "building", "interior",
+    "animal", "monster",
+    "prop", "medieval", "food", "campfire", "urban", "infrastructure",
+    "nature", "forest",
+    "scifi"
+]
+
 
 def analyze_user_request(message: str) -> dict:
     prompt = f"""
-You analyze user search intent for Human Mind & AI Logic.
-
 Return ONLY valid JSON.
 
 Schema:
 {{
   "result_type": "film | asset | unknown",
-  "asset_type": "robot | humanoid_character | animal_character | creature | environment | building | vehicle | drone | prop | nature | unknown",
-  "film_theme": "sci_fi | adventure | family | comedy | action | cooking | robot | animal | unknown",
   "search_query": "clear English semantic search query"
 }}
 
 Rules:
-- Translate any language to English.
-- If user asks for 3D assets, models, resources, characters, objects, cities, vehicles, buildings, animals, robots, drones, props, environments → asset.
-- If user asks for movies, films, videos, cinematic stories, or watchable content → film.
-- Children, kids, boys, girls, human characters → humanoid_character.
+- 3D assets, models, characters, robots, humanoid robots, drones, props, cities, animals, vehicles, food props → asset.
+- Movies, films, videos, cinematic stories → film.
 - Return ONLY JSON.
 
 User message:
@@ -48,15 +54,11 @@ User message:
     except Exception:
         return {
             "result_type": "unknown",
-            "asset_type": "unknown",
-            "film_theme": "unknown",
             "search_query": message
         }
 
     return {
         "result_type": data.get("result_type", "unknown"),
-        "asset_type": data.get("asset_type", "unknown"),
-        "film_theme": data.get("film_theme", "unknown"),
         "search_query": data.get("search_query", message)
     }
 
@@ -65,21 +67,25 @@ def force_correct_result_type(message: str, result_type: str) -> str:
     msg = message.lower()
 
     asset_words = [
-        "asset", "assets",
-        "اسيت", "اسيتس", "أسيت", "أسيتس",
-        "است", "استس", "اسيتش", "استيش",
-        "مودل", "موديل", "مجسم", "مجسمات",
-        "3d", "glb", "gltf",
+        "asset", "assets", "اسيت", "اسيتس", "أسيت", "أسيتس",
+        "3d", "ثري", "ثري دي",
+        "مودل", "موديل", "مودلز", "models",
+        "مجسم", "مجسمات",
+        "glb", "gltf",
         "شخصية", "شخصيات",
         "ولد", "اولاد", "أولاد", "اطفال", "أطفال",
-        "روبوت", "روبوتات",
-        "درون", "درونات",
+        "انسان", "إنسان", "بشر",
+        "روبوت", "روبوتات", "robot", "robots",
+        "humanoid", "هيومانويد",
+        "شكل انسان", "شكل إنسان",
+        "درون", "درونات", "drone", "drones",
         "مدينة", "مدن",
-        "مبنى", "مباني",
-        "سيارة", "سيارات",
         "حيوان", "حيوانات",
+        "بروب", "prop", "props",
         "وحش", "وحوش",
-        "بروب", "props", "prop"
+        "اكل", "أكل", "طعام", "خضرة", "خضار", "خضروات",
+        "فواكه", "فاكهة", "حبوب", "قمح",
+        "food", "foods", "vegetable", "vegetables", "fruit", "fruits", "grain", "grains"
     ]
 
     film_words = [
@@ -99,17 +105,13 @@ def force_correct_result_type(message: str, result_type: str) -> str:
 def build_tags_text(tags):
     if tags is None:
         return ""
-
     if isinstance(tags, list):
         return ", ".join(str(tag) for tag in tags)
-
     return str(tags)
 
 
 def extract_indexes(text: str, max_len: int):
-    text = text.strip()
-
-    if text.upper() == "NONE":
+    if text.strip().upper() == "NONE":
         return []
 
     numbers = re.findall(r"\d+", text)
@@ -121,6 +123,265 @@ def extract_indexes(text: str, max_len: int):
             indexes.append(i)
 
     return indexes
+
+
+def is_all_assets_request(message: str) -> bool:
+    msg = message.lower()
+
+    all_phrases = [
+        "كل الاسيتس",
+        "كل الأسيتس",
+        "كل assets",
+        "all assets",
+        "كل الثري دي",
+        "كل ال 3d",
+        "كل 3d",
+        "جميع الاسيتس",
+        "جميع الأسيتس",
+        "جميع assets",
+        "كل المودلز",
+        "كل المجسمات"
+    ]
+
+    return any(phrase in msg for phrase in all_phrases)
+
+
+def extract_asset_search_plan(message: str) -> dict:
+    prompt = f"""
+You are building a search plan for a 3D asset marketplace.
+
+Return ONLY valid JSON.
+
+Schema:
+{{
+  "include_any": [],
+  "include_all": [],
+  "exclude": []
+}}
+
+Allowed tags:
+{ALLOWED_ASSET_TAGS}
+
+Rules:
+- Use ONLY allowed tags.
+- include_any = useful preference tags. Items can match ANY of them.
+- include_all = tags that MUST exist together in the same asset.
+- exclude = tags that should be avoided.
+- For simple exact requests, use include_all if the tags must be together.
+- For complex mixed requests, use include_any to collect relevant groups.
+- Do NOT over-constrain complex requests.
+
+Examples:
+
+User:
+اعطيني روبوتات بشكل انسان
+Response:
+{{
+  "include_any": [],
+  "include_all": ["robot", "humanoid"],
+  "exclude": []
+}}
+
+User:
+اعطيني الروبوتات المشابهة للانسان
+Response:
+{{
+  "include_any": [],
+  "include_all": ["robot", "humanoid"],
+  "exclude": []
+}}
+
+User:
+اعطيني روبوتات
+Response:
+{{
+  "include_any": [],
+  "include_all": ["robot"],
+  "exclude": []
+}}
+
+User:
+اعطيني اولاد
+Response:
+{{
+  "include_any": [],
+  "include_all": ["character", "boy", "cartoon"],
+  "exclude": ["robot", "drone", "monster", "vehicle"]
+}}
+
+User:
+اعطيني اطفال
+Response:
+{{
+  "include_any": [],
+  "include_all": ["character", "boy", "cartoon"],
+  "exclude": ["robot", "drone", "monster", "vehicle"]
+}}
+
+User:
+عندي ماركت بدي اعرض الخضرة يلي للاكل
+Response:
+{{
+  "include_any": [],
+  "include_all": ["food"],
+  "exclude": []
+}}
+
+User:
+اعطيني درونات
+Response:
+{{
+  "include_any": [],
+  "include_all": ["drone"],
+  "exclude": []
+}}
+
+User:
+اعطيني مدينة
+Response:
+{{
+  "include_any": [],
+  "include_all": ["environment", "city"],
+  "exclude": []
+}}
+
+User:
+عندي فيلم خيال علمي عن مدينة مستقبلية فيها روبوتات بشرية ودرونات مراقبة، وبدي أسيتس مناسبة للمشاهد الداخلية والخارجية + شخصيات أطفال كرتونية لكن بدون أي روبوتات قتالية
+Response:
+{{
+  "include_any": ["city", "environment", "interior", "robot", "humanoid", "drone", "character", "boy", "cartoon", "scifi"],
+  "include_all": [],
+  "exclude": ["mech", "monster"]
+}}
+
+User request:
+"{message}"
+"""
+
+    response = client.responses.create(
+        model="gpt-5.4",
+        input=prompt,
+        temperature=0
+    )
+
+    try:
+        data = json.loads(response.output_text.strip())
+
+        include_any = [
+            str(t).strip().lower()
+            for t in data.get("include_any", [])
+            if str(t).strip().lower() in ALLOWED_ASSET_TAGS
+        ]
+
+        include_all = [
+            str(t).strip().lower()
+            for t in data.get("include_all", [])
+            if str(t).strip().lower() in ALLOWED_ASSET_TAGS
+        ]
+
+        exclude = [
+            str(t).strip().lower()
+            for t in data.get("exclude", [])
+            if str(t).strip().lower() in ALLOWED_ASSET_TAGS
+        ]
+
+        return {
+            "include_any": list(dict.fromkeys(include_any)),
+            "include_all": list(dict.fromkeys(include_all)),
+            "exclude": list(dict.fromkeys(exclude))
+        }
+
+    except Exception:
+        return {
+            "include_any": [],
+            "include_all": [],
+            "exclude": []
+        }
+
+
+def format_asset_results(rows):
+    if not rows:
+        return None
+
+    reply = "🧊 أقرب الأسيتس المناسبة لطلبك:\n\n"
+
+    for name, category, description, tags, similarity in rows[:10]:
+        reply += f"- {name}\n"
+
+    return reply
+
+
+def format_film_results(rows):
+    if not rows:
+        return None
+
+    reply = "🎬 أقرب الأفلام المناسبة لطلبك:\n\n"
+
+    for title, category, description, tags, similarity in rows[:10]:
+        reply += f"- {title}\n"
+
+    return reply
+
+
+def get_all_assets(cur):
+    query = """
+        SELECT
+            name,
+            category,
+            description,
+            tags,
+            1.0 AS similarity
+        FROM assets
+        WHERE status = 'approved'
+        ORDER BY name;
+    """
+
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    if not rows:
+        return "ما لقيت أسيتس متاحة."
+
+    return format_asset_results(rows)
+
+
+def get_assets_by_search_plan(cur, plan: dict):
+    include_any = plan.get("include_any", [])
+    include_all = plan.get("include_all", [])
+    exclude = plan.get("exclude", [])
+
+    if not include_any and not include_all and not exclude:
+        return []
+
+    query = """
+        SELECT
+            name,
+            category,
+            description,
+            tags,
+            1.0 AS similarity
+        FROM assets
+        WHERE status = 'approved'
+    """
+
+    params = []
+
+    if include_all:
+        query += " AND tags @> %s::text[]"
+        params.append(include_all)
+
+    if include_any:
+        query += " AND tags && %s::text[]"
+        params.append(include_any)
+
+    if exclude:
+        query += " AND NOT (tags && %s::text[])"
+        params.append(exclude)
+
+    query += " ORDER BY name LIMIT 30;"
+
+    cur.execute(query, tuple(params))
+    return cur.fetchall()
 
 
 def ai_rerank_assets(message: str, rows):
@@ -147,53 +408,32 @@ User request:
 "{message}"
 
 You are selecting 3D assets from a marketplace.
-
 All items are 3D assets/models.
 
-Choose ONLY assets that truly match the user's request.
+Use name, category, description, tags, and similarity.
 
-Use ALL fields:
-- name
-- category
-- description
-- tags
-- similarity
+Important:
+- Exact tag matches are very important.
+- For complex requests, select a useful mix of matching assets.
+- Do not choose unrelated categories even if similarity is high.
+- If the request contains robot + human-shaped / humanoid / شكل انسان, choose ONLY robot + humanoid.
+- If the request asks for humans/boys/kids WITHOUT robot, choose character/boy/cartoon only. Do NOT choose robots.
+- If the request asks for food, vegetables, fruits, grains, or خضار/خضرة/أكل, choose food-related props only.
+- Respect exclusions like بدون وحوش, بدون روبوتات قتالية, without monsters, without combat robots.
 
-IMPORTANT RULES:
-
-- Exact tag matches are extremely important.
-- Prioritize assets that share the same tags as the request.
-- Never recommend unrelated categories even if similarity is high.
-
-Asset tag meanings:
-- boy / kids / children / اولاد / اطفال → character, boy, cartoon
-- cartoon characters → character, cartoon
-- robots → robot, humanoid, mech, scifi
+Tag meanings:
+- children/boys/kids → character, boy, cartoon
+- humanoid robots → robot, humanoid
+- robots general → robot
 - drones → drone, aircraft, scifi
-- vehicles / cars → vehicle, car, racing
-- environments / cities → environment, city, architecture, building, interior
-- animals → animal, cartoon, character
-- monsters → monster, character, cartoon
-- props → prop, medieval, food, campfire, urban, infrastructure
-- nature → environment, nature, forest
-- sci-fi / scifi → scifi, robot, drone, environment, interior
-
-Do NOT choose:
-- robots when the user asks for boys/kids/children.
-- drones when the user asks for boys/kids/children.
-- environments or cities when the user asks for characters.
-- monsters when the user asks for boys/kids/children.
-- vehicles when the user asks for characters.
-- animals when the user asks for robots/drones/cities unless the user asked for animals.
-
-Examples:
-- "اعطيني اولاد" → choose assets with tags: character, boy, cartoon.
-- "اعطيني اطفال" → choose assets with tags: character, boy, cartoon.
-- "اعطيني درونات" → choose assets with tags: drone, aircraft, scifi.
-- "اعطيني روبوتات" → choose assets with tags: robot, humanoid/mech, scifi.
-- "اعطيني مدينة" → choose assets with tags: environment, city.
-- "اعطيني حيوانات" → choose assets with tags: character, animal, cartoon.
-- "اعطيني بروبس" → choose assets with tags: prop.
+- animals → character, animal, cartoon
+- cities → environment, city
+- interiors → interior
+- props → prop
+- food / vegetables / grains → food, prop
+- vehicles → vehicle, car, racing
+- monsters → monster
+- mech/combat robots → mech
 
 Return ONLY item numbers separated by commas.
 If none match, return NONE.
@@ -239,22 +479,14 @@ User request:
 
 You are selecting films from a cinematic platform.
 
-Choose ONLY films that truly match the user's request.
+Use title, category, description, tags, and similarity.
 
-Use ALL fields:
-- title
-- category
-- description
-- tags
-- similarity
-
-IMPORTANT RULES:
-- Exact tag matches are very important.
-- Prioritize films that share the same tags or theme as the request.
-- If user asks for cooking, chef, food, rat, or mouse → choose cooking/chef/rat related films.
-- If user asks for robots, future, space, sci-fi, scifi → choose sci-fi/robot films.
-- If user asks for family or animation → choose animated/family films.
-- Do not select unrelated films even if similarity is high.
+Rules:
+- Exact tag matches are important.
+- Cooking / chef / food / rat / mouse → cooking related films.
+- Robots / future / space / sci-fi → sci-fi/robot films.
+- Family / animation → animated/family films.
+- Do not select unrelated films.
 
 Return ONLY item numbers separated by commas.
 If none match, return NONE.
@@ -275,30 +507,6 @@ Films:
     return [rows[i] for i in indexes]
 
 
-def format_asset_results(rows):
-    if not rows:
-        return None
-
-    reply = "🧊 أقرب الأسيتس المناسبة لطلبك:\n\n"
-
-    for name, category, description, tags, similarity in rows[:5]:
-        reply += f"- {name}\n"
-
-    return reply
-
-
-def format_film_results(rows):
-    if not rows:
-        return None
-
-    reply = "🎬 أقرب الأفلام المناسبة لطلبك:\n\n"
-
-    for title, category, description, tags, similarity in rows[:5]:
-        reply += f"- {title}\n"
-
-    return reply
-
-
 def handle_similar(message: str, is_authenticated: bool = False) -> str:
     if not is_authenticated:
         return "ميزة البحث عن عناصر مشابهة متاحة بعد تسجيل الدخول."
@@ -313,14 +521,27 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
     if result_type == "unknown":
         return "مش واضح إذا بدك أفلام ولا أسيتس."
 
-    query_embedding = create_embedding(search_query)
-    pg_vector = embedding_to_pgvector(query_embedding)
-
     conn = get_connection()
     cur = conn.cursor()
 
     try:
         if result_type == "asset":
+
+            if is_all_assets_request(message):
+                return get_all_assets(cur)
+
+            search_plan = extract_asset_search_plan(message)
+            plan_rows = get_assets_by_search_plan(cur, search_plan)
+
+            if plan_rows:
+                selected_rows = ai_rerank_assets(message, plan_rows)
+
+                if selected_rows:
+                    return format_asset_results(selected_rows)
+
+            query_embedding = create_embedding(search_query)
+            pg_vector = embedding_to_pgvector(query_embedding)
+
             query = """
                 SELECT
                     name,
@@ -346,6 +567,9 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
             return format_asset_results(selected_rows)
 
         if result_type == "film":
+            query_embedding = create_embedding(search_query)
+            pg_vector = embedding_to_pgvector(query_embedding)
+
             query = """
                 SELECT
                     title,

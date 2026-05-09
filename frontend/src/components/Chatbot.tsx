@@ -52,6 +52,12 @@ export function Chatbot() {
     detectAndApplyTheme(currentMessage);
     setInputValue('');
 
+    const textarea = document.querySelector("textarea");
+
+if (textarea) {
+  textarea.style.height = "40px";
+}
+
     try {
       const response = await fetch('http://localhost:8000/chat', {
         method: 'POST',
@@ -149,7 +155,9 @@ export function Chatbot() {
                           : 'bg-muted/80 text-foreground border border-border/30'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+                       {message.text}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
@@ -158,13 +166,42 @@ export function Chatbot() {
 
               <div className="p-4 border-t border-border/50 bg-card/50">
                 <div className="flex gap-2">
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type your message..."
-                    className="flex-1 bg-background/50 border-border/50 focus:border-primary/50 transition-colors"
-                  />
+                  <textarea
+  value={inputValue}
+  onChange={(e) => {
+    setInputValue(e.target.value);
+
+    e.target.style.height = "auto";
+    e.target.style.height =
+      Math.min(e.target.scrollHeight, 96) + "px";
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  }}
+  placeholder="Type your message..."
+  rows={1}
+  className="
+    flex-1
+    bg-background/50
+    border
+    border-border/50
+    focus:border-primary/50
+    transition-colors
+    rounded-md
+    px-3
+    py-2
+    text-sm
+    text-white
+    resize-none
+    overflow-y-auto
+    min-h-10
+    max-h-24
+    leading-5
+  "
+/>
                   <Button
                     onClick={handleSendMessage}
                     size="icon"

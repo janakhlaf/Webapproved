@@ -25,164 +25,50 @@ INTENTS = [
 
 
 def classify_intent(message: str) -> str:
-
     prompt = f"""
-You are an intent classifier for a platform called Human Mind & AI Logic.
+You are an intent classifier for Human Mind & AI Logic.
 
-Your job:
 Classify the user's message into EXACTLY ONE intent.
 
---------------------------------
-AVAILABLE INTENTS
---------------------------------
-
+Available intents:
 {", ".join(INTENTS)}
 
---------------------------------
-IMPORTANT PLATFORM CONTEXT
---------------------------------
+Platform context:
+- The platform has cinematic films.
+- The platform has interactive 3D assets/models.
+- Assets include GLB/GLTF models, characters, boys, robots, humanoid robots, drones, vehicles, props, cities, environments, animals, monsters, buildings, and sci-fi models.
 
-Human Mind & AI Logic contains:
-- cinematic films
-- interactive 3D assets/models
+Return ONLY the intent label.
 
-All assets are 3D assets such as:
-- GLB models
-- GLTF models
-- characters
-- cartoon boys
-- kids
-- robots
-- humanoids
-- drones
-- aircraft
-- vehicles
-- props
-- buildings
-- architecture
-- cities
-- environments
-- interiors
-- animals
-- monsters
-- sci-fi models
+High priority:
+- If the user asks to get/show/give/find/list/recommend/suggest/search specific films or assets → SIMILAR_REQUEST.
+- If user asks for all assets, all 3D, كل الاسيتس, كل الثري دي, كل المودلز, كل المجسمات → SIMILAR_REQUEST.
+- If user asks for boys, kids, children, humans, robots, humanoid robots, drones, animals, cities, props, monsters, vehicles → SIMILAR_REQUEST.
+- If user asks general information about assets page, upload, download, preview, GLB/GLTF → ASSET_QUERY.
+- If user asks general information about films page, watching, downloading films → FILM_QUERY.
 
-Assets are used in:
-- animation
-- games
-- cinematic scenes
-- storytelling
-- architecture visualization
-- creative 3D projects
-
---------------------------------
-STRICT RULES
---------------------------------
-
-- Return ONLY the intent label.
-- No explanation.
-- No extra text.
-- No punctuation.
-
---------------------------------
-SIMILAR_REQUEST RULES
---------------------------------
-
-If the user asks to:
-- find
-- suggest
-- recommend
-- show
-- give
-- bring
-- search
-- closest
-- related
-- matching
-- similar
-
-films or assets by:
-- theme
-- category
-- style
-- character type
-- robot type
-- environment
-- sci-fi
-- city
-- adventure
-- animation
-- drone
-- architecture
-- cartoon
-- monster
-- animal
-- vehicle
-- prop
-
-→ RETURN:
-SIMILAR_REQUEST
-
-Examples:
-- اعطيني شخصيات
+Examples for SIMILAR_REQUEST:
 - اعطيني اولاد
 - اعطيني اطفال
-- اعطيني درونات
+- اعطيني انسان
 - اعطيني روبوتات
+- اعطيني روبوتات ع شكل انسان
+- اعطيني روبوتات على شكل انسان
+- اعطيني درونات
+- اعطيني حيوانات
 - اعطيني مدن
-- اعطيني environments
-- assets like robots
+- اعطيني بروبس
+- اعطيني كل الاسيتس
+- اعطيني كل الثري دي
+- اعطيني كل ال 3d
+- اعطيني كل المودلز
+- اعطيني مجسمات
 - similar drones
-- cinematic films about AI
+- assets like robots
 - recommend animation films
-- give me cartoon assets
-- closest robot asset
-- مشابه لهذا
-- زي هذا
-- مثل هذا
-- related assets
+- هات فيلم خيال علمي
 
-→ RETURN:
-SIMILAR_REQUEST
-
---------------------------------
-ASSET_QUERY RULES
---------------------------------
-
-If the user asks GENERAL questions about:
-- assets page
-- 3D assets
-- GLB
-- GLTF
-- asset formats
-- downloading assets
-- previewing assets
-- uploading assets
-- asset information
-
-→ RETURN:
-ASSET_QUERY
-
---------------------------------
-FILM_QUERY RULES
---------------------------------
-
-If the user asks GENERAL questions about:
-- films
-- movies
-- cinematic content
-- animation films
-- watching films
-- downloading films
-- film page
-
-→ RETURN:
-FILM_QUERY
-
---------------------------------
-OTHER RULES
---------------------------------
-
+Other:
 - Greeting → GREETING
 - Buying → PURCHASE_INTENT
 - Cart → CART_ACTION
@@ -193,12 +79,9 @@ OTHER RULES
 - Favorites → FAVORITES_ACTION
 - About page → ABOUT_PAGE
 - Platform information → PLATFORM_INFO
-- Unrelated requests → OUT_OF_SCOPE
+- Unrelated → OUT_OF_SCOPE
 
---------------------------------
-USER MESSAGE
---------------------------------
-
+User message:
 "{message}"
 """
 
