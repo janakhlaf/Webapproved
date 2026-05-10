@@ -216,101 +216,46 @@ User request:
             "exclude": []
         }
 
-
+def is_arabic_message(text: str) -> bool:
+    return any('\u0600' <= ch <= '\u06FF' for ch in text)
 def format_asset_results(rows, message: str, is_authenticated: bool):
     if not rows:
         return None
 
-    asset_names = []
+    names = []
 
     for name, category, description, tags, similarity in rows[:10]:
-        asset_names.append(name)
+        names.append(name)
 
-    names_text = "\n".join(f"- {name}" for name in asset_names)
+    if is_arabic_message(message):
+        response = "ممكن يعجبك هذول:\n\n"
+    else:
+        response = "You might like these assets:\n\n"
 
-    prompt = f"""
-User request:
-{message}
+    for name in names:
+        response += f"- {name}\n"
 
-Matching asset names:
-{names_text}
-
-Answer in the same language as the user.
-
-Rules:
-- Keep the response VERY short.
-- Use one small intro sentence only.
-- Then show asset names only.
-- Do NOT explain every asset.
-- Do NOT write descriptions.
-- Do NOT write long paragraphs.
-- Do NOT use markdown symbols like ** or ###.
-- Keep it clean for a small chat box.
-
-Good example:
-You might like these assets:
-
-- humanoid_robot
-- sci_fi_humanoid_robot
-- wasteland_robot
-
-Arabic example:
-ممكن يعجبك هذول:
-
-- humanoid_robot
-- sci_fi_humanoid_robot
-- wasteland_robot
-""".strip()
-
-    return normal_chat(prompt, is_authenticated)
+    return response.strip()
 
 
 def format_film_results(rows, message: str, is_authenticated: bool):
     if not rows:
         return None
 
-    film_names = []
+    names = []
 
     for title, category, description, tags, similarity in rows[:10]:
-        film_names.append(title)
+        names.append(title)
 
-    names_text = "\n".join(f"- {title}" for title in film_names)
+    if is_arabic_message(message):
+        response = "ممكن يعجبك هذول:\n\n"
+    else:
+        response = "You might like these films:\n\n"
 
-    prompt = f"""
-User request:
-{message}
+    for title in names:
+        response += f"- {title}\n"
 
-Matching film names:
-{names_text}
-
-Answer in the same language as the user.
-
-Rules:
-- Keep the response VERY short.
-- Use one small intro sentence only.
-- Then show film names only.
-- Do NOT explain every film.
-- Do NOT write story details.
-- Do NOT write long paragraphs.
-- Do NOT use markdown symbols like ** or ###.
-- Keep it clean for a small chat box.
-
-Good example:
-You might like these films:
-
-- WALL-E
-- Ratatouille
-- THE BREAD
-
-Arabic example:
-ممكن يعجبك هذول:
-
-- WALL-E
-- Ratatouille
-- THE BREAD
-""".strip()
-
-    return normal_chat(prompt, is_authenticated)
+    return response.strip()
 
 
 def get_all_assets(cur, message: str, is_authenticated: bool):
