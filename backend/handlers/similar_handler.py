@@ -171,89 +171,6 @@ Rules:
 - For complex mixed requests, use include_any to collect relevant groups.
 - Do NOT over-constrain complex requests.
 
-Examples:
-
-User:
-اعطيني روبوتات بشكل انسان
-Response:
-{{
-  "include_any": [],
-  "include_all": ["robot", "humanoid"],
-  "exclude": []
-}}
-
-User:
-اعطيني الروبوتات المشابهة للانسان
-Response:
-{{
-  "include_any": [],
-  "include_all": ["robot", "humanoid"],
-  "exclude": []
-}}
-
-User:
-اعطيني روبوتات
-Response:
-{{
-  "include_any": [],
-  "include_all": ["robot"],
-  "exclude": []
-}}
-
-User:
-اعطيني اولاد
-Response:
-{{
-  "include_any": [],
-  "include_all": ["character", "boy", "cartoon"],
-  "exclude": ["robot", "drone", "monster", "vehicle"]
-}}
-
-User:
-اعطيني اطفال
-Response:
-{{
-  "include_any": [],
-  "include_all": ["character", "boy", "cartoon"],
-  "exclude": ["robot", "drone", "monster", "vehicle"]
-}}
-
-User:
-عندي ماركت بدي اعرض الخضرة يلي للاكل
-Response:
-{{
-  "include_any": [],
-  "include_all": ["food"],
-  "exclude": []
-}}
-
-User:
-اعطيني درونات
-Response:
-{{
-  "include_any": [],
-  "include_all": ["drone"],
-  "exclude": []
-}}
-
-User:
-اعطيني مدينة
-Response:
-{{
-  "include_any": [],
-  "include_all": ["environment", "city"],
-  "exclude": []
-}}
-
-User:
-عندي فيلم خيال علمي عن مدينة مستقبلية فيها روبوتات بشرية ودرونات مراقبة، وبدي أسيتس مناسبة للمشاهد الداخلية والخارجية + شخصيات أطفال كرتونية لكن بدون أي روبوتات قتالية
-Response:
-{{
-  "include_any": ["city", "environment", "interior", "robot", "humanoid", "drone", "character", "boy", "cartoon", "scifi"],
-  "include_all": [],
-  "exclude": ["mech", "monster"]
-}}
-
 User request:
 "{message}"
 """
@@ -479,14 +396,30 @@ User request:
 
 You are selecting films from a cinematic platform.
 
-Use title, category, description, tags, and similarity.
+Choose ONLY films that truly match the user's request.
 
-Rules:
-- Exact tag matches are important.
-- Cooking / chef / food / rat / mouse → cooking related films.
-- Robots / future / space / sci-fi → sci-fi/robot films.
-- Family / animation → animated/family films.
-- Do not select unrelated films.
+Use:
+- title
+- category
+- description
+- tags
+- similarity
+
+Film tag meanings:
+- robot / scifi / postapocalyptic → WALL·E type films.
+- superhero / adventure / action → superhero adventure films.
+- food / comedy / adventure → cooking or food comedy films.
+- food / survival / comedy → food survival comedy films.
+- racing / adventure / comedy → racing adventure comedy films.
+
+IMPORTANT RULES:
+- Exact tag matches are very important.
+- Prioritize films that share tags with the user request.
+- If user asks for robots, AI, future, abandoned earth, post-apocalyptic, technology, or sci-fi → choose robot/scifi/postapocalyptic films.
+- If user asks for superhero, heroes, powers, action, city threat, villain, or adventure → choose superhero/action/adventure films.
+- If user asks for cooking, chef, food, rat, bread, survival, or comedy → choose food/comedy films.
+- If user asks for racing, speed, snail, race, competition, or adventure → choose racing/adventure films.
+- Do not select unrelated films even if similarity is high.
 
 Return ONLY item numbers separated by commas.
 If none match, return NONE.

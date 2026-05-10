@@ -37,15 +37,27 @@ Platform context:
 - The platform has cinematic films.
 - The platform has interactive 3D assets/models.
 - Assets include GLB/GLTF models, characters, boys, robots, humanoid robots, drones, vehicles, props, cities, environments, animals, monsters, buildings, and sci-fi models.
+- Asset names may be simple words or file-like names such as snail_mail, formula, dog, boy, cartoon_kid, humanoid_robot, drone, or any new uploaded asset name.
 
 Return ONLY the intent label.
 
 High priority:
+- If the user asks about a specific asset name/details/explanation → ASSET_QUERY.
+- If the user says tell me about / explain / what is / details about / احكيلي عن / اشرحلي عن followed by a possible asset name → ASSET_QUERY.
+- Do NOT classify unknown asset names as OUT_OF_SCOPE. The assets handler will search the database.
 - If the user asks to get/show/give/find/list/recommend/suggest/search specific films or assets → SIMILAR_REQUEST.
 - If user asks for all assets, all 3D, كل الاسيتس, كل الثري دي, كل المودلز, كل المجسمات → SIMILAR_REQUEST.
-- If user asks for boys, kids, children, humans, robots, humanoid robots, drones, animals, cities, props, monsters, vehicles → SIMILAR_REQUEST.
+- If user asks for boys, kids, children, humans, robots, humanoid robots, drones, animals, cities, props, monsters, vehicles as results to show/list → SIMILAR_REQUEST.
 - If user asks general information about assets page, upload, download, preview, GLB/GLTF → ASSET_QUERY.
 - If user asks general information about films page, watching, downloading films → FILM_QUERY.
+
+Examples for ASSET_QUERY:
+- احكيلي عن snail_mail
+- احكيلي عن snail mail
+- اشرحلي عن formula
+- tell me about cartoon_kid
+- what is humanoid_robot?
+- احكيلي عن الاسيتس الموجودة عندي
 
 Examples for SIMILAR_REQUEST:
 - اعطيني اولاد

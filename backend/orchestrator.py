@@ -24,18 +24,19 @@ def get_response_by_intent(
     if intent == "SIMILAR_REQUEST":
         return handle_similar(message, is_authenticated)
 
-    # 👋 تحية
+        # 👋 Greeting
     if intent == "GREETING":
-        if is_authenticated:
-            return (
-                "أهلًا وسهلًا 👋 بما إنك مسجل دخول، بقدر أساعدك بتفاصيل أوسع عن "
-                "الأفلام، أصول 3D، الاقتراحات، والاستخدامات داخل منصة Human Mind & AI Logic."
-            )
 
-        return (
-            "أهلًا وسهلًا 👋 كيف بقدر أساعدك في منصة Human Mind & AI Logic؟ "
-            "عنا أفلام وأصول 3D تفاعلية تقدر تستعرضها داخل المنصة."
-        )
+        greeting_context = f"""
+    User message:
+    {message}
+
+    Platform context:
+    Human Mind & AI Logic is a platform for cinematic films and interactive 3D assets.
+    Be welcoming, natural, and reply in the same language as the user.
+    """.strip()
+
+        return normal_chat(greeting_context, is_authenticated)
 
     # 🤖 أي شيء ثاني → يروح على AI العام
     enhanced_message = f"""
