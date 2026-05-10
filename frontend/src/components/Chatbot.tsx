@@ -96,7 +96,7 @@ if (textarea) {
     setIsOpen(false);
     resetTheme();
   };
-
+const isArabicText = (text: string) => /[\u0600-\u06FF]/.test(text);
   return (
     <>
       <motion.div
@@ -155,8 +155,15 @@ if (textarea) {
                           : 'bg-muted/80 text-foreground border border-border/30'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
-                       {message.text}
+                      <p
+                        className="text-sm leading-relaxed break-words whitespace-pre-wrap"
+                        style={{
+                          direction: isArabicText(message.text) ? "rtl" : "ltr",
+                          textAlign: isArabicText(message.text) ? "right" : "left",
+                          lineHeight: "1.7",
+                        }}
+                        >
+                        {message.text}
                       </p>
                     </div>
                   </motion.div>
@@ -167,41 +174,41 @@ if (textarea) {
               <div className="p-4 border-t border-border/50 bg-card/50">
                 <div className="flex gap-2">
                   <textarea
-  value={inputValue}
-  onChange={(e) => {
-    setInputValue(e.target.value);
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
 
-    e.target.style.height = "auto";
-    e.target.style.height =
-      Math.min(e.target.scrollHeight, 96) + "px";
-  }}
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }}
-  placeholder="Type your message..."
-  rows={1}
-  className="
-    flex-1
-    bg-background/50
-    border
-    border-border/50
-    focus:border-primary/50
-    transition-colors
-    rounded-md
-    px-3
-    py-2
-    text-sm
-    text-white
-    resize-none
-    overflow-y-auto
-    min-h-10
-    max-h-24
-    leading-5
-  "
-/>
+                      e.target.style.height = "auto";
+                      e.target.style.height =
+                        Math.min(e.target.scrollHeight, 96) + "px";
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Type your message..."
+                    rows={1}
+                    className="
+                      flex-1
+                      bg-background/50
+                      border
+                      border-border/50
+                      focus:border-primary/50
+                      transition-colors
+                      rounded-md
+                      px-3
+                      py-2
+                      text-sm
+                      text-white
+                      resize-none
+                      overflow-y-auto
+                      min-h-10
+                      max-h-24
+                      leading-5
+                    "
+                  />
                   <Button
                     onClick={handleSendMessage}
                     size="icon"

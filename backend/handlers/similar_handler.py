@@ -5,6 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 from ai.embedding_service import create_embedding, embedding_to_pgvector
+from ai.platform_assistant import normal_chat
 from db import get_connection
 
 load_dotenv()
@@ -216,31 +217,103 @@ User request:
         }
 
 
-def format_asset_results(rows):
+def format_asset_results(rows, message: str, is_authenticated: bool):
     if not rows:
         return None
 
-    reply = "🧊 أقرب الأسيتس المناسبة لطلبك:\n\n"
+    asset_names = []
 
     for name, category, description, tags, similarity in rows[:10]:
-        reply += f"- {name}\n"
+        asset_names.append(name)
 
-    return reply
+    names_text = "\n".join(f"- {name}" for name in asset_names)
+
+    prompt = f"""
+User request:
+{message}
+
+Matching asset names:
+{names_text}
+
+Answer in the same language as the user.
+
+Rules:
+- Keep the response VERY short.
+- Use one small intro sentence only.
+- Then show asset names only.
+- Do NOT explain every asset.
+- Do NOT write descriptions.
+- Do NOT write long paragraphs.
+- Do NOT use markdown symbols like ** or ###.
+- Keep it clean for a small chat box.
+
+Good example:
+You might like these assets:
+
+- humanoid_robot
+- sci_fi_humanoid_robot
+- wasteland_robot
+
+Arabic example:
+ممكن يعجبك هذول:
+
+- humanoid_robot
+- sci_fi_humanoid_robot
+- wasteland_robot
+""".strip()
+
+    return normal_chat(prompt, is_authenticated)
 
 
-def format_film_results(rows):
+def format_film_results(rows, message: str, is_authenticated: bool):
     if not rows:
         return None
 
-    reply = "🎬 أقرب الأفلام المناسبة لطلبك:\n\n"
+    film_names = []
 
     for title, category, description, tags, similarity in rows[:10]:
-        reply += f"- {title}\n"
+        film_names.append(title)
 
-    return reply
+    names_text = "\n".join(f"- {title}" for title in film_names)
+
+    prompt = f"""
+User request:
+{message}
+
+Matching film names:
+{names_text}
+
+Answer in the same language as the user.
+
+Rules:
+- Keep the response VERY short.
+- Use one small intro sentence only.
+- Then show film names only.
+- Do NOT explain every film.
+- Do NOT write story details.
+- Do NOT write long paragraphs.
+- Do NOT use markdown symbols like ** or ###.
+- Keep it clean for a small chat box.
+
+Good example:
+You might like these films:
+
+- WALL-E
+- Ratatouille
+- THE BREAD
+
+Arabic example:
+ممكن يعجبك هذول:
+
+- WALL-E
+- Ratatouille
+- THE BREAD
+""".strip()
+
+    return normal_chat(prompt, is_authenticated)
 
 
-def get_all_assets(cur):
+def get_all_assets(cur, message: str, is_authenticated: bool):
     query = """
         SELECT
             name,
@@ -257,9 +330,19 @@ def get_all_assets(cur):
     rows = cur.fetchall()
 
     if not rows:
-        return "ما لقيت أسيتس متاحة."
+        return normal_chat(
+            f"""
+User request:
+{message}
 
-    return format_asset_results(rows)
+No assets are currently available.
+
+Reply in the same language as the user.
+""",
+            is_authenticated
+        )
+
+    return format_asset_results(rows, message, is_authenticated)
 
 
 def get_assets_by_search_plan(cur, plan: dict):
@@ -439,10 +522,23 @@ Films:
 
     return [rows[i] for i in indexes]
 
+def is_arabic_message(text: str) -> bool:
+    return any('\u0600' <= ch <= '\u06FF' for ch in text)
+
 
 def handle_similar(message: str, is_authenticated: bool = False) -> str:
+
     if not is_authenticated:
-        return "ميزة البحث عن عناصر مشابهة متاحة بعد تسجيل الدخول."
+
+        if is_arabic_message(message):
+            return "عذرًا، لازم تسجل دخول أولًا لتستخدم البحث عن العناصر المشابهة."
+
+        return "Sorry, you need to sign in first to use similar search."
+
+    intent = analyze_user_request(message)
+
+    result_type = intent["result_type"]
+    search_query = intent["search_query"]
 
     intent = analyze_user_request(message)
 
@@ -452,7 +548,16 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
     result_type = force_correct_result_type(message, result_type)
 
     if result_type == "unknown":
-        return "مش واضح إذا بدك أفلام ولا أسيتس."
+        return normal_chat(
+            f"""
+User request:
+{message}
+
+The request is unclear. Ask the user whether they want films or assets.
+Reply in the same language as the user.
+""",
+            is_authenticated
+        )
 
     conn = get_connection()
     cur = conn.cursor()
@@ -461,7 +566,7 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
         if result_type == "asset":
 
             if is_all_assets_request(message):
-                return get_all_assets(cur)
+                return get_all_assets(cur, message, is_authenticated)
 
             search_plan = extract_asset_search_plan(message)
             plan_rows = get_assets_by_search_plan(cur, search_plan)
@@ -470,7 +575,7 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
                 selected_rows = ai_rerank_assets(message, plan_rows)
 
                 if selected_rows:
-                    return format_asset_results(selected_rows)
+                    return format_asset_results(selected_rows, message, is_authenticated)
 
             query_embedding = create_embedding(search_query)
             pg_vector = embedding_to_pgvector(query_embedding)
@@ -495,9 +600,19 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
             selected_rows = ai_rerank_assets(message, rows)
 
             if not selected_rows:
-                return "ما لقيت أسيتس مناسبة لطلبك."
+                return normal_chat(
+                    f"""
+User request:
+{message}
 
-            return format_asset_results(selected_rows)
+No matching assets were found.
+
+Reply in the same language as the user.
+""",
+                    is_authenticated
+                )
+
+            return format_asset_results(selected_rows, message, is_authenticated)
 
         if result_type == "film":
             query_embedding = create_embedding(search_query)
@@ -523,9 +638,19 @@ def handle_similar(message: str, is_authenticated: bool = False) -> str:
             selected_rows = ai_rerank_films(message, rows)
 
             if not selected_rows:
-                return "ما لقيت أفلام مناسبة لطلبك."
+                return normal_chat(
+                    f"""
+User request:
+{message}
 
-            return format_film_results(selected_rows)
+No matching films were found.
+
+Reply in the same language as the user.
+""",
+                    is_authenticated
+                )
+
+            return format_film_results(selected_rows, message, is_authenticated)
 
     except Exception as e:
         return f"خطأ: {str(e)}"
