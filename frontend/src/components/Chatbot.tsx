@@ -27,6 +27,7 @@ export function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { detectAndApplyTheme, resetTheme } = useTheme();
   const { isAuthenticated } = useAuth();
+  const previousAuthRef = useRef(isAuthenticated);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,6 +36,19 @@ export function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  useEffect(() => {
+  if (previousAuthRef.current !== isAuthenticated) {
+    setIsOpen(false);
+
+    setMessages([WELCOME_MESSAGE]);
+
+    localStorage.removeItem('guest_chat_messages');
+    localStorage.removeItem('chat_messages');
+    localStorage.removeItem('chat_session_id');
+  }
+
+  previousAuthRef.current = isAuthenticated;
+}, [isAuthenticated]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
