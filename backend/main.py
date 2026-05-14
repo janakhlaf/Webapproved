@@ -8,12 +8,14 @@ from films import router as films_router
 from ai.intent_classifier import classify_intent
 from orchestrator import get_response_by_intent
 
+
 from chat_history import (
     create_chat_session,
     get_user_sessions,
     get_session_messages,
     save_chat_message,
-    delete_chat_session
+    delete_chat_session,
+    get_recent_conversation_context
 )
 
 app = FastAPI()
@@ -80,10 +82,18 @@ async def chat(request: ChatRequest):
     user_message = request.message
     intent = classify_intent(user_message)
 
+    conversation_context = []
+
+    if request.session_id:
+        conversation_context = get_recent_conversation_context(
+            request.session_id
+        )
+
     reply = get_response_by_intent(
         intent,
         user_message,
-        request.isAuthenticated
+        request.isAuthenticated,
+        conversation_context
     )
 
     if request.user_id and request.session_id:

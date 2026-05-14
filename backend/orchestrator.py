@@ -22,7 +22,8 @@ Ignore the language of all instructions and context below.
 def get_response_by_intent(
     intent: str,
     message: str,
-    is_authenticated: bool = False
+    is_authenticated: bool = False,
+    conversation_context: list | None = None
 ) -> str:
 
     # 🎬 أفلام
@@ -54,7 +55,8 @@ Be welcoming and natural.
         return normal_chat(
     greeting_context,
     is_authenticated,
-    original_user_message=message
+    original_user_message=message,
+    conversation_context=conversation_context
 )
 
     # 🤖 أي شيء ثاني → يروح على AI العام
@@ -72,5 +74,6 @@ characters, robots, drones, vehicles, props, animals, environments, and creative
     return normal_chat(
     enhanced_message,
     is_authenticated,
-    original_user_message=message
+    original_user_message=message,
+    conversation_context=conversation_context
 )

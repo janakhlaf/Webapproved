@@ -22,9 +22,58 @@ INTENTS = [
     "ABOUT_PAGE",
     "OUT_OF_SCOPE",
 ]
+def rule_based_intent(message: str) -> str | None:
+    text = message.lower().strip()
 
+    text = (
+        text.replace("أ", "ا")
+            .replace("إ", "ا")
+            .replace("آ", "ا")
+            .replace("ى", "ي")
+            .replace("ة", "ه")
+    )
+
+    has_page = (
+        "صفحه" in text
+        or "page" in text
+        or "تبويب" in text
+        or "قسم" in text
+    )
+
+    has_film = (
+        "فيلم" in text
+        or "افلام" in text
+        or "films" in text
+        or "film" in text
+        or "movies" in text
+        or "movie" in text
+    )
+
+    has_asset = (
+        "اسيت" in text
+        or "اسيتس" in text
+        or "اصول" in text
+        or "اصل" in text
+        or "assets" in text
+        or "asset" in text
+        or "3d" in text
+        or "ثري دي" in text
+    )
+
+    if has_page and has_film:
+        return "FILM_QUERY"
+
+    if has_page and has_asset:
+        return "ASSET_QUERY"
+
+    return None
 
 def classify_intent(message: str) -> str:
+    rule_intent = rule_based_intent(message)
+
+    if rule_intent:
+        return rule_intent
+
     prompt = f"""
 You are an intent classifier for Human Mind & AI Logic.
 
@@ -45,11 +94,23 @@ High priority:
 - If the user asks about a specific asset name/details/explanation → ASSET_QUERY.
 - If the user says tell me about / explain / what is / details about / احكيلي عن / اشرحلي عن followed by a possible asset name → ASSET_QUERY.
 - Do NOT classify unknown asset names as OUT_OF_SCOPE. The assets handler will search the database.
-- If the user asks to get/show/give/find/list/recommend/suggest/search specific films or assets → SIMILAR_REQUEST.
+- SIMILAR_REQUEST is ONLY when the user clearly wants actual recommendations, search results, or lists of films/assets.
+- Questions asking about what a page contains, what exists inside a page, how a page works, or what features/pages are available are NOT SIMILAR_REQUEST.
+- If the user asks to get/show/give/find/list/recommend/suggest/search specific films or assets themselves → SIMILAR_REQUEST. If the user asks to get/show/give/find/list/recommend/suggest/search specific films or assets → SIMILAR_REQUEST.
 - If user asks for all assets, all 3D, كل الاسيتس, كل الثري دي, كل المودلز, كل المجسمات → SIMILAR_REQUEST.
 - If user asks for boys, kids, children, humans, robots, humanoid robots, drones, animals, cities, props, monsters, vehicles as results to show/list → SIMILAR_REQUEST.
 - If user asks general information about assets page, upload, download, preview, GLB/GLTF → ASSET_QUERY.
 - If user asks general information about films page, watching, downloading films → FILM_QUERY.
+- If the user asks about what a page/section contains, what is inside it, what exists there, or how to reach/use it, classify by page:
+  films page → FILM_QUERY
+  assets page → ASSET_QUERY
+  profile page → PROFILE_ACTION
+  cart page → CART_ACTION
+  library page → LIBRARY_ACCESS
+  upload page → UPLOAD_ACTION
+- Do NOT classify page explanation questions as SIMILAR_REQUEST.
+- SIMILAR_REQUEST is only when the user wants actual item recommendations/search results, not page explanation.
+
 
 Examples for ASSET_QUERY:
 - احكيلي عن snail_mail

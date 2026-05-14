@@ -229,10 +229,44 @@ def detect_message_language(text: str) -> str:
         return "Arabic"
 
     return "English"
+def build_conversation_messages(
+    final_prompt: str,
+    conversation_context: list,
+    current_message: str
+):
+
+    messages = [
+        {
+            "role": "system",
+            "content": final_prompt
+        }
+    ]
+
+    for msg in conversation_context:
+        role = msg["role"]
+
+        if role == "assistant":
+            role = "assistant"
+        else:
+            role = "user"
+
+        messages.append({
+            "role": role,
+            "content": msg["content"]
+        })
+
+    messages.append({
+        "role": "user",
+        "content": current_message
+    })
+
+    return messages
+
 def normal_chat(
     message: str,
     is_authenticated: bool = False,
-    original_user_message: str | None = None
+    original_user_message: str | None = None,
+    conversation_context: list | None = None
 ) -> str:
    auth_status = "true" if is_authenticated else "false"
 
@@ -254,13 +288,18 @@ def normal_chat(
     If the user message is Arabic, the whole answer must be Arabic.
 
     """
+   if conversation_context is None:
+    conversation_context = []
+
+    messages = build_conversation_messages(
+    final_prompt,
+    conversation_context,
+    message
+)
 
    response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": final_prompt},
-            {"role": "user", "content": message}
-        ]
+        messages=messages
     )
 
    return response.choices[0].message.content

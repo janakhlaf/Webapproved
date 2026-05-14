@@ -145,3 +145,33 @@ def delete_chat_session(session_id: int, user_id: int):
     conn.close()
 
     return True
+def get_recent_conversation_context(
+    session_id: int,
+    limit: int = 10
+):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT role, content
+        FROM chat_messages
+        WHERE session_id = %s
+        ORDER BY created_at ASC
+        LIMIT %s
+    """, (session_id, limit))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    messages = []
+
+    for row in rows:
+        messages.append({
+            "role": row[0],
+            "content": row[1]
+        })
+
+    return messages
