@@ -64,11 +64,8 @@ export function Chatbot() {
     if (previousAuthRef.current !== isAuthenticated) {
       setIsOpen(false);
       setIsHistoryOpen(false);
-
       setMessages([WELCOME_MESSAGE]);
-
       setSessions([]);
-
       setActiveSessionId(null);
 
       localStorage.removeItem('guest_chat_messages');
@@ -96,32 +93,10 @@ export function Chatbot() {
   };
 
   const createNewChat = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:8000/chat/sessions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: USER_ID,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      setActiveSessionId(data.session.id);
-
-      setMessages([WELCOME_MESSAGE]);
-
-      setIsHistoryOpen(false);
-
-      await loadSessions();
-    } catch (error) {
-      console.error(error);
-    }
+    setActiveSessionId(null);
+    setMessages([WELCOME_MESSAGE]);
+    setInputValue('');
+    setIsHistoryOpen(false);
   };
 
   const openSession = async (sessionId: number) => {
@@ -166,7 +141,6 @@ export function Chatbot() {
 
       if (activeSessionId === sessionId) {
         setActiveSessionId(null);
-
         setMessages([WELCOME_MESSAGE]);
       }
 
@@ -187,9 +161,34 @@ export function Chatbot() {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    if (!activeSessionId && isAuthenticated) {
-      await createNewChat();
-      return;
+    let sessionId = activeSessionId;
+
+    if (!sessionId && isAuthenticated) {
+      try {
+        const sessionResponse = await fetch(
+          'http://localhost:8000/chat/sessions',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id: USER_ID,
+            }),
+          }
+        );
+
+        const sessionData = await sessionResponse.json();
+
+        sessionId = sessionData.session.id;
+
+        setActiveSessionId(sessionId);
+
+        await loadSessions();
+      } catch (error) {
+        console.error(error);
+        return;
+      }
     }
 
     const currentMessage = inputValue;
@@ -223,7 +222,7 @@ export function Chatbot() {
           message: currentMessage,
           isAuthenticated: isAuthenticated,
           user_id: USER_ID,
-          session_id: activeSessionId,
+          session_id: sessionId,
         }),
       });
 
@@ -253,9 +252,7 @@ export function Chatbot() {
 
   const handleClose = () => {
     setIsOpen(false);
-
     setIsHistoryOpen(false);
-
     resetTheme();
   };
 
