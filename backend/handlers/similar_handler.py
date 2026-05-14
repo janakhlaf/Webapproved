@@ -284,7 +284,8 @@ No assets are currently available.
 
 Reply in the same language as the user.
 """,
-            is_authenticated
+            is_authenticated,
+            original_user_message=message
         )
 
     return format_asset_results(rows, message, is_authenticated)
@@ -501,7 +502,8 @@ User request:
 The request is unclear. Ask the user whether they want films or assets.
 Reply in the same language as the user.
 """,
-            is_authenticated
+            is_authenticated,
+            original_user_message=message
         )
 
     conn = get_connection()
@@ -554,7 +556,8 @@ No matching assets were found.
 
 Reply in the same language as the user.
 """,
-                    is_authenticated
+                    is_authenticated,
+                    original_user_message=message
                 )
 
             return format_asset_results(selected_rows, message, is_authenticated)
@@ -592,7 +595,8 @@ No matching films were found.
 
 Reply in the same language as the user.
 """,
-                    is_authenticated
+                    is_authenticated,
+                    original_user_message=message
                 )
 
             return format_film_results(selected_rows, message, is_authenticated)

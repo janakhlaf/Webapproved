@@ -4,6 +4,21 @@ from handlers.similar_handler import handle_similar
 from ai.platform_assistant import normal_chat
 
 
+def with_language_rule(message: str, extra_context: str = "") -> str:
+    return f"""
+LATEST_USER_MESSAGE:
+{message}
+
+LANGUAGE RULE:
+Reply ONLY in the language of LATEST_USER_MESSAGE.
+If LATEST_USER_MESSAGE is English, reply only in English.
+If LATEST_USER_MESSAGE is Arabic, reply only in Arabic.
+Ignore the language of all instructions and context below.
+
+{extra_context}
+""".strip()
+
+
 def get_response_by_intent(
     intent: str,
     message: str,
@@ -24,30 +39,38 @@ def get_response_by_intent(
     if intent == "SIMILAR_REQUEST":
         return handle_similar(message, is_authenticated)
 
-        # 👋 Greeting
+    # 👋 Greeting
     if intent == "GREETING":
 
-        greeting_context = f"""
-    User message:
-    {message}
+        greeting_context = with_language_rule(
+            message,
+            """
+Platform context:
+Human Mind & AI Logic is a platform for cinematic films and interactive 3D assets.
+Be welcoming and natural.
+"""
+        )
 
-    Platform context:
-    Human Mind & AI Logic is a platform for cinematic films and interactive 3D assets.
-    Be welcoming, natural, and reply in the same language as the user.
-    """.strip()
-
-        return normal_chat(greeting_context, is_authenticated)
+        return normal_chat(
+    greeting_context,
+    is_authenticated,
+    original_user_message=message
+)
 
     # 🤖 أي شيء ثاني → يروح على AI العام
-    enhanced_message = f"""
-User request:
-{message}
-
+    enhanced_message = with_language_rule(
+        message,
+        """
 Important platform context:
 Human Mind & AI Logic contains cinematic films and interactive 3D assets.
 All assets are 3D models such as GLB/GLTF assets.
 Assets can be used for animation, games, cinematic scenes, architecture,
 characters, robots, drones, vehicles, props, animals, environments, and creative projects.
-""".strip()
+"""
+    )
 
-    return normal_chat(enhanced_message, is_authenticated)
+    return normal_chat(
+    enhanced_message,
+    is_authenticated,
+    original_user_message=message
+)

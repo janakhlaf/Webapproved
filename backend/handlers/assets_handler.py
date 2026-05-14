@@ -246,4 +246,8 @@ Response rules:
 - Be smart, natural, and concise.
 """.strip()
 
-    return normal_chat(prompt, is_authenticated)
+    return normal_chat(
+    prompt,
+    is_authenticated,
+    original_user_message=message
+)

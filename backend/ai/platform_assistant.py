@@ -2,6 +2,7 @@ from openai import OpenAI
 import os
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+import re
 
 SYSTEM_PROMPT = """
 You are an intelligent AI assistant for a platform called "Human Mind & AI Logic".
@@ -220,17 +221,41 @@ GOAL
 Act like a smart assistant inside the platform, helping users explore, understand, and use films and interactive 3D assets effectively.
 """
 
+def detect_message_language(text: str) -> str:
+    arabic_chars = len(re.findall(r"[\u0600-\u06FF]", text))
+    english_chars = len(re.findall(r"[A-Za-z]", text))
 
-def normal_chat(message: str, is_authenticated: bool = False) -> str:
-    auth_status = "true" if is_authenticated else "false"
+    if arabic_chars > english_chars:
+        return "Arabic"
 
-    final_prompt = SYSTEM_PROMPT + f"""
+    return "English"
+def normal_chat(
+    message: str,
+    is_authenticated: bool = False,
+    original_user_message: str | None = None
+) -> str:
+   auth_status = "true" if is_authenticated else "false"
 
-Current user authentication:
-isAuthenticated = {auth_status}
-"""
+   source_message = original_user_message if original_user_message else message
 
-    response = client.chat.completions.create(
+   detected_language = detect_message_language(source_message)
+
+   final_prompt = SYSTEM_PROMPT + f"""
+
+    Current user authentication:
+    isAuthenticated = {auth_status}
+
+    STRICT LANGUAGE OUTPUT:
+    The user's latest message language is: {detected_language}.
+    Reply ONLY in {detected_language}.
+    Do not switch languages.
+    Do not translate into another language.
+    If the user message is English, the whole answer must be English.
+    If the user message is Arabic, the whole answer must be Arabic.
+
+    """
+
+   response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": final_prompt},
@@ -238,4 +263,4 @@ isAuthenticated = {auth_status}
         ]
     )
 
-    return response.choices[0].message.content
+   return response.choices[0].message.content
