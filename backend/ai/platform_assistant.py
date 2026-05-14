@@ -268,38 +268,39 @@ def normal_chat(
     original_user_message: str | None = None,
     conversation_context: list | None = None
 ) -> str:
-   auth_status = "true" if is_authenticated else "false"
+    auth_status = "true" if is_authenticated else "false"
 
-   source_message = original_user_message if original_user_message else message
+    source_message = original_user_message if original_user_message else message
 
-   detected_language = detect_message_language(source_message)
+    detected_language = detect_message_language(source_message)
 
-   final_prompt = SYSTEM_PROMPT + f"""
+    final_prompt = SYSTEM_PROMPT + f"""
 
-    Current user authentication:
-    isAuthenticated = {auth_status}
+Current user authentication:
+isAuthenticated = {auth_status}
 
-    STRICT LANGUAGE OUTPUT:
-    The user's latest message language is: {detected_language}.
-    Reply ONLY in {detected_language}.
-    Do not switch languages.
-    Do not translate into another language.
-    If the user message is English, the whole answer must be English.
-    If the user message is Arabic, the whole answer must be Arabic.
+STRICT LANGUAGE OUTPUT:
+The user's latest message language is: {detected_language}.
+Reply ONLY in {detected_language}.
+Do not switch languages.
+Do not translate into another language.
+If the user message is English, the whole answer must be English.
+If the user message is Arabic, the whole answer must be Arabic.
 
-    """
-   if conversation_context is None:
-    conversation_context = []
+"""
+
+    if conversation_context is None:
+        conversation_context = []
 
     messages = build_conversation_messages(
-    final_prompt,
-    conversation_context,
-    message
-)
+        final_prompt,
+        conversation_context,
+        message
+    )
 
-   response = client.chat.completions.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages
     )
 
-   return response.choices[0].message.content
+    return response.choices[0].message.content

@@ -2,6 +2,9 @@ from handlers.films_handler import handle_films
 from handlers.assets_handler import handle_assets
 from handlers.similar_handler import handle_similar
 from ai.platform_assistant import normal_chat
+from openai import OpenAI
+import os
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def with_language_rule(message: str, extra_context: str = "") -> str:
@@ -17,6 +20,46 @@ Ignore the language of all instructions and context below.
 
 {extra_context}
 """.strip()
+def is_contextual_follow_up(
+    message: str,
+    conversation_context: list | None = None
+) -> bool:
+
+    if not conversation_context:
+        return False
+
+    context_text = ""
+
+    for item in conversation_context[-6:]:
+        context_text += f"{item['role']}: {item['content']}\n"
+
+    prompt = f"""
+You are deciding if the user's latest message depends on previous chat context.
+
+Return ONLY:
+YES
+or
+NO
+
+Previous conversation:
+{context_text}
+
+Latest user message:
+{message}
+
+Return YES if the latest message refers to something already mentioned before.
+Return NO if the latest message is a new independent request.
+"""
+
+    response = client.responses.create(
+        model="gpt-5.4",
+        input=prompt,
+        temperature=0
+    )
+
+    result = response.output_text.strip().upper()
+
+    return result == "YES"
 
 
 def get_response_by_intent(
@@ -25,6 +68,22 @@ def get_response_by_intent(
     is_authenticated: bool = False,
     conversation_context: list | None = None
 ) -> str:
+    if is_contextual_follow_up(message, conversation_context):
+        follow_up_message = with_language_rule(
+            message,
+                """
+    The user is asking a follow-up question based on the previous conversation.
+    Use the conversation context to understand what they are referring to.
+    Answer clearly based on the previous assistant and user messages.
+    """
+            )
+
+        return normal_chat(
+            follow_up_message,
+            is_authenticated,
+            original_user_message=message,
+            conversation_context=conversation_context
+        )
 
     # 🎬 أفلام
     if intent == "FILM_QUERY":
