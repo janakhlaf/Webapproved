@@ -20,12 +20,8 @@ interface UseAuthReturn {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
-  register: (
-    email: string,
-    password: string,
-    name: string,
-    accountType: string
-  ) => Promise<{ success: boolean; error?: string }>;
+  sendEmailCode: (email: string) => Promise<{ success: boolean; error?: string }>;
+  verifyEmailCode: (email: string, token: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
 }
 
@@ -93,10 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
+        return { success: false, error: error.message };
       }
 
       return { success: true };
@@ -119,38 +112,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
+      return { success: false, error: error.message };
     }
 
     return { success: true };
   }, []);
 
-  const register = useCallback(
-    async (
-      email: string,
-      password: string,
-      name: string,
-      accountType: string
-    ): Promise<{ success: boolean; error?: string }> => {
-      const { error } = await supabase.auth.signUp({
+  const sendEmailCode = useCallback(
+    async (email: string): Promise<{ success: boolean; error?: string }> => {
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
         options: {
-          data: {
-            full_name: name,
-            account_type: accountType || 'Creator',
-          },
+          shouldCreateUser: true,
+          emailRedirectTo: 'http://localhost:8080',
         },
       });
 
       if (error) {
-        return {
-          success: false,
-          error: error.message,
-        };
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    },
+    []
+  );
+
+  const verifyEmailCode = useCallback(
+    async (
+      email: string,
+      token: string
+    ): Promise<{ success: boolean; error?: string }> => {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
       }
 
       return { success: true };
@@ -172,10 +171,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: authState.user,
       signIn,
       signInWithGoogle,
-      register,
+      sendEmailCode,
+      verifyEmailCode,
       signOut,
     }),
-    [authState, signIn, signInWithGoogle, register, signOut]
+    [authState, signIn, signInWithGoogle, sendEmailCode, verifyEmailCode, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

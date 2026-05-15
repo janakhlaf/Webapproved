@@ -3,10 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Mail,
-  Lock,
-  User as UserIcon,
-  Eye,
-  EyeOff,
+  ShieldCheck,
   Film,
   Upload,
   ShoppingCart,
@@ -16,57 +13,56 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ROUTE_PATHS } from '@/lib/index';
 import { useAuth } from '@/hooks/useAuth';
 import { springPresets } from '@/lib/motion';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { sendEmailCode, verifyEmailCode } = useAuth();
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
-    password: '',
-    confirmPassword: '',
+    code: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage('Passwords do not match');
-      return;
-    }
-
+    setSuccessMessage('');
     setIsLoading(true);
 
-    const result = await register(
-      formData.email,
-      formData.password,
-      formData.name,
-     'Creator'
-    );
+    const result = await sendEmailCode(formData.email);
+
+    setIsLoading(false);
+
+    if (result.success) {
+      setCodeSent(true);
+      setSuccessMessage('Verification code sent to your email.');
+    } else {
+      setErrorMessage(result.error || 'Failed to send verification code');
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    setIsLoading(true);
+
+    const result = await verifyEmailCode(formData.email, formData.code);
 
     setIsLoading(false);
 
     if (result.success) {
       navigate(ROUTE_PATHS.HOME);
     } else {
-      setErrorMessage(result.error || 'Failed to create account');
+      setErrorMessage(result.error || 'Invalid verification code');
     }
   };
 
@@ -138,7 +134,7 @@ export default function Register() {
                 Join Human Mind & AI Logic
               </h1>
               <p className="text-lg text-muted-foreground">
-                Create your account and start exploring films, assets, and AI-powered tools.
+                Create your account securely using your email verification code.
               </p>
             </div>
 
@@ -181,7 +177,7 @@ export default function Register() {
                   Create Account
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Start your creative journey today
+                  Enter your email and verify it with a code.
                 </p>
               </div>
 
@@ -191,121 +187,88 @@ export default function Register() {
                 </p>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Full Name
-                  </Label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="pl-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
-                      required
-                    />
+              {successMessage && (
+                <p className="mb-4 text-sm text-green-500 text-center">
+                  {successMessage}
+                </p>
+              )}
+
+              {!codeSent ? (
+                <form onSubmit={handleSendCode} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        className="pl-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="pl-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
-                      required
-                    />
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-accent/70 hover:bg-accent/60 text-accent-foreground shadow-lg shadow-accent/10 hover:shadow-accent/20 transition-all"
+                  >
+                    {isLoading ? 'Sending code...' : 'Send Verification Code'}
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="code" className="text-sm font-medium">
+                      Verification Code
+                    </Label>
+                    <div className="relative">
+                      <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="code"
+                        type="text"
+                        placeholder="Enter verification code"
+                        value={formData.code}
+                        onChange={(e) =>
+                          setFormData({ ...formData, code: e.target.value })
+                        }
+                        className="pl-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      className="pl-10 pr-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-accent/70 hover:bg-accent/60 text-accent-foreground shadow-lg shadow-accent/10 hover:shadow-accent/20 transition-all"
+                  >
+                    {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                  </Button>
 
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      className="pl-10 pr-10 h-11 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-11 bg-accent/70 hover:bg-accent/60 text-accent-foreground shadow-lg shadow-accent/10 hover:shadow-accent/20 transition-all"
-                >
-                  {isLoading ? 'Creating account...' : 'Create Account'}
-                </Button>
-              </form>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isLoading}
+                    onClick={() => {
+                      setCodeSent(false);
+                      setFormData({ email: formData.email, code: '' });
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
+                    className="w-full"
+                  >
+                    Change Email
+                  </Button>
+                </form>
+              )}
 
               <p className="text-center text-sm text-muted-foreground mt-4">
                 Already have an account?{' '}
