@@ -31,8 +31,19 @@ def get_assets():
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, name, description, category, preview_url,
-                       bucket_path, file_type, file_size, price, status
+                SELECT
+                    id,
+                    user_id,
+                    name,
+                    description,
+                    category,
+                    preview_url,
+                    bucket_path,
+                    file_type,
+                    file_size,
+                    price,
+                    status,
+                    source_type
                 FROM assets
                 WHERE status = 'approved'
                 ORDER BY id ASC
@@ -41,18 +52,26 @@ def get_assets():
             rows = cur.fetchall()
 
     assets = []
+
     for row in rows:
+        source_type = row[11] or "user_upload"
+        user_id = row[1]
+
         assets.append({
             "id": row[0],
-            "title": row[1],
-            "description": row[2],
-            "category": row[3],
-            "preview_url": row[4],
-            "bucket_path": row[5],
-            "file_type": row[6],
-            "file_size": row[7],
-            "price": row[8],
-            "status": row[9],
+            "user_id": user_id,
+            "title": row[2],
+            "name": row[2],
+            "description": row[3],
+            "category": row[4],
+            "preview_url": row[5],
+            "bucket_path": row[6],
+            "file_type": row[7],
+            "file_size": row[8],
+            "price": row[9],
+            "status": row[10],
+            "source_type": source_type,
+            "uploader": "Admin" if source_type == "admin" else f"User {user_id}",
         })
 
     return {"assets": assets}
@@ -64,12 +83,12 @@ def upload_asset(
     description: str = Form(...),
     category: str = Form(...),
     price: float = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    user_id: int = Form(...)
 ):
     supabase_url = os.getenv("SUPABASE_URL")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-    # هذا خليه للعرض public
     bucket = os.getenv("SUPABASE_BUCKET")
 
     file_extension = file.filename.split(".")[-1].lower()
@@ -116,6 +135,7 @@ def upload_asset(
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO assets (
+                    user_id,
                     name,
                     description,
                     category,
@@ -125,11 +145,13 @@ def upload_asset(
                     file_size,
                     price,
                     status,
+                    source_type,
                     embedding
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'approved', %s::vector)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'approved', 'user_upload', %s::vector)
                 RETURNING id
             """, (
+                user_id,
                 title,
                 description,
                 category,
@@ -148,12 +170,16 @@ def upload_asset(
         "message": "Asset uploaded and saved successfully",
         "asset": {
             "id": asset_id,
+            "user_id": user_id,
             "title": title,
+            "name": title,
             "preview_url": preview_url,
             "bucket_path": bucket_path,
             "file_type": file_extension,
             "file_size": file_size_mb,
             "price": price,
-            "status": "approved"
+            "status": "approved",
+            "source_type": "user_upload",
+            "uploader": f"User {user_id}",
         }
     }

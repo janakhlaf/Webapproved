@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, Tag } from 'lucide-react';
+import { Heart, Tag, User, ShieldCheck } from 'lucide-react';
 import { Asset, formatPrice } from '@/lib/index';
 import { LazyAsset3DViewer } from '@/components/LazyAsset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -8,7 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
 interface AssetCardProps {
-  asset: Asset;
+  asset: Asset & {
+    uploader?: string;
+    sourceType?: string;
+    status?: string;
+  };
   onClick: (asset: Asset) => void;
 }
 
@@ -24,6 +28,10 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
   const handleCardClick = () => {
     onClick(asset);
   };
+
+  const statusLabel = asset.status || 'approved';
+  const sourceLabel = asset.sourceType || 'user_upload';
+  const uploaderLabel = asset.uploader || 'Unknown';
 
   return (
     <motion.div
@@ -60,6 +68,12 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
             />
           </motion.button>
 
+          <div className="absolute top-3 left-3 z-10">
+            <Badge className="bg-primary/15 text-primary border border-primary/40">
+              {statusLabel}
+            </Badge>
+          </div>
+
           <div className="absolute bottom-3 left-3 z-10">
             <Badge className="bg-background/90 backdrop-blur-md border-border/40 text-foreground">
               <Tag className="w-3 h-3 mr-1" />
@@ -74,9 +88,34 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
               <h3 className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors duration-200">
                 {asset.title}
               </h3>
+
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                 {asset.description}
               </p>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-xs text-muted-foreground border-t border-border/40 pt-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1">
+                <User className="w-3.5 h-3.5" />
+                Uploader
+              </span>
+
+              <span className="text-foreground font-medium">
+                {uploaderLabel}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Source
+              </span>
+
+              <span className="text-foreground font-medium">
+                {sourceLabel}
+              </span>
             </div>
           </div>
 
