@@ -38,7 +38,18 @@ export default function SignIn() {
     if (result.success) {
       navigate(ROUTE_PATHS.HOME);
     } else {
-      setErrorMessage(result.error || 'Failed to sign in');
+      if (
+  result.error ===
+  'Invalid login credentials'
+) {
+  setErrorMessage(
+    'Incorrect email or password'
+  );
+} else {
+  setErrorMessage(
+    result.error || 'Failed to sign in'
+  );
+}
     }
   };
 

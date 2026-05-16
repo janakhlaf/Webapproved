@@ -26,6 +26,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -61,6 +62,7 @@ export default function Register() {
     e.preventDefault();
 
     setErrorMessage('');
+    setEmailError('');
     setSuccessMessage('');
 
     if (!isPasswordValid) {
@@ -74,6 +76,28 @@ export default function Register() {
     }
 
     setIsLoading(true);
+
+    const { supabase } = await import('@/lib/supabase');
+
+    const {
+      data: emailAlreadyExists,
+      error: emailCheckError,
+    } = await supabase.rpc('email_exists', {
+      check_email: formData.email,
+    });
+
+    if (emailCheckError) {
+      setIsLoading(false);
+      setErrorMessage(emailCheckError.message);
+      return;
+    }
+
+    if (emailAlreadyExists) {
+      setIsLoading(false);
+      setShowCodeInput(false);
+      setEmailError('An account with this email already exists. Please sign in.');
+      return;
+    }
 
     const result = await register(formData.email, formData.password);
 
@@ -272,16 +296,25 @@ export default function Register() {
                       type="email"
                       placeholder="your@email.com"
                       value={formData.email}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        setEmailError('');
                         setFormData({
                           ...formData,
                           email: e.target.value,
-                        })
-                      }
-                      className="pl-10 h-11 bg-background/50 border-border/20"
+                        });
+                      }}
+                      className={`pl-10 h-11 bg-background/50 border-border/20 ${
+                        emailError ? 'border-red-500 focus:border-red-500' : ''
+                      }`}
                       required
                     />
                   </div>
+
+                  {emailError && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {emailError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
