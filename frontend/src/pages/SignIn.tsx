@@ -182,26 +182,61 @@ export default function SignIn() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={formData.rememberMe}
-                    onCheckedChange={(checked) =>
-                      setFormData({
-                        ...formData,
-                        rememberMe: checked as boolean,
-                      })
-                    }
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="text-sm text-muted-foreground cursor-pointer"
-                  >
-                    Remember me
-                  </label>
-                </div>
-              </div>
+             <div className="flex items-center justify-between">
+  <label className="flex items-center gap-2">
+    <Checkbox
+      checked={formData.rememberMe}
+      onCheckedChange={(checked) =>
+        setFormData((prev) => ({
+          ...prev,
+          rememberMe: checked as boolean,
+        }))
+      }
+    />
+
+    <span className="text-sm text-muted-foreground">
+      Remember me
+    </span>
+  </label>
+</div>
+
+<div className="flex justify-end">
+  <button
+    type="button"
+    onClick={async () => {
+      if (!formData.email) {
+        setErrorMessage(
+          'Please enter your email first.'
+        );
+        return;
+      }
+
+      const { supabase } = await import(
+        '@/lib/supabase'
+      );
+
+      const { error } =
+        await supabase.auth.resetPasswordForEmail(
+          formData.email,
+          {
+            redirectTo:
+              'http://localhost:8080/#/reset-password',
+          }
+        );
+
+      if (error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage(
+          'Password reset email sent.'
+        );
+      }
+    }}
+    className="text-sm text-primary hover:underline"
+  >
+    Forgot Password?
+  </button>
+</div>
 
               <Button
                 type="submit"
