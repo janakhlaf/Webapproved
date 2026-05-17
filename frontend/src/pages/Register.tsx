@@ -59,57 +59,68 @@ export default function Register() {
     doesNotContainEmail;
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setErrorMessage('');
-    setEmailError('');
-    setSuccessMessage('');
+  setErrorMessage('');
+  setEmailError('');
+  setSuccessMessage('');
 
-    if (!isPasswordValid) {
-      setErrorMessage('Password does not meet the requirements.');
-      return;
-    }
+  if (!isPasswordValid) {
+    setErrorMessage('Password does not meet the requirements.');
+    return;
+  }
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage('Passwords do not match');
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    setErrorMessage('Passwords do not match');
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    const { supabase } = await import('@/lib/supabase');
+  const { supabase } = await import('@/lib/supabase');
 
-    const {
-      data: emailAlreadyExists,
-      error: emailCheckError,
-    } = await supabase.rpc('email_exists', {
-      check_email: formData.email,
-    });
+  const {
+    data: emailAlreadyExists,
+    error: emailCheckError,
+  } = await supabase.rpc('email_exists', {
+    check_email: formData.email,
+  });
 
-    if (emailCheckError) {
-      setIsLoading(false);
-      setErrorMessage(emailCheckError.message);
-      return;
-    }
+  if (emailCheckError) {
+    setIsLoading(false);
+    setErrorMessage(emailCheckError.message);
+    return;
+  }
 
-    if (emailAlreadyExists) {
-      setIsLoading(false);
-      setShowCodeInput(false);
-      setEmailError('An account with this email already exists. Please sign in.');
-      return;
-    }
-
-    const result = await register(formData.email, formData.password);
-
+  if (emailAlreadyExists) {
     setIsLoading(false);
 
-    if (result.success) {
-      setShowCodeInput(true);
-      setSuccessMessage('Verification code sent to your email.');
-    } else {
-      setErrorMessage(result.error || 'Registration failed');
-    }
-  };
+    setEmailError(
+      'An account with this email already exists. Please sign in.'
+    );
+
+    return;
+  }
+
+  const result = await register(
+    formData.email,
+    formData.password
+  );
+
+  setIsLoading(false);
+
+ if (result.success) {
+  setShowCodeInput(true);
+
+  setSuccessMessage(
+    'Verification code sent to your email.'
+  );
+} else {
+  setErrorMessage(
+    result.error || 'Registration failed'
+  );
+}
+};
 
   const handleVerifyCode = async () => {
     setErrorMessage('');

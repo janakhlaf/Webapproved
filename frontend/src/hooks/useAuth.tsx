@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+
 import type { User } from '@/lib/index';
 
 interface AuthState {
@@ -150,6 +151,7 @@ export function AuthProvider({
 
           options: {
             redirectTo: 'http://localhost:8080',
+
             queryParams: {
               prompt: 'select_account',
             },
@@ -169,30 +171,30 @@ export function AuthProvider({
   );
 
   const register = useCallback(
-  async (
-    email: string,
-    password: string
-  ): Promise<{
-    success: boolean;
-    error?: string;
-  }> => {
-    const { error } =
-      await supabase.auth.signUp({
-        email,
-        password,
-      });
+    async (
+      email: string,
+      password: string
+    ): Promise<{
+      success: boolean;
+      error?: string;
+    }> => {
+      const { error } =
+        await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+      if (error) {
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
 
-    return { success: true };
-  },
-  []
-);
+      return { success: true };
+    },
+    []
+  );
 
   const signOut = useCallback((): void => {
     supabase.auth.signOut();

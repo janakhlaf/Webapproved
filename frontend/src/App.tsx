@@ -16,7 +16,7 @@ import Register from "@/pages/Register";
 import { AuthProvider } from "@/hooks/useAuth";
 import Cart from "@/pages/Cart";
 import { CartProvider } from "@/hooks/CartContext";
-import ResetPassword from "@/pages/ResetPassword";
+
 
 const queryClient = new QueryClient();
 
@@ -37,8 +37,8 @@ const App = () => (
               <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
               <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
               <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
-              <Route path="/reset-password"element={<Layout><ResetPassword /></Layout>}
-/>
+             
+
             </Routes>
 
              <Chatbot />

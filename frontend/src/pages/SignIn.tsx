@@ -7,7 +7,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+
 import { ROUTE_PATHS } from '@/lib/index';
 import { useAuth } from '@/hooks/useAuth';
 import { springPresets } from '@/lib/motion';
@@ -23,7 +23,7 @@ export default function SignIn() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false,
+  
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,61 +182,8 @@ export default function SignIn() {
                 </div>
               </div>
 
-             <div className="flex items-center justify-between">
-  <label className="flex items-center gap-2">
-    <Checkbox
-      checked={formData.rememberMe}
-      onCheckedChange={(checked) =>
-        setFormData((prev) => ({
-          ...prev,
-          rememberMe: checked as boolean,
-        }))
-      }
-    />
+             
 
-    <span className="text-sm text-muted-foreground">
-      Remember me
-    </span>
-  </label>
-</div>
-
-<div className="flex justify-end">
-  <button
-    type="button"
-    onClick={async () => {
-      if (!formData.email) {
-        setErrorMessage(
-          'Please enter your email first.'
-        );
-        return;
-      }
-
-      const { supabase } = await import(
-        '@/lib/supabase'
-      );
-
-      const { error } =
-        await supabase.auth.resetPasswordForEmail(
-          formData.email,
-          {
-            redirectTo:
-              'http://localhost:8080/#/reset-password',
-          }
-        );
-
-      if (error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage(
-          'Password reset email sent.'
-        );
-      }
-    }}
-    className="text-sm text-primary hover:underline"
-  >
-    Forgot Password?
-  </button>
-</div>
 
               <Button
                 type="submit"
