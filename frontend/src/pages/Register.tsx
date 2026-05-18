@@ -123,23 +123,47 @@ export default function Register() {
 };
 
   const handleVerifyCode = async () => {
-    setErrorMessage('');
+  setErrorMessage('');
 
-    const { supabase } = await import('@/lib/supabase');
+  const { supabase } = await import('@/lib/supabase');
 
-    const { error } = await supabase.auth.verifyOtp({
-      email: formData.email,
-      token: formData.code,
-      type: 'signup',
-    });
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: formData.email,
+    token: formData.code,
+    type: 'signup',
+  });
 
-    if (error) {
-      setErrorMessage(error.message);
-      return;
-    }
+  if (error) {
+    setErrorMessage(error.message);
+    return;
+  }
 
-    window.location.href = '/';
-  };
+  const user = data.user;
+
+  if (user) {
+
+    const defaultAvatar =
+  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
+
+const { error: updateError } =
+  await supabase
+    .from('users')
+    .update({
+      profile_image:
+        defaultAvatar,
+    })
+    .eq(
+      'auth_user_id',
+      user.id
+    );
+
+if (updateError) {
+  console.error(updateError);
+}
+  }
+
+  window.location.href = '/';
+};
 
   const Requirement = ({
     valid,

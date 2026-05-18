@@ -82,37 +82,123 @@ export function AuthProvider({
     });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) {
+  supabase.auth.getSession().then(async ({ data }) => {
+    if (data.session?.user) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_user_id', data.session.user.id)
+        .single();
+
+        if (!profile?.profile_image) {
+  const googleAvatar =
+    data.session.user.user_metadata?.avatar_url ||
+    data.session.user.user_metadata?.picture;
+
+  if (googleAvatar) {
+    await supabase
+      .from('users')
+      .update({
+        profile_image: googleAvatar,
+      })
+      .eq(
+        'auth_user_id',
+        data.session.user.id
+      );
+
+    profile.profile_image =
+      googleAvatar;
+  }
+}
+
+      setAuthState({
+        isAuthenticated: true,
+        user: {
+          id: data.session.user.id,
+          email: data.session.user.email || '',
+          name:
+            profile?.full_name ||
+            data.session.user.email?.split('@')[0] ||
+            'User',
+          avatar:
+            profile?.profile_image ||
+            data.session.user.user_metadata?.avatar_url ||
+            getDefaultAvatar(),
+          accountType: 'Creator',
+          createdAt:
+            data.session.user.created_at ||
+            new Date().toISOString(),
+        },
+      });
+    }
+  });
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) {
+      const loadProfile = async () => {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('auth_user_id', session.user.id)
+          .single();
+
+          if (!profile?.profile_image) {
+  const googleAvatar =
+    session.user.user_metadata?.avatar_url ||
+    session.user.user_metadata?.picture;
+
+  if (googleAvatar) {
+    await supabase
+      .from('users')
+      .update({
+        profile_image: googleAvatar,
+      })
+      .eq(
+        'auth_user_id',
+        session.user.id
+      );
+
+    profile.profile_image =
+      googleAvatar;
+  }
+}
+
         setAuthState({
           isAuthenticated: true,
-          user: mapSupabaseUser(data.session.user),
+          user: {
+            id: session.user.id,
+            email: session.user.email || '',
+            name:
+              profile?.full_name ||
+              session.user.email?.split('@')[0] ||
+              'User',
+            avatar:
+              profile?.profile_image ||
+              session.user.user_metadata?.avatar_url ||
+              getDefaultAvatar(),
+            accountType: 'Creator',
+            createdAt:
+              session.user.created_at ||
+              new Date().toISOString(),
+          },
         });
-      }
-    });
+      };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          setAuthState({
-            isAuthenticated: true,
-            user: mapSupabaseUser(session.user),
-          });
-        } else {
-          setAuthState({
-            isAuthenticated: false,
-            user: null,
-          });
-        }
-      }
-    );
+      loadProfile();
+    } else {
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+      });
+    }
+  });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
 
   const signIn = useCallback(
     async (
