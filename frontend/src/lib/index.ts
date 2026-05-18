@@ -94,13 +94,21 @@ export const FILM_CATEGORIES = [
 ] as const;
 
 export const ASSET_CATEGORIES = [
-  'All',
+  'All Categories',
   'Characters',
-  'Environments',
-  'Props',
+  'Robots',
   'Vehicles',
-  'Effects',
+  'Drones',
+  'Animals',
+  'Environments',
+  'Buildings',
   'Architecture',
+  'Nature',
+  'Props',
+  'Furniture',
+  'Food',
+  'Weapons',
+  'Effects',
 ] as const;
 
 export type FilmCategory = typeof FILM_CATEGORIES[number];

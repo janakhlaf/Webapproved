@@ -30,13 +30,61 @@ export default function Assets() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] =
-    useState<AssetCategory>('All');
+    useState<AssetCategory>('All Categories');
   const [sortOrder, setSortOrder] = useState<'highest' | 'lowest'>('highest');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [uploadFormVisible, setUploadFormVisible] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const ASSET_TAGS = [
+  'realistic',
+  'cartoon',
+  'stylized',
+  'lowpoly',
+  'scifi',
+  'fantasy',
+  'cyberpunk',
+  'medieval',
+
+  'character',
+  'humanoid',
+  'monster',
+  'animal',
+  'boy',
+  'girl',
+
+  'robot',
+  'mech',
+  'machine',
+  'drone',
+
+  'vehicle',
+  'car',
+  'aircraft',
+  'racing',
+
+  'environment',
+  'city',
+  'nature',
+  'forest',
+  'interior',
+  'architecture',
+  'building',
+  'urban',
+
+  'prop',
+  'weapon',
+  'food',
+  'furniture',
+  'campfire',
+
+  'animated',
+  'rigged',
+  'game-ready',
+];
+
+const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     getAssetsFromDatabase().then(setAssets).catch(console.error);
@@ -52,7 +100,7 @@ export default function Assets() {
         );
 
       const matchesCategory =
-        selectedCategory === 'All' || asset.category === selectedCategory;
+        selectedCategory === 'All Categories' || asset.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     })
@@ -151,7 +199,7 @@ export default function Assets() {
               <SelectContent>
                 {ASSET_CATEGORIES.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === 'All' ? 'All Categories' : category}
+                    {category === 'All Categories' ? 'All Categories' : category}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -181,7 +229,7 @@ export default function Assets() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ASSET_CATEGORIES.filter((c) => c !== 'All').map((c) => (
+                    {ASSET_CATEGORIES.filter((c) => c !== 'All Categories').map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}
                       </SelectItem>
@@ -201,6 +249,68 @@ export default function Assets() {
                   className="w-full px-3 py-2 rounded-md bg-background/50 border border-input"
                 />
               </div>
+
+              <div className="md:col-span-2">
+  <label className="block text-sm font-medium mb-2">
+    Tags (Select up to 3)
+  </label>
+
+  <Select
+    onValueChange={(tag) => {
+      if (
+        !selectedTags.includes(tag) &&
+        selectedTags.length < 3
+      ) {
+        setSelectedTags([...selectedTags, tag]);
+      }
+    }}
+  >
+    <SelectTrigger title="Select tags">
+      <SelectValue placeholder="Choose tags" />
+    </SelectTrigger>
+
+    <SelectContent>
+      {ASSET_TAGS.map((tag) => (
+        <SelectItem
+          key={tag}
+          value={tag}
+          disabled={selectedTags.includes(tag)}
+        >
+          {tag}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+
+  <div className="flex flex-wrap gap-2 mt-3">
+    {selectedTags.map((tag) => (
+      <div
+        key={tag}
+        className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm"
+      >
+        {tag}
+
+        <button
+          type="button"
+          onClick={() =>
+            setSelectedTags(
+              selectedTags.filter((t) => t !== tag)
+            )
+          }
+          className="text-xs"
+        >
+          ✕
+        </button>
+      </div>
+    ))}
+  </div>
+
+  {selectedTags.length >= 3 && (
+    <p className="text-xs text-muted-foreground mt-2">
+      Maximum 3 tags selected
+    </p>
+  )}
+</div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Price</label>
