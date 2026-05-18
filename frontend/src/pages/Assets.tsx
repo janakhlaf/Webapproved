@@ -13,6 +13,8 @@ import {
 } from '@/lib/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
 import {
   Select,
   SelectContent,
@@ -37,6 +39,11 @@ export default function Assets() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const [assetName, setAssetName] = useState('');
+  const [assetDescription, setAssetDescription] = useState('');
+  const [assetPrice, setAssetPrice] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const ASSET_TAGS = [
   'realistic',
   'cartoon',
@@ -139,12 +146,39 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
     assetFileInputRef.current?.click();
   };
 
-  const handleAssetFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log('Selected asset file:', file);
-    }
-  };
+ const handleAssetFileChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = e.target.files?.[0];
+
+  if (file) {
+    setSelectedFile(file);
+
+
+    console.log('Selected asset file:', file);
+  }
+};
+
+const handleAssetSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  console.log({
+    title: assetName,
+    description: assetDescription,
+    category: uploadCategory,
+    price: Number(assetPrice),
+    tags: selectedTags,
+    file: selectedFile,
+  });
+
+  setAssetName('');
+  setAssetDescription('');
+  setAssetPrice('');
+  setUploadCategory('');
+  setSelectedTags([]);
+  setSelectedFile(null);
+  setUploadFormVisible(false);
+};
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -217,37 +251,49 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
                 <label className="block text-sm font-medium mb-2">
                   Asset Name
                 </label>
-                <Input placeholder="Enter asset name" title="Asset Name" />
+               <Input
+                 placeholder="Enter asset name"
+                 value={assetName}
+                 onChange={(e) => setAssetName(e.target.value)}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Category
                 </label>
-                <Select>
+
+                <Select
+                  value={uploadCategory}
+                  onValueChange={setUploadCategory}
+                >
                   <SelectTrigger title="Select category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {ASSET_CATEGORIES.filter((c) => c !== 'All Categories').map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
+                    {ASSET_CATEGORIES
+                      .filter((c) => c !== 'All Categories')
+                      .map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
-              </div>
+            </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">
                   Description
                 </label>
-                <textarea
-                  placeholder="Describe your asset"
-                  title="Asset description"
-                  rows={4}
-                  className="w-full px-3 py-2 rounded-md bg-background/50 border border-input"
-                />
+                  <Textarea
+    placeholder="Describe your asset"
+    value={assetDescription}
+  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+    setAssetDescription(e.target.value)
+  }
+  />
               </div>
 
               <div className="md:col-span-2">
@@ -315,10 +361,10 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
               <div>
                 <label className="block text-sm font-medium mb-2">Price</label>
                 <Input
-                  type="number"
-                  placeholder="Enter asset price"
-                  title="Asset price"
-                />
+  placeholder="Enter asset price"
+  value={assetPrice}
+  onChange={(e) => setAssetPrice(e.target.value)}
+/>
               </div>
 
               <div className="md:col-span-2">
@@ -327,12 +373,26 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
                 </label>
 
                 <div
-                  onClick={handleAssetFileBoxClick}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
-                >
-                  <Upload className="w-12 h-12 mx-auto mb-4" />
-                  <p>Click to upload</p>
-                </div>
+  onClick={handleAssetFileBoxClick}
+  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
+>
+  {selectedFile ? (
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-16 h-20 border-2 border-muted rounded-sm bg-white relative">
+        <div className="absolute top-0 right-0 w-4 h-4 bg-background border-l-2 border-b-2 border-muted rotate-45 translate-x-2 -translate-y-2" />
+      </div>
+
+      <p className="text-sm mt-2 text-foreground">
+        {selectedFile.name}
+      </p>
+    </div>
+  ) : (
+    <>
+      <Upload className="w-12 h-12 mx-auto mb-4" />
+      <p>Click to upload</p>
+    </>
+  )}
+</div>
 
                 <input
                   ref={assetFileInputRef}
@@ -346,7 +406,12 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
             </div>
 
             <div className="flex gap-4 mt-6">
-              <Button>Submit</Button>
+              <Button
+                type="button"
+                onClick={handleAssetSubmit}
+              >
+                Submit
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setUploadFormVisible(false)}
