@@ -6,6 +6,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "@/lib/index";
 import { Layout } from "@/components/Layout";
 import { Chatbot } from "@/components/Chatbot";
+
 import Home from "@/pages/Home";
 import Films from "@/pages/Films";
 import Assets from "@/pages/Assets";
@@ -13,10 +14,13 @@ import About from "@/pages/About";
 import Profile from "@/pages/Profile";
 import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
-import { AuthProvider } from "@/hooks/useAuth";
 import Cart from "@/pages/Cart";
+
+import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/CartContext";
 
+// 🔥 IMPORT SLIDER
+import Slider from "@/components/Slider";
 
 const queryClient = new QueryClient();
 
@@ -27,9 +31,20 @@ const App = () => (
         <CartProvider>
           <Toaster />
           <Sonner />
+
           <HashRouter>
             <Routes>
-              <Route path={ROUTE_PATHS.HOME} element={<Layout><Home /></Layout>} />
+              {/* 🟢 HOME + SLIDER */}
+              <Route
+                path={ROUTE_PATHS.HOME}
+                element={
+                  <Layout>
+                    <Slider />   {/* 👈 السلايدر هنا تحت النافبار */}
+                    <Home />
+                  </Layout>
+                }
+              />
+
               <Route path={ROUTE_PATHS.FILMS} element={<Layout><Films /></Layout>} />
               <Route path={ROUTE_PATHS.ASSETS} element={<Layout><Assets /></Layout>} />
               <Route path={ROUTE_PATHS.ABOUT} element={<Layout><About /></Layout>} />
@@ -37,11 +52,9 @@ const App = () => (
               <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
               <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
               <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
-             
-
             </Routes>
 
-             <Chatbot />
+            <Chatbot />
           </HashRouter>
         </CartProvider>
       </TooltipProvider>
