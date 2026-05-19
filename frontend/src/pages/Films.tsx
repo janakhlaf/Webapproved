@@ -27,40 +27,40 @@ export default function Films() {
   const posterFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const FILM_TAGS = [
-  'robot',
-  'scifi',
-  'postapocalyptic',
-  'food',
-  'comedy',
-  'adventure',
-  'survival',
-  'superhero',
-  'action',
-  'racing',
-  'humanoid',
-  'drone',
-  'ai',
-  'cyberpunk',
-  'cinematic',
-  'animated',
-  'dark',
-  'emotional',
-  'fantasy',
-  'future',
-  'space',
-  'war',
-  'nature',
-  'city',
-  'cartoon',
-  'stylized',
-  'realistic',
-  'vehicles',
-  'animals',
-  'magic',
-  'thriller',
-  'horror',
-  'mystery',
-];
+    'robot',
+    'scifi',
+    'postapocalyptic',
+    'food',
+    'comedy',
+    'adventure',
+    'survival',
+    'superhero',
+    'action',
+    'racing',
+    'humanoid',
+    'drone',
+    'ai',
+    'cyberpunk',
+    'cinematic',
+    'animated',
+    'dark',
+    'emotional',
+    'fantasy',
+    'future',
+    'space',
+    'war',
+    'nature',
+    'city',
+    'cartoon',
+    'stylized',
+    'realistic',
+    'vehicles',
+    'animals',
+    'magic',
+    'thriller',
+    'horror',
+    'mystery',
+  ];
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] =
@@ -75,6 +75,8 @@ export default function Films() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [filmFile, setFilmFile] = useState<File | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [submitError, setSubmitError] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [databaseFilms, setDatabaseFilms] = useState<Film[]>([]);
   const [uploadedFilms, setUploadedFilms] = useState<Film[]>(() => {
@@ -148,6 +150,7 @@ export default function Films() {
     setSelectedTags([]);
     setFilmFile(null);
     setPosterFile(null);
+    setSubmitError(false);
     setUploadFormVisible(false);
 
     if (filmFileInputRef.current) filmFileInputRef.current.value = '';
@@ -155,18 +158,21 @@ export default function Films() {
   };
 
   const handleSubmitFilm = () => {
-    if (
+    const isInvalid =
       !filmTitle ||
       !filmCategory ||
       !filmDescription ||
       !filmPrice ||
-      selectedTags.length === 0 ||
+      selectedTags.length !== 3 ||
       !filmFile ||
-      !posterFile
-    ) {
-      alert('Please fill all fields and upload both the film file and poster image.');
+      !posterFile;
+
+    if (isInvalid) {
+      setSubmitError(true);
       return;
     }
+
+    setSubmitError(false);
 
     console.log({
       title: filmTitle,
@@ -178,26 +184,8 @@ export default function Films() {
       posterFile,
     });
 
-    const newFilm: Film = {
-      id: `uploaded-${Date.now()}`,
-      title: filmTitle,
-      description: filmDescription,
-      category: filmCategory,
-      posterUrl: URL.createObjectURL(posterFile),
-      videoUrl: URL.createObjectURL(filmFile),
-      price: Number(filmPrice),
-      duration: 'New Upload',
-      releaseYear: new Date().getFullYear(),
-      director: 'Uploaded by User',
-      tags: selectedTags,
-    };
+   setShowSuccessModal(true);
 
-    const updatedFilms = [newFilm, ...uploadedFilms];
-    setUploadedFilms(updatedFilms);
-    localStorage.setItem('uploaded_films', JSON.stringify(updatedFilms));
-
-    resetForm();
-    alert('Film submitted successfully and is waiting for admin review.');
   };
 
   const FilePreview = ({ file }: { file: File }) => (
@@ -286,7 +274,18 @@ export default function Films() {
                   placeholder="Enter film title"
                   value={filmTitle}
                   onChange={(e) => setFilmTitle(e.target.value)}
+                  className={
+                    submitError && !filmTitle
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
                 />
+
+                {submitError && !filmTitle && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter film title.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -297,7 +296,12 @@ export default function Films() {
                   value={filmCategory}
                   onValueChange={setFilmCategory}
                 >
-                  <SelectTrigger title="Select category">
+                  <SelectTrigger
+                    title="Select category"
+                    className={
+                      submitError && !filmCategory ? 'border-red-500' : ''
+                    }
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
 
@@ -311,6 +315,12 @@ export default function Films() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {submitError && !filmCategory && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please select category.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -321,7 +331,18 @@ export default function Films() {
                   placeholder="Describe your film"
                   value={filmDescription}
                   onChange={(e) => setFilmDescription(e.target.value)}
+                  className={
+                    submitError && !filmDescription
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
                 />
+
+                {submitError && !filmDescription && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter description.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -339,7 +360,14 @@ export default function Films() {
                     }
                   }}
                 >
-                  <SelectTrigger title="Select tags">
+                  <SelectTrigger
+                    title="Select tags"
+                    className={
+                      submitError && selectedTags.length !== 3
+                        ? 'border-red-500'
+                        : ''
+                    }
+                  >
                     <SelectValue placeholder="Choose tags" />
                   </SelectTrigger>
 
@@ -379,9 +407,15 @@ export default function Films() {
                   ))}
                 </div>
 
-                {selectedTags.length >= 3 && (
+                {selectedTags.length === 3 && (
                   <p className="text-xs text-muted-foreground mt-2">
                     Maximum 3 tags selected
+                  </p>
+                )}
+
+                {submitError && selectedTags.length !== 3 && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please select exactly 3 tags.
                   </p>
                 )}
               </div>
@@ -394,7 +428,18 @@ export default function Films() {
                   placeholder="Enter film price"
                   value={filmPrice}
                   onChange={(e) => setFilmPrice(e.target.value)}
+                  className={
+                    submitError && !filmPrice
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
                 />
+
+                {submitError && !filmPrice && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter film price.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -404,7 +449,9 @@ export default function Films() {
 
                 <div
                   onClick={handleFilmFileBoxClick}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
+                    submitError && !filmFile ? 'border-red-500' : ''
+                  }`}
                 >
                   {filmFile ? (
                     <FilePreview file={filmFile} />
@@ -415,6 +462,12 @@ export default function Films() {
                     </>
                   )}
                 </div>
+
+                {submitError && !filmFile && (
+                  <p className="text-red-500 text-xs mt-2">
+                    Please upload film file.
+                  </p>
+                )}
 
                 <input
                   ref={filmFileInputRef}
@@ -433,7 +486,9 @@ export default function Films() {
 
                 <div
                   onClick={handlePosterFileBoxClick}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
+                    submitError && !posterFile ? 'border-red-500' : ''
+                  }`}
                 >
                   {posterFile ? (
                     <FilePreview file={posterFile} />
@@ -444,6 +499,12 @@ export default function Films() {
                     </>
                   )}
                 </div>
+
+                {submitError && !posterFile && (
+                  <p className="text-red-500 text-xs mt-2">
+                    Please upload poster image.
+                  </p>
+                )}
 
                 <input
                   ref={posterFileInputRef}
@@ -479,6 +540,29 @@ export default function Films() {
           ))}
         </div>
       </div>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-md rounded-2xl border border-primary/40 bg-background p-6 text-center shadow-xl">
+            <h3 className="text-xl font-bold mb-3">Film Submitted</h3>
+
+            <p className="text-sm text-muted-foreground mb-6">
+              Your film was submitted successfully and is waiting for admin
+              review.
+            </p>
+
+            <Button
+              type="button"
+              onClick={() => {
+                setShowSuccessModal(false);
+                resetForm();
+              }}
+            >
+              OK
+            </Button>
+          </div>
+        </div>
+      )}
 
       <FilmDetailModal
         film={selectedFilm}
