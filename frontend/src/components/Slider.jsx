@@ -62,7 +62,7 @@ export default function Slider() {
         slides.map((s) => (
           <img
             key={s.id}
-            src={s.image_url}
+            src={s.media_url}
             alt={s.title || "slide"}
             style={{
               width: "100%",
