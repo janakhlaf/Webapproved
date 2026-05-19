@@ -39,59 +39,56 @@ export default function Assets() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
   const [assetName, setAssetName] = useState('');
   const [assetDescription, setAssetDescription] = useState('');
   const [assetPrice, setAssetPrice] = useState('');
   const [uploadCategory, setUploadCategory] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
   const ASSET_TAGS = [
-  'realistic',
-  'cartoon',
-  'stylized',
-  'lowpoly',
-  'scifi',
-  'fantasy',
-  'cyberpunk',
-  'medieval',
-
-  'character',
-  'humanoid',
-  'monster',
-  'animal',
-  'boy',
-  'girl',
-
-  'robot',
-  'mech',
-  'machine',
-  'drone',
-
-  'vehicle',
-  'car',
-  'aircraft',
-  'racing',
-
-  'environment',
-  'city',
-  'nature',
-  'forest',
-  'interior',
-  'architecture',
-  'building',
-  'urban',
-
-  'prop',
-  'weapon',
-  'food',
-  'furniture',
-  'campfire',
-
-  'animated',
-  'rigged',
-  'game-ready',
-];
-
-const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    'realistic',
+    'cartoon',
+    'stylized',
+    'lowpoly',
+    'scifi',
+    'fantasy',
+    'cyberpunk',
+    'medieval',
+    'character',
+    'humanoid',
+    'monster',
+    'animal',
+    'boy',
+    'girl',
+    'robot',
+    'mech',
+    'machine',
+    'drone',
+    'vehicle',
+    'car',
+    'aircraft',
+    'racing',
+    'environment',
+    'city',
+    'nature',
+    'forest',
+    'interior',
+    'architecture',
+    'building',
+    'urban',
+    'prop',
+    'weapon',
+    'food',
+    'furniture',
+    'campfire',
+    'animated',
+    'rigged',
+    'game-ready',
+  ];
 
   useEffect(() => {
     getAssetsFromDatabase().then(setAssets).catch(console.error);
@@ -107,7 +104,8 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
         );
 
       const matchesCategory =
-        selectedCategory === 'All Categories' || asset.category === selectedCategory;
+        selectedCategory === 'All Categories' ||
+        asset.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     })
@@ -146,39 +144,48 @@ const [selectedTags, setSelectedTags] = useState<string[]>([]);
     assetFileInputRef.current?.click();
   };
 
- const handleAssetFileChange = (
-  e: React.ChangeEvent<HTMLInputElement>
-) => {
-  const file = e.target.files?.[0];
+  const handleAssetFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
 
-  if (file) {
-    setSelectedFile(file);
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
 
+  const handleAssetSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-    console.log('Selected asset file:', file);
-  }
-};
+    const isInvalid =
+      !assetName ||
+      !assetDescription ||
+      !uploadCategory ||
+      !assetPrice ||
+      selectedTags.length !== 3 ||
+      !selectedFile;
 
-const handleAssetSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
+    if (isInvalid) {
+      setSubmitError(true);
+      setSuccessMessage('');
+      return;
+    }
 
-  console.log({
-    title: assetName,
-    description: assetDescription,
-    category: uploadCategory,
-    price: Number(assetPrice),
-    tags: selectedTags,
-    file: selectedFile,
-  });
+    setSubmitError(false);
 
-  setAssetName('');
-  setAssetDescription('');
-  setAssetPrice('');
-  setUploadCategory('');
-  setSelectedTags([]);
-  setSelectedFile(null);
-  setUploadFormVisible(false);
-};
+    console.log({
+      title: assetName,
+      description: assetDescription,
+      category: uploadCategory,
+      price: Number(assetPrice),
+      tags: selectedTags,
+      file: selectedFile,
+    });
+
+   setShowSuccessModal(true);
+    
+  };
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -230,10 +237,11 @@ const handleAssetSubmit = (e: React.FormEvent) => {
               >
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
+
               <SelectContent>
                 {ASSET_CATEGORIES.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === 'All Categories' ? 'All Categories' : category}
+                    {category}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -251,11 +259,23 @@ const handleAssetSubmit = (e: React.FormEvent) => {
                 <label className="block text-sm font-medium mb-2">
                   Asset Name
                 </label>
-               <Input
-                 placeholder="Enter asset name"
-                 value={assetName}
-                 onChange={(e) => setAssetName(e.target.value)}
+
+                <Input
+                  placeholder="Enter asset name"
+                  value={assetName}
+                  onChange={(e) => setAssetName(e.target.value)}
+                  className={
+                    submitError && !assetName
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
                 />
+
+                {submitError && !assetName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter asset name.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -267,104 +287,154 @@ const handleAssetSubmit = (e: React.FormEvent) => {
                   value={uploadCategory}
                   onValueChange={setUploadCategory}
                 >
-                  <SelectTrigger title="Select category">
+                  <SelectTrigger
+                    title="Select category"
+                    className={
+                      submitError && !uploadCategory ? 'border-red-500' : ''
+                    }
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    {ASSET_CATEGORIES
-                      .filter((c) => c !== 'All Categories')
-                      .map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
+                    {ASSET_CATEGORIES.filter(
+                      (c) => c !== 'All Categories'
+                    ).map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-            </div>
+
+                {submitError && !uploadCategory && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please select category.
+                  </p>
+                )}
+              </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">
                   Description
                 </label>
-                  <Textarea
-    placeholder="Describe your asset"
-    value={assetDescription}
-  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setAssetDescription(e.target.value)
-  }
-  />
+
+                <Textarea
+                  placeholder="Describe your asset"
+                  value={assetDescription}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setAssetDescription(e.target.value)
+                  }
+                  className={
+                    submitError && !assetDescription
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
+                />
+
+                {submitError && !assetDescription && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter description.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
-  <label className="block text-sm font-medium mb-2">
-    Tags (Select up to 3)
-  </label>
+                <label className="block text-sm font-medium mb-2">
+                  Tags (Select up to 3)
+                </label>
 
-  <Select
-    onValueChange={(tag) => {
-      if (
-        !selectedTags.includes(tag) &&
-        selectedTags.length < 3
-      ) {
-        setSelectedTags([...selectedTags, tag]);
-      }
-    }}
-  >
-    <SelectTrigger title="Select tags">
-      <SelectValue placeholder="Choose tags" />
-    </SelectTrigger>
+                <Select
+                  onValueChange={(tag) => {
+                    if (
+                      !selectedTags.includes(tag) &&
+                      selectedTags.length < 3
+                    ) {
+                      setSelectedTags([...selectedTags, tag]);
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    title="Select tags"
+                    className={
+                      submitError && selectedTags.length === 0
+                        ? 'border-red-500'
+                        : ''
+                    }
+                  >
+                    <SelectValue placeholder="Choose tags" />
+                  </SelectTrigger>
 
-    <SelectContent>
-      {ASSET_TAGS.map((tag) => (
-        <SelectItem
-          key={tag}
-          value={tag}
-          disabled={selectedTags.includes(tag)}
-        >
-          {tag}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
+                  <SelectContent>
+                    {ASSET_TAGS.map((tag) => (
+                      <SelectItem
+                        key={tag}
+                        value={tag}
+                        disabled={selectedTags.includes(tag)}
+                      >
+                        {tag}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-  <div className="flex flex-wrap gap-2 mt-3">
-    {selectedTags.map((tag) => (
-      <div
-        key={tag}
-        className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm"
-      >
-        {tag}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {selectedTags.map((tag) => (
+                    <div
+                      key={tag}
+                      className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm"
+                    >
+                      {tag}
 
-        <button
-          type="button"
-          onClick={() =>
-            setSelectedTags(
-              selectedTags.filter((t) => t !== tag)
-            )
-          }
-          className="text-xs"
-        >
-          ✕
-        </button>
-      </div>
-    ))}
-  </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedTags(
+                            selectedTags.filter((t) => t !== tag)
+                          )
+                        }
+                        className="text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
 
-  {selectedTags.length >= 3 && (
-    <p className="text-xs text-muted-foreground mt-2">
-      Maximum 3 tags selected
-    </p>
-  )}
-</div>
+                {selectedTags.length >= 3 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Maximum 3 tags selected
+                  </p>
+                )}
+
+               {submitError && selectedTags.length !== 3 && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please select exactly 3 tags.
+                </p>
+              )}
+              </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Price</label>
+                <label className="block text-sm font-medium mb-2">
+                  Price
+                </label>
+
                 <Input
-  placeholder="Enter asset price"
-  value={assetPrice}
-  onChange={(e) => setAssetPrice(e.target.value)}
-/>
+                  placeholder="Enter asset price"
+                  value={assetPrice}
+                  onChange={(e) => setAssetPrice(e.target.value)}
+                  className={
+                    submitError && !assetPrice
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }
+                />
+
+                {submitError && !assetPrice && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Please enter price.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -373,26 +443,34 @@ const handleAssetSubmit = (e: React.FormEvent) => {
                 </label>
 
                 <div
-  onClick={handleAssetFileBoxClick}
-  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
->
-  {selectedFile ? (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-16 h-20 border-2 border-muted rounded-sm bg-white relative">
-        <div className="absolute top-0 right-0 w-4 h-4 bg-background border-l-2 border-b-2 border-muted rotate-45 translate-x-2 -translate-y-2" />
-      </div>
+                  onClick={handleAssetFileBoxClick}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
+                    submitError && !selectedFile ? 'border-red-500' : ''
+                  }`}
+                >
+                  {selectedFile ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-16 h-20 border-2 border-muted rounded-sm bg-white relative">
+                        <div className="absolute top-0 right-0 w-4 h-4 bg-background border-l-2 border-b-2 border-muted rotate-45 translate-x-2 -translate-y-2" />
+                      </div>
 
-      <p className="text-sm mt-2 text-foreground">
-        {selectedFile.name}
-      </p>
-    </div>
-  ) : (
-    <>
-      <Upload className="w-12 h-12 mx-auto mb-4" />
-      <p>Click to upload</p>
-    </>
-  )}
-</div>
+                      <p className="text-sm mt-2 text-foreground">
+                        {selectedFile.name}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-12 h-12 mx-auto mb-4" />
+                      <p>Click to upload</p>
+                    </>
+                  )}
+                </div>
+
+                {submitError && !selectedFile && (
+                  <p className="text-red-500 text-xs mt-2">
+                    Please upload asset file.
+                  </p>
+                )}
 
                 <input
                   ref={assetFileInputRef}
@@ -405,16 +483,20 @@ const handleAssetSubmit = (e: React.FormEvent) => {
               </div>
             </div>
 
+           
+
             <div className="flex gap-4 mt-6">
-              <Button
-                type="button"
-                onClick={handleAssetSubmit}
-              >
+              <Button type="button" onClick={handleAssetSubmit}>
                 Submit
               </Button>
+
               <Button
                 variant="outline"
-                onClick={() => setUploadFormVisible(false)}
+                onClick={() => {
+                  setUploadFormVisible(false);
+                  setSubmitError(false);
+                  setSuccessMessage('');
+                }}
               >
                 Cancel
               </Button>
@@ -475,6 +557,35 @@ const handleAssetSubmit = (e: React.FormEvent) => {
             </Button>
           </div>
         )}
+        {showSuccessModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="w-full max-w-md rounded-2xl border border-primary/40 bg-background p-6 text-center shadow-xl">
+      <h3 className="text-xl font-bold mb-3">Asset Submitted</h3>
+
+      <p className="text-sm text-muted-foreground mb-6">
+        Your asset was submitted successfully and is waiting for admin review.
+      </p>
+
+      <Button
+        type="button"
+        onClick={() => {
+          setShowSuccessModal(false);
+
+          setAssetName('');
+          setAssetDescription('');
+          setAssetPrice('');
+          setUploadCategory('');
+          setSelectedTags([]);
+          setSelectedFile(null);
+          setSubmitError(false);
+          setUploadFormVisible(false);
+        }}
+      >
+        OK
+      </Button>
+    </div>
+  </div>
+)}
       </div>
 
       <AssetDetailModal
