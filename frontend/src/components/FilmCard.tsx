@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+ import { motion } from 'framer-motion';
 import { Heart, Play } from 'lucide-react';
 import { Film } from '@/lib/index';
 import { useFavorites } from '@/hooks/useFavorites';
