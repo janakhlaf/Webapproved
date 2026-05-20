@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 from assets import router as assets_router
 from films import router as films_router
+from library import router as library_router
 
 from ai.intent_classifier import classify_intent
 from orchestrator import get_response_by_intent
-
 
 from chat_history import (
     create_chat_session,
@@ -20,6 +20,8 @@ from chat_history import (
 
 app = FastAPI()
 
+print("THIS IS MY MAIN.PY")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,6 +32,7 @@ app.add_middleware(
 
 app.include_router(assets_router)
 app.include_router(films_router)
+app.include_router(library_router)
 
 
 class ChatRequest(BaseModel):
@@ -41,6 +44,14 @@ class ChatRequest(BaseModel):
 
 class CreateChatSessionRequest(BaseModel):
     user_id: int
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Backend is running",
+        "main_file": "THIS IS MY MAIN.PY"
+    }
 
 
 @app.post("/chat/sessions")
@@ -68,6 +79,8 @@ async def get_messages(session_id: int):
     return {
         "messages": messages
     }
+
+
 @app.delete("/chat/sessions/{session_id}")
 async def delete_session(session_id: int, user_id: int):
     delete_chat_session(session_id, user_id)

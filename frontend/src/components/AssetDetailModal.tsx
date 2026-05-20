@@ -15,11 +15,7 @@ interface AssetDetailModalProps {
   onClose: () => void;
 }
 
-export function AssetDetailModal({
-  asset,
-  open,
-  onClose,
-}: AssetDetailModalProps) {
+export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps) {
   const { isAssetFavorite, toggleAssetFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
   const { addToCart, cartItems } = useCart();
@@ -95,9 +91,7 @@ export function AssetDetailModal({
                 variant={isFavorite ? 'default' : 'outline'}
                 className="flex-1 gap-2 transition-all duration-200 hover:scale-[1.02]"
               >
-                <Heart
-                  className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`}
-                />
+                <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
                 {isFavorite ? 'Saved' : 'Save to Favorites'}
               </Button>
             </div>
@@ -109,18 +103,12 @@ export function AssetDetailModal({
                 {asset.type}
               </Badge>
 
-              <Badge
-                variant="outline"
-                className="text-sm px-3 py-1 border-primary/30"
-              >
+              <Badge variant="outline" className="text-sm px-3 py-1 border-primary/30">
                 {asset.category}
               </Badge>
 
               {asset.format && (
-                <Badge
-                  variant="outline"
-                  className="text-sm px-3 py-1 border-accent/30"
-                >
+                <Badge variant="outline" className="text-sm px-3 py-1 border-accent/30">
                   {asset.format}
                 </Badge>
               )}

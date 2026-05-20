@@ -3,7 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
+
 import { ROUTE_PATHS } from "@/lib/index";
+
 import { Layout } from "@/components/Layout";
 import { Chatbot } from "@/components/Chatbot";
 
@@ -15,11 +17,11 @@ import Profile from "@/pages/Profile";
 import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
 import Cart from "@/pages/Cart";
+import Library from "@/pages/MyLibrary";
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/CartContext";
 
-// 🔥 IMPORT SLIDER
 import Slider from "@/components/Slider";
 
 const queryClient = new QueryClient();
@@ -34,12 +36,11 @@ const App = () => (
 
           <HashRouter>
             <Routes>
-              {/* 🟢 HOME + SLIDER */}
               <Route
                 path={ROUTE_PATHS.HOME}
                 element={
                   <Layout>
-                    <Slider />   {/* 👈 السلايدر هنا تحت النافبار */}
+                    <Slider />
                     <Home />
                   </Layout>
                 }
@@ -52,6 +53,15 @@ const App = () => (
               <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
               <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
               <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
+
+              <Route
+                path="/my-library"
+                element={
+                  <Layout>
+                    <Library />
+                  </Layout>
+                }
+              />
             </Routes>
 
             <Chatbot />

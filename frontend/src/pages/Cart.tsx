@@ -18,8 +18,14 @@ type PurchasedItem = {
 };
 
 export default function Cart() {
+
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, clearCart } = useCart();
+
+  const {
+    cartItems,
+    removeFromCart,
+    clearCart
+  } = useCart();
 
   const [showCheckout, setShowCheckout] = useState(false);
 
@@ -33,100 +39,224 @@ export default function Cart() {
   const [addressLine, setAddressLine] = useState('');
   const [postalCode, setPostalCode] = useState('');
 
-  const films = cartItems.filter((item) => item.itemType === 'film');
-  const assets = cartItems.filter((item) => item.itemType === 'asset');
+  const films = cartItems.filter(
+    (item) => item.itemType === 'film'
+  );
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const assets = cartItems.filter(
+    (item) => item.itemType === 'asset'
+  );
 
-  const handleSuccessfulPayment = () => {
-    try {
-      const existingPurchased: PurchasedItem[] = JSON.parse(
-        localStorage.getItem('purchased_items') || '[]'
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price,
+    0
+  );
+
+  const getOriginalId = (id: string) => {
+    return Number(
+      id.replace('film-', '')
+        .replace('asset-', '')
+    );
+  };
+
+  const saveItemsToLibrary = async () => {
+
+    for (const item of cartItems) {
+
+      await fetch(
+        'http://127.0.0.1:9000/library/add',
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json',
+          },
+
+          body: JSON.stringify({
+            user_id: 1,
+            item_id: getOriginalId(item.id),
+            item_type: item.itemType,
+            title: item.title,
+            preview_url: item.image || '',
+            price: item.price,
+          }),
+        }
       );
+    }
+  };
 
-      const purchasedFromCart: PurchasedItem[] = cartItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        category: item.category,
-        price: item.price,
-        image: item.image,
-        itemType: item.itemType,
-        videoUrl: item.itemType === 'film' ? item.image : undefined,
-        downloadUrl: item.image,
-      }));
+  const handleSuccessfulPayment = async () => {
+
+    try {
+
+      await saveItemsToLibrary();
+
+      const existingPurchased: PurchasedItem[] =
+        JSON.parse(
+          localStorage.getItem(
+            'purchased_items'
+          ) || '[]'
+        );
+
+      const purchasedFromCart: PurchasedItem[] =
+        cartItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          price: item.price,
+          image: item.image,
+          itemType: item.itemType,
+          videoUrl:
+            item.itemType === 'film'
+              ? item.image
+              : undefined,
+          downloadUrl: item.image,
+        }));
 
       localStorage.setItem(
         'purchased_items',
-        JSON.stringify([...existingPurchased, ...purchasedFromCart])
+
+        JSON.stringify([
+          ...existingPurchased,
+          ...purchasedFromCart,
+        ])
       );
 
       clearCart();
+
       setShowCheckout(false);
+
       alert('✅ Payment Successful 🎉');
-      navigate(ROUTE_PATHS.MY_LIBRARY);
+
+      navigate('/library');
+
     } catch (error) {
-      console.error('Payment save error:', error);
-      alert('❌ Something went wrong while saving your purchase.');
+
+      console.error(
+        'Payment save error:',
+        error
+      );
+
+      alert(
+        '❌ Something went wrong while saving your purchase.'
+      );
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
+
       <div className="container mx-auto px-4 py-10">
+
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
-          <ShoppingCart /> My Cart
+
+          <ShoppingCart />
+
+          My Cart
+
         </h1>
 
         {cartItems.length === 0 ? (
+
           <p>Your cart is empty</p>
+
         ) : (
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
             <div className="xl:col-span-2 space-y-6">
+
               {films.length > 0 && (
+
                 <section>
+
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Film /> Films <Badge>{films.length}</Badge>
+
+                    <Film />
+
+                    Films
+
+                    <Badge>
+                      {films.length}
+                    </Badge>
+
                   </h2>
 
                   {films.map((item) => (
+
                     <div
                       key={item.id}
                       className="flex justify-between p-3 border rounded mb-3"
                     >
+
                       <div>
+
                         <h3>{item.title}</h3>
+
                         <p>${item.price}</p>
+
                       </div>
 
-                      <Button onClick={() => removeFromCart(item.id)}>
+                      <Button
+                        onClick={() =>
+                          removeFromCart(item.id)
+                        }
+                      >
+
                         <Trash2 className="mr-2 h-4 w-4" />
+
                         Remove
+
                       </Button>
+
                     </div>
                   ))}
                 </section>
               )}
 
               {assets.length > 0 && (
+
                 <section>
+
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Package /> Assets <Badge>{assets.length}</Badge>
+
+                    <Package />
+
+                    Assets
+
+                    <Badge>
+                      {assets.length}
+                    </Badge>
+
                   </h2>
 
                   {assets.map((item) => (
+
                     <div
                       key={item.id}
                       className="flex justify-between p-3 border rounded mb-3"
                     >
+
                       <div>
+
                         <h3>{item.title}</h3>
+
                         <p>${item.price}</p>
+
                       </div>
 
-                      <Button onClick={() => removeFromCart(item.id)}>
+                      <Button
+                        onClick={() =>
+                          removeFromCart(item.id)
+                        }
+                      >
+
                         <Trash2 className="mr-2 h-4 w-4" />
+
                         Remove
+
                       </Button>
+
                     </div>
                   ))}
                 </section>
@@ -134,35 +264,64 @@ export default function Cart() {
             </div>
 
             <div className="border p-5 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
-              <p>Films: {films.length}</p>
-              <p>Assets: {assets.length}</p>
+              <h2 className="text-xl font-semibold mb-4">
+                Order Summary
+              </h2>
+
+              <p>
+                Films: {films.length}
+              </p>
+
+              <p>
+                Assets: {assets.length}
+              </p>
 
               <h3 className="text-xl font-bold mt-3 mb-4">
-                Total: ${totalPrice.toFixed(2)}
+
+                Total:
+                ${totalPrice.toFixed(2)}
+
               </h3>
 
               <Button
                 className="w-full mb-2"
-                onClick={() => setShowCheckout(true)}
+                onClick={() =>
+                  setShowCheckout(true)
+                }
               >
+
                 Proceed to Checkout
+
               </Button>
 
-              <Button variant="outline" className="w-full" onClick={clearCart}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={clearCart}
+              >
+
                 Clear Cart
+
               </Button>
 
               {showCheckout && (
+
                 <div className="mt-6 border p-4 rounded space-y-4">
-                  <h3 className="font-semibold text-lg">Credit Card Details</h3>
+
+                  <h3 className="font-semibold text-lg">
+                    Credit Card Details
+                  </h3>
 
                   <input
                     type="text"
                     placeholder="Cardholder Name"
                     value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
+                    onChange={(e) =>
+                      setCardName(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
@@ -170,16 +329,25 @@ export default function Cart() {
                     type="text"
                     placeholder="Card Number"
                     value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
+                    onChange={(e) =>
+                      setCardNumber(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
                   <div className="flex gap-2">
+
                     <input
                       type="text"
                       placeholder="MM/YY"
                       value={expiryDate}
-                      onChange={(e) => setExpiryDate(e.target.value)}
+                      onChange={(e) =>
+                        setExpiryDate(
+                          e.target.value
+                        )
+                      }
                       className="w-full p-2 border rounded"
                     />
 
@@ -187,18 +355,29 @@ export default function Cart() {
                       type="text"
                       placeholder="CVV"
                       value={cvv}
-                      onChange={(e) => setCvv(e.target.value)}
+                      onChange={(e) =>
+                        setCvv(
+                          e.target.value
+                        )
+                      }
                       className="w-full p-2 border rounded"
                     />
+
                   </div>
 
-                  <h3 className="font-semibold text-lg mt-4">Billing Details</h3>
+                  <h3 className="font-semibold text-lg mt-4">
+                    Billing Details
+                  </h3>
 
                   <input
                     type="text"
                     placeholder="Country"
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) =>
+                      setCountry(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
@@ -206,7 +385,11 @@ export default function Cart() {
                     type="text"
                     placeholder="City"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) =>
+                      setCity(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
@@ -214,7 +397,11 @@ export default function Cart() {
                     type="text"
                     placeholder="Address"
                     value={addressLine}
-                    onChange={(e) => setAddressLine(e.target.value)}
+                    onChange={(e) =>
+                      setAddressLine(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
@@ -222,14 +409,21 @@ export default function Cart() {
                     type="text"
                     placeholder="Postal Code"
                     value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
+                    onChange={(e) =>
+                      setPostalCode(
+                        e.target.value
+                      )
+                    }
                     className="w-full p-2 border rounded"
                   />
 
                   <div className="flex gap-2">
+
                     <Button
                       className="flex-1"
+
                       onClick={() => {
+
                         if (
                           !cardName ||
                           !cardNumber ||
@@ -240,31 +434,70 @@ export default function Cart() {
                           !addressLine ||
                           !postalCode
                         ) {
-                          alert('Please fill all fields');
+
+                          alert(
+                            'Please fill all fields'
+                          );
+
                           return;
                         }
 
-                        if (cardNumber === '4242424242424242') {
+                        const cleanCardNumber =
+                          cardNumber.replace(
+                            /\s/g,
+                            ''
+                          );
+
+                        if (
+                          cleanCardNumber ===
+                          '4242424242424242'
+                        ) {
+
                           handleSuccessfulPayment();
-                        } else if (cardNumber === '4000000000009995') {
-                          alert('❌ Insufficient Funds');
-                        } else if (cardNumber === '4000000000000002') {
-                          alert('❌ Card Declined');
+
+                        } else if (
+                          cleanCardNumber ===
+                          '4000000000009995'
+                        ) {
+
+                          alert(
+                            '❌ Insufficient Funds'
+                          );
+
+                        } else if (
+                          cleanCardNumber ===
+                          '4000000000000002'
+                        ) {
+
+                          alert(
+                            '❌ Card Declined'
+                          );
+
                         } else {
-                          alert('❌ Invalid Card Details');
+
+                          alert(
+                            '❌ Invalid Card Details'
+                          );
                         }
                       }}
                     >
+
                       Confirm Payment
+
                     </Button>
 
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={() => setShowCheckout(false)}
+                      onClick={() =>
+                        setShowCheckout(false)
+                      }
                     >
+
                       Cancel
+
                     </Button>
+
                   </div>
                 </div>
               )}

@@ -29,14 +29,20 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
       className="group"
     >
       <Card className="relative overflow-hidden bg-card/50 backdrop-blur-xl border border-border/20 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
-        <div className="relative aspect-[2/3] overflow-hidden">
+        <div className="relative aspect-[2/3] overflow-hidden bg-black">
           <img
-            src={film.posterUrl}
+            src={
+              film.posterUrl ||
+              film.poster_url ||
+              film.thumbnail_url ||
+              "/placeholder.jpg"
+            }
             alt={film.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
           />
+
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-          
+
           <button
             onClick={handleFavoriteClick}
             className="absolute top-3 right-3 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/20 hover:border-primary/40 transition-all duration-200 hover:scale-110 active:scale-95"
@@ -44,7 +50,9 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
           >
             <Heart
               className={`w-5 h-5 transition-colors duration-200 ${
-                isFavorite ? 'fill-primary text-primary' : 'text-muted-foreground hover:text-primary'
+                isFavorite
+                  ? 'fill-primary text-primary'
+                  : 'text-muted-foreground hover:text-primary'
               }`}
             />
           </button>
@@ -56,11 +64,15 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
             >
               {film.category}
             </Badge>
+
             <h3 className="text-xl font-semibold text-foreground line-clamp-2">
               {film.title}
             </h3>
+
             {film.director && (
-              <p className="text-sm text-muted-foreground">Directed by {film.director}</p>
+              <p className="text-sm text-muted-foreground">
+                Directed by {film.director}
+              </p>
             )}
           </div>
         </div>
@@ -73,6 +85,7 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {film.duration && <span>{film.duration}</span>}
+
               {film.releaseYear && (
                 <>
                   <span>•</span>
