@@ -168,7 +168,7 @@ def upload_film(
             "details": poster_upload_response.text
         }
 
-    thumbnail_url = f"{supabase_url}/storage/v1/object/public/{bucket}/{poster_bucket_path}"
+    thumbnail_url = f"{supabase_url}/storage/v1/object/public/thumbnail_previw/{poster_bucket_path}"
     file_size_mb = f"{round(len(film_bytes) / (1024 * 1024), 2)} MB"
     mime_type = film_file.content_type or f"video/{film_extension}"
 
