@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getFilmsFromDatabase } from '@/api/films';
 
 export default function Films() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const filmFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,18 +79,15 @@ export default function Films() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [databaseFilms, setDatabaseFilms] = useState<Film[]>([]);
-  const [uploadedFilms, setUploadedFilms] = useState<Film[]>(() => {
-    const saved = localStorage.getItem('uploaded_films');
-    return saved ? JSON.parse(saved) : [];
-  });
+  
 
   useEffect(() => {
     getFilmsFromDatabase().then(setDatabaseFilms).catch(console.error);
   }, []);
 
   const allFilms = useMemo(
-    () => [...uploadedFilms, ...databaseFilms],
-    [uploadedFilms, databaseFilms]
+    () => [...databaseFilms],
+    [databaseFilms]
   );
 
   const filteredFilms = allFilms.filter((film) => {
@@ -157,36 +154,62 @@ export default function Films() {
     if (posterFileInputRef.current) posterFileInputRef.current.value = '';
   };
 
-  const handleSubmitFilm = () => {
-    const isInvalid =
-      !filmTitle ||
-      !filmCategory ||
-      !filmDescription ||
-      !filmPrice ||
-      selectedTags.length !== 3 ||
-      !filmFile ||
-      !posterFile;
+  const [isUploading, setIsUploading] = useState(false);
 
-    if (isInvalid) {
-      setSubmitError(true);
-      return;
-    }
+const handleSubmitFilm = async () => {
+  if (isUploading) return;
+  setIsUploading(true);
 
-    setSubmitError(false);
+  if (!isAuthenticated) {
+    setIsUploading(false);
+    navigate(ROUTE_PATHS.SIGNIN);
+    return;
+  }
 
-    console.log({
-      title: filmTitle,
-      description: filmDescription,
-      category: filmCategory,
-      price: Number(filmPrice),
-      tags: selectedTags,
-      filmFile,
-      posterFile,
+  const isInvalid =
+    !filmTitle ||
+    !filmCategory ||
+    !filmDescription ||
+    !filmPrice ||
+    selectedTags.length !== 3 ||
+    !filmFile ||
+    !posterFile;
+
+  if (isInvalid) {
+    setSubmitError(true);
+    return;
+  }
+
+  setSubmitError(false);
+
+  const formData = new FormData();
+  formData.append('auth_user_id', user?.id || '');
+  formData.append('title', filmTitle);
+  formData.append('description', filmDescription);
+  formData.append('category', filmCategory);
+  formData.append('price', filmPrice);
+  formData.append('tags', JSON.stringify(selectedTags));
+  formData.append('film_file', filmFile);
+  formData.append('poster_file', posterFile);
+
+  try {
+    const response = await fetch('http://localhost:8000/films/upload', {
+      method: 'POST',
+      body: formData,
     });
 
-   setShowSuccessModal(true);
+    if (!response.ok) {
+      throw new Error('Upload request failed');
+    }
 
-  };
+    setShowSuccessModal(true);
+    setIsUploading(false);
+  } catch (error) {
+    setIsUploading(false);
+    console.error(error);
+    alert('Something went wrong. Please try again.');
+  }
+};
 
   const FilePreview = ({ file }: { file: File }) => (
     <div className="flex flex-col items-center justify-center">
@@ -518,8 +541,11 @@ export default function Films() {
             </div>
 
             <div className="flex gap-4 mt-6">
-              <Button type="button" onClick={handleSubmitFilm}>
-                Submit
+              <Button
+                onClick={handleSubmitFilm}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Uploading...' : 'Submit'}
               </Button>
 
               <Button variant="outline" onClick={resetForm}>

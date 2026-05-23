@@ -4,6 +4,9 @@ import os
 import uuid
 import requests
 from dotenv import load_dotenv
+import json
+import tempfile
+from moviepy import VideoFileClip
 
 from ai.embedding_service import (
     create_embedding,
@@ -50,8 +53,9 @@ def get_films():
                 rejection_reason,
                 thumbnail_basic
             FROM films
-            ORDER BY id DESC
-        """)
+                WHERE status = 'approved'
+                ORDER BY id DESC
+               """)
 
         rows = cur.fetchall()
 
@@ -86,61 +90,109 @@ def get_films():
 
 @router.post("/films/upload")
 def upload_film(
+    auth_user_id: str = Form(...),
     title: str = Form(...),
     description: str = Form(...),
     category: str = Form(...),
-    duration: str = Form(""),
     price: float = Form(...),
-    thumbnail_url: str = Form(""),
-    thumbnail_basic: str = Form(""),
-    file: UploadFile = File(...)
+    tags: str = Form(...),
+    film_file: UploadFile = File(...),
+    poster_file: UploadFile = File(...)
 ):
     supabase_url = os.getenv("SUPABASE_URL")
     service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    bucket = os.getenv("SUPABASE_FILMS_BUCKET") or os.getenv("SUPABASE_BUCKET")
+    bucket = "films_private"
 
-    file_extension = file.filename.split(".")[-1].lower()
-    file_name = f"{uuid.uuid4()}.{file_extension}"
-    bucket_path = f"films/{file_name}"
+    parsed_tags = json.loads(tags)
 
-    file_bytes = file.file.read()
+    # upload film
+    film_extension = film_file.filename.split(".")[-1].lower()
+    film_name = f"{uuid.uuid4()}.{film_extension}"
+    film_bucket_path = f"users/{film_name}"
+    film_bytes = film_file.file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{film_extension}") as temp_video:
+        temp_video.write(film_bytes)
+        temp_video_path = temp_video.name
 
-    upload_url = f"{supabase_url}/storage/v1/object/{bucket}/{bucket_path}"
+    clip = VideoFileClip(temp_video_path)
+    duration_seconds = int(clip.duration)
+    clip.close()
 
-    headers = {
+    minutes = duration_seconds // 60
+    seconds = duration_seconds % 60
+    duration = f"{minutes}:{seconds:02d}"
+
+    film_upload_url = f"{supabase_url}/storage/v1/object/{bucket}/{film_bucket_path}"
+
+    film_headers = {
         "Authorization": f"Bearer {service_key}",
         "apikey": service_key,
-        "Content-Type": file.content_type or "application/octet-stream",
+        "Content-Type": film_file.content_type or "application/octet-stream",
     }
 
-    upload_response = requests.post(
-        upload_url,
-        headers=headers,
-        data=file_bytes
+    film_upload_response = requests.post(
+        film_upload_url,
+        headers=film_headers,
+        data=film_bytes
     )
 
-    if upload_response.status_code not in [200, 201]:
+    if film_upload_response.status_code not in [200, 201]:
         return {
             "error": "Failed to upload film to Supabase Storage",
-            "details": upload_response.text
+            "details": film_upload_response.text
         }
 
-    file_size_mb = f"{round(len(file_bytes) / (1024 * 1024), 2)} MB"
-    mime_type = file.content_type or f"video/{file_extension}"
+    # upload poster
+    poster_extension = poster_file.filename.split(".")[-1].lower()
+    poster_name = f"{uuid.uuid4()}.{poster_extension}"
+    poster_bucket_path = f"users/{poster_name}"
+    poster_bytes = poster_file.file.read()
 
-    embedding_text = build_film_embedding_text(
-        title,
-        description,
-        category
+    poster_upload_url = f"{supabase_url}/storage/v1/object/thumbnail_previw/{poster_bucket_path}"
+
+    poster_headers = {
+        "Authorization": f"Bearer {service_key}",
+        "apikey": service_key,
+        "Content-Type": poster_file.content_type or "image/png",
+    }
+
+    poster_upload_response = requests.post(
+        poster_upload_url,
+        headers=poster_headers,
+        data=poster_bytes
     )
 
+    if poster_upload_response.status_code not in [200, 201]:
+        return {
+            "error": "Failed to upload poster to Supabase Storage",
+            "details": poster_upload_response.text
+        }
+
+    thumbnail_url = f"{supabase_url}/storage/v1/object/public/{bucket}/{poster_bucket_path}"
+    file_size_mb = f"{round(len(film_bytes) / (1024 * 1024), 2)} MB"
+    mime_type = film_file.content_type or f"video/{film_extension}"
+
+    embedding_text = build_film_embedding_text(title, description, category)
     embedding = create_embedding(embedding_text)
     pg_vector = embedding_to_pgvector(embedding)
 
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
+                SELECT id
+                FROM users
+                WHERE auth_user_id = %s
+            """, (auth_user_id,))
+
+            user_row = cur.fetchone()
+
+            if not user_row:
+                return {"error": "User not found"}
+
+            user_id = user_row[0]
+            cur.execute("""
                 INSERT INTO films (
+                    user_id,
                     title,
                     description,
                     category,
@@ -153,24 +205,27 @@ def upload_film(
                     source_type,
                     status,
                     thumbnail_basic,
+                    tags,
                     embedding
                 )
                 VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    'user', 'approved', %s, %s::vector
+                   %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    'user', 'pending', %s, %s, %s::vector
                 )
                 RETURNING id
             """, (
+                user_id,
                 title,
                 description,
                 category,
                 duration,
                 thumbnail_url,
-                bucket_path,
+                film_bucket_path,
                 mime_type,
                 file_size_mb,
                 price,
-                thumbnail_basic,
+                thumbnail_url,
+                parsed_tags,
                 pg_vector
             ))
 
@@ -178,20 +233,89 @@ def upload_film(
             conn.commit()
 
     return {
-        "message": "Film uploaded and saved successfully",
+        "message": "Film submitted for admin approval",
         "film": {
             "id": film_id,
             "title": title,
-            "description": description,
-            "category": category,
-            "duration": duration,
-            "thumbnail_url": thumbnail_url,
-            "bucket_path": bucket_path,
-            "mime_type": mime_type,
-            "file_size": file_size_mb,
-            "price": price,
-            "source_type": "user",
-            "status": "approved",
-            "thumbnail_basic": thumbnail_basic
+            "status": "pending"
         }
+    }
+
+@router.patch("/admin/films/{film_id}/approve")
+def approve_film(film_id: int):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                UPDATE films
+                SET status = 'approved'
+                WHERE id = %s
+                RETURNING id
+            """, (film_id,))
+
+            row = cur.fetchone()
+
+            if not row:
+                return {"error": "Film not found"}
+
+            conn.commit()
+
+    return {
+        "message": "Film approved successfully"
+    }
+
+
+@router.delete("/admin/films/{film_id}/reject")
+def reject_film(film_id: int):
+
+    bucket = os.getenv("SUPABASE_FILMS_BUCKET") or os.getenv("SUPABASE_BUCKET")
+    preview_bucket = "thumbnail_previw"
+
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT bucket_path, thumbnail_url
+                FROM films
+                WHERE id = %s
+            """, (film_id,))
+
+            row = cur.fetchone()
+
+            if not row:
+                return {"error": "Film not found"}
+
+            film_path = row[0]
+            thumbnail_url = row[1]
+
+            poster_path = thumbnail_url.split(f"/{preview_bucket}/")[-1]
+
+            headers = {
+                "Authorization": f"Bearer {service_key}",
+                "apikey": service_key,
+                "Content-Type": "application/json",
+            }
+
+            requests.delete(
+                f"{supabase_url}/storage/v1/object/{bucket}/{film_path}",
+                headers=headers
+            )
+
+            requests.delete(
+                f"{supabase_url}/storage/v1/object/{preview_bucket}/{poster_path}",
+                headers=headers
+            )
+
+            cur.execute("""
+                DELETE FROM films
+                WHERE id = %s
+            """, (film_id,))
+
+            conn.commit()
+
+    return {
+        "message": "Film rejected and deleted"
     }
