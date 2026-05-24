@@ -88,6 +88,7 @@ export default function Assets() {
     'campfire',
     'animated',
     'rigged',
+    "infrastructure",
     'game-ready',
   ];
 
