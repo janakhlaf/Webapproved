@@ -4,6 +4,7 @@ import psycopg
 import requests
 import os
 import uuid
+import json
 
 from ai.embedding_service import (
     create_embedding,
@@ -85,6 +86,7 @@ def upload_asset(
     category: str = Form(...),
     price: float = Form(...),
     file: UploadFile = File(...),
+    tags: str = Form("[]"),
     auth_user_id: str = Form(...)
 ):
     supabase_url = os.getenv("SUPABASE_URL")
@@ -188,9 +190,10 @@ def upload_asset(
                 price,
                 status,
                 source_type,
+                tags,
                 embedding
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', 'user_upload', %s::vector)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', 'user_upload', %s, %s::vector)
             RETURNING id
         """, (
             user_id,
@@ -202,6 +205,7 @@ def upload_asset(
             file_extension,
             file_size_mb,
             price,
+            json.loads(tags),
             pg_vector
         ))
 

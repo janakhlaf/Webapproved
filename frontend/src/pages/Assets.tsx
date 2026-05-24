@@ -48,6 +48,7 @@ export default function Assets() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const ASSET_TAGS = [
     'realistic',
@@ -156,6 +157,8 @@ export default function Assets() {
 
  const handleAssetSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  if (isUploading) return;
+  setIsUploading(true);
 
   const isInvalid =
     !assetName ||
@@ -198,7 +201,9 @@ formData.append('auth_user_id', user.id);
     }
 
     setShowSuccessModal(true);
+    setIsUploading(false);
   } catch (error) {
+    setIsUploading(false);
     console.error(error);
     alert('Something went wrong. Please try again.');
   }
@@ -504,8 +509,12 @@ formData.append('auth_user_id', user.id);
            
 
             <div className="flex gap-4 mt-6">
-              <Button type="button" onClick={handleAssetSubmit}>
-                Submit
+              <Button
+                type="button"
+                onClick={handleAssetSubmit}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Uploading...' : 'Submit'}
               </Button>
 
               <Button
