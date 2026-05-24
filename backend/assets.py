@@ -31,7 +31,31 @@ def get_connection():
 
 @router.get("/assets")
 def get_assets():
+<<<<<<< HEAD
     print("=== /assets endpoint called ===")
+=======
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    user_id,
+                    name,
+                    description,
+                    category,
+                    preview_url,
+                    bucket_path,
+                    file_type,
+                    file_size,
+                    price,
+                    status,
+                    source_type
+                FROM assets
+                WHERE status = 'approved'
+                ORDER BY id ASC
+            """)
+>>>>>>> 4cf9131a38c760775784acb30343e37a73240867
 
     try:
         with get_connection() as conn:
@@ -108,21 +132,33 @@ def upload_asset(
     category: str = Form(...),
     price: float = Form(...),
     file: UploadFile = File(...),
-    user_id: int = Form(...)
+    auth_user_id: str = Form(...)
 ):
     try:
         supabase_url = os.getenv("SUPABASE_URL")
         service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
         bucket = os.getenv("SUPABASE_BUCKET")
 
+<<<<<<< HEAD
         file_extension = file.filename.split(".")[-1].lower()
         file_name = f"{uuid.uuid4()}.{file_extension}"
         bucket_path = f"assets/{file_name}"
 
         file_bytes = file.file.read()
+=======
+    preview_bucket = "assets_previwe"
+    private_bucket = "assets_private"
+
+    file_extension = file.filename.split(".")[-1].lower()
+    file_name = f"{uuid.uuid4()}.{file_extension}"
+
+    preview_bucket_path = f"users/{file_name}"
+    private_bucket_path = f"users/{file_name}"
+>>>>>>> 4cf9131a38c760775784acb30343e37a73240867
 
         upload_url = f"{supabase_url}/storage/v1/object/{bucket}/{bucket_path}"
 
+<<<<<<< HEAD
         headers = {
             "Authorization": f"Bearer {service_key}",
             "apikey": service_key,
@@ -135,6 +171,52 @@ def upload_asset(
             data=file_bytes,
             timeout=10
         )
+=======
+    preview_upload_url = (
+        f"{supabase_url}/storage/v1/object/"
+        f"{preview_bucket}/{preview_bucket_path}"
+    )
+
+    private_upload_url = (
+        f"{supabase_url}/storage/v1/object/"
+        f"{private_bucket}/{private_bucket_path}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {service_key}",
+        "apikey": service_key,
+        "Content-Type": file.content_type or "application/octet-stream",
+    }
+
+    preview_upload_response = requests.post(
+        preview_upload_url,
+        headers=headers,
+        data=file_bytes
+    )
+
+    private_upload_response = requests.post(
+        private_upload_url,
+        headers=headers,
+        data=file_bytes
+    )
+
+    if (
+        preview_upload_response.status_code not in [200, 201]
+        or
+        private_upload_response.status_code not in [200, 201]
+    ):
+        return {
+            "error": "Failed to upload file to Supabase Storage",
+            "details": "Upload failed"
+        }
+
+    preview_url = (
+        f"{supabase_url}/storage/v1/object/public/"
+        f"{preview_bucket}/{preview_bucket_path}"
+    )
+
+    bucket_path = private_bucket_path
+>>>>>>> 4cf9131a38c760775784acb30343e37a73240867
 
         if upload_response.status_code not in [200, 201]:
             return {
@@ -144,6 +226,7 @@ def upload_asset(
 
         preview_url = f"{supabase_url}/storage/v1/object/public/{bucket}/{bucket_path}"
 
+<<<<<<< HEAD
         file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
 
         embedding_text = build_asset_embedding_text(
@@ -207,6 +290,77 @@ def upload_asset(
                 "source_type": "user_upload",
                 "uploader": f"User {user_id}",
             }
+=======
+    embedding = create_embedding(embedding_text)
+    pg_vector = embedding_to_pgvector(embedding)
+    with get_connection() as conn:
+     with conn.cursor() as cur:
+
+        cur.execute("""
+            SELECT id
+            FROM users
+            WHERE auth_user_id = %s
+        """, (auth_user_id,))
+
+        user_row = cur.fetchone()
+
+        if not user_row:
+            return {
+                "error": "User not found"
+            }
+
+        user_id = user_row[0]
+
+        cur.execute("""
+            INSERT INTO assets (
+                user_id,
+                name,
+                description,
+                category,
+                preview_url,
+                bucket_path,
+                file_type,
+                file_size,
+                price,
+                status,
+                source_type,
+                embedding
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', 'user_upload', %s::vector)
+            RETURNING id
+        """, (
+            user_id,
+            title,
+            description,
+            category,
+            preview_url,
+            bucket_path,
+            file_extension,
+            file_size_mb,
+            price,
+            pg_vector
+        ))
+
+        asset_id = cur.fetchone()[0]
+        conn.commit()
+
+
+    return {
+        "message": "Asset uploaded and saved successfully",
+        "asset": {
+            "id": asset_id,
+            "user_id": user_id,
+            "title": title,
+            "name": title,
+            "preview_url": preview_url,
+            "bucket_path": bucket_path,
+            "file_type": file_extension,
+            "file_size": file_size_mb,
+            "price": price,
+            "status": "pending",
+            "source_type": "user_upload",
+            "uploader": f"User {user_id}",
+>>>>>>> 4cf9131a38c760775784acb30343e37a73240867
         }
 
     except Exception as e:

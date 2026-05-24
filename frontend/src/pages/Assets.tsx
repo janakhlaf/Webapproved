@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 
 export default function Assets() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const assetFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -154,37 +154,55 @@ export default function Assets() {
     }
   };
 
-  const handleAssetSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleAssetSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const isInvalid =
-      !assetName ||
-      !assetDescription ||
-      !uploadCategory ||
-      !assetPrice ||
-      selectedTags.length !== 3 ||
-      !selectedFile;
+  const isInvalid =
+    !assetName ||
+    !assetDescription ||
+    !uploadCategory ||
+    !assetPrice ||
+    selectedTags.length !== 3 ||
+    !selectedFile;
 
-    if (isInvalid) {
-      setSubmitError(true);
-      setSuccessMessage('');
-      return;
-    }
+  if (isInvalid) {
+    setSubmitError(true);
+    setSuccessMessage('');
+    return;
+  }
 
-    setSubmitError(false);
+  setSubmitError(false);
 
-    console.log({
-      title: assetName,
-      description: assetDescription,
-      category: uploadCategory,
-      price: Number(assetPrice),
-      tags: selectedTags,
-      file: selectedFile,
+  const formData = new FormData();
+  formData.append('title', assetName);
+  formData.append('description', assetDescription);
+  formData.append('category', uploadCategory);
+  formData.append('price', assetPrice);
+  formData.append('tags', JSON.stringify(selectedTags));
+  formData.append('file', selectedFile);
+  if (!user?.id) {
+  navigate(ROUTE_PATHS.SIGNIN);
+  return;
+}
+
+formData.append('auth_user_id', user.id);
+
+  try {
+    const response = await fetch('http://localhost:8000/assets/upload', {
+      method: 'POST',
+      body: formData,
     });
 
-   setShowSuccessModal(true);
-    
-  };
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    setShowSuccessModal(true);
+  } catch (error) {
+    console.error(error);
+    alert('Something went wrong. Please try again.');
+  }
+};
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   return (
