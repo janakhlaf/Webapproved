@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Box, ArrowRight } from 'lucide-react';
 
+import Hero from '@/components/Hero';
 import { FilmCard } from '@/components/FilmCard';
 import { AssetCard } from '@/components/AssetCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
@@ -35,7 +36,11 @@ export default function Home() {
   const featuredAssets = assets.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
+      {/* 🚀 Render our custom Hero section containing animations and user effects at the top */}
+      <Hero />
+
+      {/* Original Featured Films section */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
 
@@ -95,6 +100,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Original 3D Assets section */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -155,6 +161,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Modal Dialogs */}
       <FilmDetailModal
         film={selectedFilm}
         open={!!selectedFilm}
