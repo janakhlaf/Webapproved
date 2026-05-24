@@ -34,7 +34,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 backdrop-blur-xl bg-background/80 supports-[backdrop-filter]:bg-background/60">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 backdrop-blur-xl bg-[#0B0F17]/80">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             to={ROUTE_PATHS.HOME}
@@ -285,9 +285,9 @@ export function Layout({ children }: { children: ReactNode }) {
         </AnimatePresence>
       </header>
 
-      <main className="flex-1 pt-16">{children}</main>
+      <main className="flex-1 pt-16 relative z-10">{children}</main>
 
-      <footer className="border-t border-border/20 bg-card/30 backdrop-blur-sm">
+      <footer className="border-t border-border/20 bg-card/30 backdrop-blur-sm relative z-10">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>

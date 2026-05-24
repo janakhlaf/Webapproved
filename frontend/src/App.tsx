@@ -23,6 +23,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/CartContext";
 
 import Slider from "@/components/Slider";
+import CineVerseBackground from "@/components/CineVerseBackground";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Sonner />
 
           <HashRouter>
+            <CineVerseBackground />
             <Routes>
               <Route
                 path={ROUTE_PATHS.HOME}

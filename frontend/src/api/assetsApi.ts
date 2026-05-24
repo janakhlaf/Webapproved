@@ -6,12 +6,25 @@ export async function getAssetsFromDatabase(): Promise<Asset[]> {
   const response = await fetch(`${API_URL}/assets`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch assets');
+    console.error('Failed to fetch assets - response not ok');
+    return [];
   }
 
-  const data = await response.json();
+  let data;
 
-  const assets = data.assets ?? data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    console.error('Failed to parse JSON:', error);
+    return [];
+  }
+
+  // 🔥 أهم حماية عندك (حل المشكلة نهائيًا)
+  const assets = Array.isArray(data?.assets)
+    ? data.assets
+    : Array.isArray(data)
+    ? data
+    : [];
 
   return assets.map((asset: any) => ({
     id: String(asset.id),

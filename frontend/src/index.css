@@ -182,8 +182,10 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans min-h-screen;
+    @apply text-foreground font-sans min-h-screen;
+    background-color: #0B0F17 !important;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -197,15 +199,108 @@
   ::selection {
     @apply bg-primary/20 text-primary;
   }
+}
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* ─── CINEVERSE DESIGN INTEGRATION ─── */
+:root {
+  --bg: #0B0F17;
+  --card: #111827;
+  --panel: #1A1F2E;
+  --border: #1e2535;
+  --accent: #7C3AED;
+  --cyan: #22D3EE;
+  --text: #F5F5F5;
+  --muted: #A1A1AA;
+  --glow-p: rgba(124, 58, 237, 0.35);
+  --glow-c: rgba(34, 211, 238, 0.25);
+}
+
+/* Override dark mode background token to make it transparent, letting the body background show */
+.dark {
+  --background: transparent;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent) !important;
+  border-radius: 4px !important;
+}
+
+/* Custom Cursor */
+body, body * {
+  cursor: none !important;
+}
+
+body:has(a:hover) #cursor,
+body:has(button:hover) #cursor,
+body:has(input:hover) #cursor,
+body:has(select:hover) #cursor,
+body:has(textarea:hover) #cursor,
+body:has([role="button"]:hover) #cursor {
+  width: 20px !important;
+  height: 20px !important;
+  background-color: var(--accent) !important;
+}
+
+/* Reveal classes for scroll animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─── FLOATING GRADIENT BLOBS ANIMATIONS ─── */
+@keyframes floatBlob1 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
   }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+  33% {
+    transform: translate(60px, 80px) scale(1.15) rotate(120deg);
   }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40;
+  66% {
+    transform: translate(-40px, 40px) scale(0.9) rotate(240deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
   }
 }
+
+@keyframes floatBlob2 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-80px, -100px) scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes floatBlob3 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(80px, -50px) scale(0.85) rotate(-120deg);
+  }
+  66% {
+    transform: translate(-50px, 70px) scale(1.1) rotate(-240deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(-360deg);
+  }
+}
+
+

@@ -1,15 +1,30 @@
 import { Film } from '@/lib/index';
 
+const API_URL = 'http://localhost:8000';
+
 export async function getFilmsFromDatabase(): Promise<Film[]> {
-  const res = await fetch('http://localhost:8000/films');
+  const res = await fetch(`${API_URL}/films`);
 
   if (!res.ok) {
-    throw new Error('Failed to fetch films');
+    console.error('Failed to fetch films - response not ok');
+    return [];
   }
 
-  const data = await res.json();
+  let data;
 
-  const films = data.films ?? data;
+  try {
+    data = await res.json();
+  } catch (error) {
+    console.error('Failed to parse films JSON:', error);
+    return [];
+  }
+
+  // 🔥 حماية قوية ضد أي شكل بيانات غلط
+  const films = Array.isArray(data?.films)
+    ? data.films
+    : Array.isArray(data)
+    ? data
+    : [];
 
   return films.map((film: any) => ({
     id: String(film.id),

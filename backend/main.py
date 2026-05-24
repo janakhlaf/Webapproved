@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 from assets import router as assets_router
 from films import router as films_router
@@ -35,6 +36,9 @@ app.include_router(films_router)
 app.include_router(library_router)
 
 
+# ========================
+# MODELS
+# ========================
 class ChatRequest(BaseModel):
     message: str
     isAuthenticated: bool = False
@@ -46,6 +50,9 @@ class CreateChatSessionRequest(BaseModel):
     user_id: int
 
 
+# ========================
+# ROOT
+# ========================
 @app.get("/")
 async def root():
     return {
@@ -54,42 +61,58 @@ async def root():
     }
 
 
+# ========================
+# HEALTH CHECK (مهم جدًا لتشخيص المشكلة)
+# ========================
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+# ========================
+# SAFE ERROR HANDLER
+# ========================
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": str(exc),
+            "message": "Internal server error"
+        }
+    )
+
+
+# ========================
+# CHAT SESSIONS
+# ========================
 @app.post("/chat/sessions")
 async def create_session(request: CreateChatSessionRequest):
     session = create_chat_session(request.user_id)
-
-    return {
-        "session": session
-    }
+    return {"session": session}
 
 
 @app.get("/chat/sessions/{user_id}")
 async def get_sessions(user_id: int):
     sessions = get_user_sessions(user_id)
-
-    return {
-        "sessions": sessions
-    }
+    return {"sessions": sessions}
 
 
 @app.get("/chat/sessions/{session_id}/messages")
 async def get_messages(session_id: int):
     messages = get_session_messages(session_id)
-
-    return {
-        "messages": messages
-    }
+    return {"messages": messages}
 
 
 @app.delete("/chat/sessions/{session_id}")
 async def delete_session(session_id: int, user_id: int):
     delete_chat_session(session_id, user_id)
-
-    return {
-        "deleted": True
-    }
+    return {"deleted": True}
 
 
+# ========================
+# CHAT ENDPOINT
+# ========================
 @app.post("/chat")
 async def chat(request: ChatRequest):
     user_message = request.message
