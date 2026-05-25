@@ -42,6 +42,7 @@ export function Chatbot() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -205,6 +206,7 @@ export function Chatbot() {
     detectAndApplyTheme(currentMessage);
 
     setInputValue('');
+    setIsTyping(true);
 
     const textarea = document.querySelector('textarea');
 
@@ -236,6 +238,7 @@ export function Chatbot() {
       };
 
       setMessages((prev) => [...prev, botMessage]);
+      setIsTyping(false);
 
       await loadSessions();
     } catch (error) {
@@ -247,6 +250,7 @@ export function Chatbot() {
       };
 
       setMessages((prev) => [...prev, errorMessage]);
+      setIsTyping(false);
     }
   };
 
@@ -421,6 +425,29 @@ export function Chatbot() {
                   </motion.div>
                 ))}
 
+                {isTyping && (
+                  <div className="flex justify-start px-4 py-2">
+                    <div className="bg-muted/80 backdrop-blur-sm px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm border border-border/40">
+                      <span className="text-sm text-muted-foreground">
+                        Typing
+                      </span>
+
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" />
+
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"
+                          style={{ animationDelay: '0.15s' }}
+                        />
+
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"
+                          style={{ animationDelay: '0.3s' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
