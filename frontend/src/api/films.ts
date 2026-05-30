@@ -27,9 +27,8 @@ export async function getFilmsFromDatabase(): Promise<Film[]> {
     : [];
 
   return films.map((film: any) => ({
-    id: String(film.id),
-    userId: film.user_id ? String(film.user_id) : undefined,
-
+   id: Number(film.id),
+    userId: Number(film.user_id),
     title: film.title ?? '',
     description: film.description ?? '',
     category: film.category ?? '',

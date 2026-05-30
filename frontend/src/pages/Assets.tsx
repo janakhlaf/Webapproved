@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AssetCard } from '@/components/AssetCard';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
 import { getAssetsFromDatabase } from '@/api/assetsApi';
+import { supabase } from '@/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Asset,
@@ -170,10 +171,11 @@ export default function Assets() {
     !selectedFile;
 
   if (isInvalid) {
-    setSubmitError(true);
-    setSuccessMessage('');
-    return;
-  }
+  setSubmitError(true);
+  setSuccessMessage('');
+  setIsUploading(false);
+  return;
+}
 
   setSubmitError(false);
 
@@ -184,12 +186,16 @@ export default function Assets() {
   formData.append('price', assetPrice);
   formData.append('tags', JSON.stringify(selectedTags));
   formData.append('file', selectedFile);
-  if (!user?.id) {
-  navigate(ROUTE_PATHS.SIGNIN);
-  return;
-}
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-formData.append('auth_user_id', user.id);
+  if (!authUser?.id) {
+    navigate(ROUTE_PATHS.SIGNIN);
+    return;
+  }
+
+formData.append('auth_user_id', authUser.id);
 
   try {
     const response = await fetch('http://localhost:8000/assets/upload', {

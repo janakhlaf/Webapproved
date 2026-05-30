@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  User, Settings, Film, Package, Heart, Upload,
-  Edit2, Star, ChevronRight, BarChart3
+  User, Film, Package, Heart, Upload,
+Edit2, Star, BarChart3, Camera, X, Save
 } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { supabase } from '@/supabaseClient';
 
 import { FilmCard } from '@/components/FilmCard';
 import { AssetCard } from '@/components/AssetCard';
@@ -39,6 +40,11 @@ export default function Profile() {
   const [isFilmModalOpen, setIsFilmModalOpen] = useState(false);
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('uploaded-films');
+  const [isEditing, setIsEditing] = useState(false);
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [bio, setBio] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     getFilmsFromDatabase()
@@ -50,13 +56,45 @@ export default function Profile() {
       .catch(console.error);
   }, []);
 
-  const savedFilmsData = films.filter((film) =>
-    favoriteFilms.includes(film.id)
-  );
+  useEffect(() => {
+  if (!user?.id) return;
 
-  const savedAssetsData = assets.filter((asset) =>
-    favoriteAssets.includes(asset.id)
-  );
+  const loadProfile = async () => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('full_name, bio, profile_image')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Failed to load profile:', error);
+      return;
+    }
+
+    setFullName(data?.full_name || user.name || '');
+    setBio(data?.bio || '');
+    setAvatarUrl(data?.profile_image || user.avatar || '');
+  };
+
+  loadProfile();
+}, [user?.id]);
+
+
+  const savedFilmsData = films.filter((film) =>
+  favoriteFilms.includes(film.id)
+);
+
+const savedAssetsData = assets.filter((asset) =>
+  favoriteAssets.includes(asset.id)
+);
+
+ const uploadedFilmsData = films.filter(
+  (film) => film.userId === Number(user.id)
+);
+
+const uploadedAssetsData = assets.filter(
+  (asset) => asset.userId === Number(user.id)
+);
 
   const handleFilmClick = (film: FilmType) => {
     setSelectedFilm(film);
@@ -75,7 +113,7 @@ export default function Profile() {
   const dashboardStats = [
     {
       title: 'Total Uploads',
-      value: '0',
+      value: `${uploadedFilmsData.length + uploadedAssetsData.length}`,
       description: 'Films & assets uploaded',
       icon: Upload,
       gradient: 'from-primary/20 to-primary/5',
@@ -123,9 +161,9 @@ export default function Profile() {
             <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-14">
               <div className="relative">
                 <Avatar className="w-28 h-28 border-4 border-background shadow-xl ring-2 ring-primary/20">
-                  <AvatarImage src={user.avatar || IMAGES.DEFAULT_AVATAR_3} alt={user.name} />
+                  <AvatarImage src={avatarUrl || IMAGES.DEFAULT_AVATAR_3} alt={fullName} />
                   <AvatarFallback className="text-3xl bg-primary/10 text-primary">
-                    {user.name.charAt(0).toUpperCase()}
+                    {fullName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-background" />
@@ -133,19 +171,22 @@ export default function Profile() {
 
               <div className="flex-1 pt-2 space-y-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>
                   <Badge className="text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
                     {user.accountType || 'Creator'}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-sm">{user.email}</p>
                 <p className="text-sm text-muted-foreground/80 max-w-xl leading-relaxed">
-                  Exploring the intersection of human creativity and artificial intelligence through
-                  cinematic storytelling and interactive 3D experiences.
+                  {bio || 'Exploring the intersection of human creativity and artificial intelligence through cinematic storytelling and interactive 3D experiences.'}
                 </p>
               </div>
 
-              <Button variant="outline" className="gap-2 border-border/30 hover:border-primary/30 hover:bg-primary/5 transition-all">
+              <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="gap-2 border-border/30 hover:border-primary/30 hover:bg-primary/5 transition-all"
+                >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
               </Button>
@@ -191,7 +232,6 @@ export default function Profile() {
                   { value: 'uploaded-assets', icon: Package, label: 'Uploaded Assets' },
                   { value: 'favorite-films', icon: Film, label: 'Favorite Films' },
                   { value: 'favorite-assets', icon: Heart, label: 'Favorite Assets' },
-                  { value: 'settings', icon: Settings, label: 'Settings' },
                 ].map((tab) => (
                   <TabsTrigger
                     key={tab.value}
@@ -207,24 +247,40 @@ export default function Profile() {
 
             <div className="p-6">
               <TabsContent value="uploaded-films" className="mt-0">
-                <EmptyState
-                  icon={Upload}
-                  title="No Uploaded Films Yet"
-                  description="Your uploaded films will appear here once you start sharing your work."
-                  link={ROUTE_PATHS.FILMS}
-                  button="Browse Films"
-                />
+                {uploadedFilmsData.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {uploadedFilmsData.map((film) => (
+                      <FilmCard key={film.id} film={film} onViewDetails={handleFilmClick} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon={Upload}
+                    title="No Uploaded Films Yet"
+                    description="Your uploaded films will appear here once you start sharing your work."
+                    link={ROUTE_PATHS.FILMS}
+                    button="Browse Films"
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="uploaded-assets" className="mt-0">
-                <EmptyState
-                  icon={Package}
-                  title="No Uploaded Assets Yet"
-                  description="3D assets and models you upload will be showcased here."
-                  link={ROUTE_PATHS.ASSETS}
-                  button="Browse Assets"
-                />
-              </TabsContent>
+                  {uploadedAssetsData.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {uploadedAssetsData.map((asset) => (
+                        <AssetCard key={asset.id} asset={asset} onClick={handleAssetClick} />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={Package}
+                      title="No Uploaded Assets Yet"
+                      description="3D assets and models you upload will be showcased here."
+                      link={ROUTE_PATHS.ASSETS}
+                      button="Browse Assets"
+                    />
+                  )}
+                </TabsContent>
 
               <TabsContent value="favorite-films" className="mt-0">
                 {savedFilmsData.length > 0 ? (
@@ -262,42 +318,6 @@ export default function Profile() {
                 )}
               </TabsContent>
 
-              <TabsContent value="settings" className="mt-0">
-                <div className="max-w-2xl space-y-8">
-                  <div>
-                    <div className="flex items-center gap-2 mb-5">
-                      <User className="w-4 h-4 text-primary" />
-                      <h3 className="text-base font-semibold">Profile Information</h3>
-                    </div>
-
-                    <div className="rounded-2xl border border-border/20 bg-background/30 divide-y divide-border/20">
-                      {[
-                        { label: 'Full Name', value: user.name },
-                        { label: 'Email Address', value: user.email },
-                        { label: 'Account Type', value: user.accountType || 'Creator' },
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center justify-between px-5 py-4">
-                          <div>
-                            <p className="text-sm font-medium">{item.label}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.value}</p>
-                          </div>
-                          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary gap-1">
-                            Edit <ChevronRight className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-
-                      <div className="px-5 py-4">
-                        <p className="text-sm font-medium mb-2">Bio</p>
-                        <Input
-                          defaultValue="Exploring the intersection of human creativity and AI."
-                          className="bg-background/50 border-border/20 text-sm focus:border-primary/30"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
             </div>
           </Tabs>
         </motion.div>

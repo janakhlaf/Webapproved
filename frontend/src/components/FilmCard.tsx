@@ -32,11 +32,11 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
         <div className="relative aspect-[2/3] overflow-hidden bg-black">
           <img
             src={
-              film.posterUrl ||
-              film.poster_url ||
-              film.thumbnail_url ||
-              "/placeholder.jpg"
-            }
+            film.posterUrl ||
+            (film as any).poster_url ||
+            (film as any).thumbnail_url ||
+            "/placeholder.jpg"
+          }
             alt={film.title}
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
           />

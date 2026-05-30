@@ -4,6 +4,7 @@ import { Search, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/supabaseClient';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -177,7 +178,16 @@ const handleSubmitFilm = async () => {
   setSubmitError(false);
 
   const formData = new FormData();
-  formData.append('auth_user_id', user?.id || '');
+ const {
+  data: { user: authUser },
+} = await supabase.auth.getUser();
+
+if (!authUser?.id) {
+  navigate(ROUTE_PATHS.SIGNIN);
+  return;
+}
+
+formData.append('auth_user_id', authUser.id);
   formData.append('title', filmTitle);
   formData.append('description', filmDescription);
   formData.append('category', filmCategory);

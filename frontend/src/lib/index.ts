@@ -11,8 +11,8 @@ export const ROUTE_PATHS = {
 };
 
 export type Film = {
-  id: string;
-  userId?: string;
+  id: number;
+  userId?: number;
 
   title: string;
   description: string;
@@ -40,7 +40,8 @@ export type Film = {
 };
 
 export interface Asset {
-  id: string;
+  id: number;
+  userId?: number;
   title: string;
   type: string;
   category: string;

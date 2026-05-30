@@ -1,107 +1,96 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '@/supabaseClient';
+import { useAuth } from './useAuth';
 
 interface FavoritesState {
-  films: string[];
-  assets: string[];
+  films: number[];
+  assets: number[];
 }
 
-const STORAGE_KEY = 'human-mind-ai-favorites';
-
-const normalizeFavorites = (favorites: FavoritesState): FavoritesState => ({
-  films: [...new Set(favorites.films || [])],
-  assets: [...new Set(favorites.assets || [])],
-});
-
-const getStoredFavorites = (): FavoritesState => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-
-    if (stored) {
-      return normalizeFavorites(JSON.parse(stored));
-    }
-  } catch (error) {
-    console.error('Failed to parse favorites from localStorage:', error);
-  }
-
-  return { films: [], assets: [] };
-};
-
-const setStoredFavorites = (favorites: FavoritesState): void => {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(normalizeFavorites(favorites))
-    );
-  } catch (error) {
-    console.error('Failed to save favorites to localStorage:', error);
-  }
+type FavoriteRow = {
+  film_id: number | null;
+  asset_id: number | null;
 };
 
 export const useFavorites = () => {
-  const [favorites, setFavorites] = useState<FavoritesState>(getStoredFavorites);
+  const { user } = useAuth();
+
+  const [favorites, setFavorites] = useState<FavoritesState>({
+    films: [],
+    assets: [],
+  });
+
+  const loadFavorites = useCallback(async () => {
+    if (!user?.id) return;
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('film_id, asset_id')
+      .eq('user_id', Number(user.id));
+
+    if (error) {
+      console.error('Failed to load favorites:', error);
+      return;
+    }
+
+    const rows = (data || []) as FavoriteRow[];
+
+    setFavorites({
+      films: rows
+        .filter((item) => item.film_id !== null)
+        .map((item) => Number(item.film_id)),
+      assets: rows
+        .filter((item) => item.asset_id !== null)
+        .map((item) => Number(item.asset_id)),
+    });
+  }, [user?.id]);
 
   useEffect(() => {
-    const syncFavorites = () => {
-      setFavorites(getStoredFavorites());
-    };
+    loadFavorites();
+  }, [loadFavorites]);
 
-    window.addEventListener('favorites-updated', syncFavorites);
+  const toggleFilmFavorite = async (filmId: number) => {
+    if (!user?.id) return;
 
-    return () => {
-      window.removeEventListener('favorites-updated', syncFavorites);
-    };
-  }, []);
+    const isFavorite = favorites.films.includes(filmId);
 
-  const updateFavorites = (updater: (prev: FavoritesState) => FavoritesState) => {
-    const latest = getStoredFavorites();
-    const updated = normalizeFavorites(updater(latest));
+    if (isFavorite) {
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', Number(user.id))
+        .eq('film_id', filmId);
+    } else {
+      await supabase.from('favorites').insert({
+        user_id: Number(user.id),
+        film_id: filmId,
+        asset_id: null,
+      });
+    }
 
-    setFavorites(updated);
-    setStoredFavorites(updated);
-
-    window.dispatchEvent(new Event('favorites-updated'));
+    await loadFavorites();
   };
 
-  const toggleFilmFavorite = (filmId: string) => {
-    updateFavorites((prev) => {
-      const isFavorite = prev.films.includes(filmId);
+  const toggleAssetFavorite = async (assetId: number) => {
+    if (!user?.id) return;
 
-      return {
-        ...prev,
-        films: isFavorite
-          ? prev.films.filter((id) => id !== filmId)
-          : [...prev.films, filmId],
-      };
-    });
-  };
+    const isFavorite = favorites.assets.includes(assetId);
 
-  const toggleAssetFavorite = (assetId: string) => {
-    updateFavorites((prev) => {
-      const isFavorite = prev.assets.includes(assetId);
+    if (isFavorite) {
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', Number(user.id))
+        .eq('asset_id', assetId);
+    } else {
+      await supabase.from('favorites').insert({
+        user_id: Number(user.id),
+        film_id: null,
+        asset_id: assetId,
+      });
+    }
 
-      return {
-        ...prev,
-        assets: isFavorite
-          ? prev.assets.filter((id) => id !== assetId)
-          : [...prev.assets, assetId],
-      };
-    });
-  };
-
-  const isFilmFavorite = (filmId: string): boolean => {
-    return favorites.films.includes(filmId);
-  };
-
-  const isAssetFavorite = (assetId: string): boolean => {
-    return favorites.assets.includes(assetId);
-  };
-
-  const clearAllFavorites = () => {
-   const empty: FavoritesState = { films: [], assets: [] };
-    setFavorites(empty);
-    setStoredFavorites(empty);
-
-    window.dispatchEvent(new Event('favorites-updated'));
+    await loadFavorites();
   };
 
   return {
@@ -109,8 +98,17 @@ export const useFavorites = () => {
     favoriteAssets: favorites.assets,
     toggleFilmFavorite,
     toggleAssetFavorite,
-    isFilmFavorite,
-    isAssetFavorite,
-    clearAllFavorites,
+    isFilmFavorite: (filmId: number) => favorites.films.includes(filmId),
+    isAssetFavorite: (assetId: number) => favorites.assets.includes(assetId),
+    clearAllFavorites: async () => {
+      if (!user?.id) return;
+
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', Number(user.id));
+
+      setFavorites({ films: [], assets: [] });
+    },
   };
 };

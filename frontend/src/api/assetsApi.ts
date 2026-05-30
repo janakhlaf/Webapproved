@@ -27,9 +27,10 @@ export async function getAssetsFromDatabase(): Promise<Asset[]> {
     : [];
 
   return assets.map((asset: any) => ({
-    id: String(asset.id),
+  id: Number(asset.id),
+  userId: Number(asset.user_id),
 
-    title: asset.name ?? asset.title ?? 'Untitled Asset',
+  title: asset.name ?? asset.title ?? 'Untitled Asset',
 
     description: asset.description ?? '',
 
