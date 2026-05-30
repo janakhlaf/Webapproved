@@ -114,7 +114,7 @@ export function AuthProvider({
       setAuthState({
         isAuthenticated: true,
         user: {
-          id: data.session.user.id,
+          id: profile.id,
           email: data.session.user.email || '',
           name:
             profile?.full_name ||
@@ -168,7 +168,7 @@ export function AuthProvider({
         setAuthState({
           isAuthenticated: true,
           user: {
-            id: session.user.id,
+            id: profile.id,
             email: session.user.email || '',
             name:
               profile?.full_name ||

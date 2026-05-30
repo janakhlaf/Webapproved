@@ -32,7 +32,6 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
-const USER_ID = 1;
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +46,7 @@ export function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { detectAndApplyTheme, resetTheme } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const previousAuthRef = useRef(isAuthenticated);
 
@@ -78,11 +77,11 @@ export function Chatbot() {
   }, [isAuthenticated]);
 
   const loadSessions = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user?.id) return;
 
     try {
       const response = await fetch(
-        `http://localhost:8000/chat/sessions/${USER_ID}`
+        `http://localhost:8000/chat/sessions/${user.id}`
       );
 
       const data = await response.json();
@@ -132,9 +131,10 @@ export function Chatbot() {
   };
 
   const deleteSession = async (sessionId: number) => {
+    if (!user?.id) return;
     try {
       await fetch(
-        `http://localhost:8000/chat/sessions/${sessionId}?user_id=${USER_ID}`,
+        `http://localhost:8000/chat/sessions/${sessionId}?user_id=${user?.id}`,
         {
           method: 'DELETE',
         }
@@ -154,17 +154,17 @@ export function Chatbot() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.id) {
       loadSessions();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     let sessionId = activeSessionId;
 
-    if (!sessionId && isAuthenticated) {
+   if (!sessionId && isAuthenticated && user?.id) {
       try {
         const sessionResponse = await fetch(
           'http://localhost:8000/chat/sessions',
@@ -174,7 +174,7 @@ export function Chatbot() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              user_id: USER_ID,
+              user_id: user.id,
             }),
           }
         );
@@ -222,8 +222,8 @@ export function Chatbot() {
         },
         body: JSON.stringify({
           message: currentMessage,
-          isAuthenticated: isAuthenticated,
-          user_id: USER_ID,
+          isAuthenticated,
+          user_id: user?.id ?? null,
           session_id: sessionId,
         }),
       });
