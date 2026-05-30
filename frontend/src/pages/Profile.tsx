@@ -129,15 +129,7 @@ const uploadedAssetsData = assets.filter(
       iconColor: 'text-pink-400',
       border: 'border-pink-500/20',
     },
-    {
-      title: 'Account Overview',
-      value: user?.accountType || 'Creator',
-      description: 'Member since 2026',
-      icon: BarChart3,
-      gradient: 'from-yellow-500/20 to-yellow-500/5',
-      iconColor: 'text-yellow-400',
-      border: 'border-yellow-500/20',
-    },
+    
   ];
 
   return (
@@ -194,7 +186,7 @@ const uploadedAssetsData = assets.filter(
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {dashboardStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
