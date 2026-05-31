@@ -36,7 +36,10 @@ interface UseAuthReturn {
   ) => Promise<{ success: boolean; error?: string }>;
 
   signOut: () => void;
+  updateUser: (updates: Partial<User>) => void;
+  
 }
+
 
 const AuthContext = createContext<
   UseAuthReturn | undefined
@@ -60,8 +63,9 @@ const mapSupabaseUser = (
     'User',
 
   avatar:
-    supabaseUser.user_metadata?.avatar_url ||
-    getDefaultAvatar(),
+  supabaseUser.user_metadata?.avatar_url ||
+  supabaseUser.user_metadata?.picture ||
+  getDefaultAvatar(),
 
   accountType: 'Creator',
 
@@ -84,37 +88,38 @@ export function AuthProvider({
   useEffect(() => {
   supabase.auth.getSession().then(async ({ data }) => {
     if (data.session?.user) {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_user_id', data.session.user.id)
-        .single();
-
-        if (!profile?.profile_image) {
-  const googleAvatar =
-    data.session.user.user_metadata?.avatar_url ||
-    data.session.user.user_metadata?.picture;
-
-  if (googleAvatar) {
-    await supabase
-      .from('users')
-      .update({
-        profile_image: googleAvatar,
-      })
-      .eq(
-        'auth_user_id',
-        data.session.user.id
-      );
-
-    profile.profile_image =
-      googleAvatar;
-  }
+      let { data: profile } = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', data.session.user.email)
+  .single();
+  if (!profile) {
+  setAuthState({
+    isAuthenticated: false,
+    user: null,
+  });
+  return;
 }
+
+if (profile && profile.auth_user_id !== data.session.user.id) {
+  const { data: updatedProfile } = await supabase
+    .from('users')
+    .update({
+      auth_user_id: data.session.user.id,
+    })
+    .eq('id', profile.id)
+    .select()
+    .single();
+
+  profile = updatedProfile;
+}
+
+
 
       setAuthState({
         isAuthenticated: true,
         user: {
-          id: profile.id,
+          id: profile?.id,
           email: data.session.user.email || '',
           name:
             profile?.full_name ||
@@ -123,6 +128,7 @@ export function AuthProvider({
           avatar:
             profile?.profile_image ||
             data.session.user.user_metadata?.avatar_url ||
+            data.session.user.user_metadata?.picture ||
             getDefaultAvatar(),
           accountType: 'Creator',
           createdAt:
@@ -138,45 +144,47 @@ export function AuthProvider({
   } = supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.user) {
       const loadProfile = async () => {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('auth_user_id', session.user.id)
-          .single();
-
-          if (!profile?.profile_image) {
-  const googleAvatar =
-    session.user.user_metadata?.avatar_url ||
-    session.user.user_metadata?.picture;
-
-  if (googleAvatar) {
-    await supabase
-      .from('users')
-      .update({
-        profile_image: googleAvatar,
-      })
-      .eq(
-        'auth_user_id',
-        session.user.id
-      );
-
-    profile.profile_image =
-      googleAvatar;
-  }
+       let { data: profile } = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', session.user.email)
+  .single();
+  if (!profile) {
+  setAuthState({
+    isAuthenticated: false,
+    user: null,
+  });
+  return;
 }
+
+if (profile && profile.auth_user_id !== session.user.id) {
+  const { data: updatedProfile } = await supabase
+    .from('users')
+    .update({
+      auth_user_id: session.user.id,
+    })
+    .eq('id', profile.id)
+    .select()
+    .single();
+
+  profile = updatedProfile;
+}
+
+         
 
         setAuthState({
           isAuthenticated: true,
           user: {
-            id: profile.id,
+           id: profile?.id,
             email: session.user.email || '',
             name:
               profile?.full_name ||
               session.user.email?.split('@')[0] ||
               'User',
-            avatar:
+             avatar:
               profile?.profile_image ||
               session.user.user_metadata?.avatar_url ||
+              session.user.user_metadata?.picture ||
               getDefaultAvatar(),
             accountType: 'Creator',
             createdAt:
@@ -290,6 +298,20 @@ export function AuthProvider({
       user: null,
     });
   }, []);
+  const updateUser = useCallback(
+  (updates: Partial<User>) => {
+    setAuthState((prev) => ({
+      ...prev,
+      user: prev.user
+        ? {
+            ...prev.user,
+            ...updates,
+          }
+        : null,
+    }));
+  },
+  []
+);
 
   const value = useMemo<UseAuthReturn>(
     () => ({
@@ -302,7 +324,8 @@ export function AuthProvider({
       signInWithGoogle,
       register,
       signOut,
-    }),
+      updateUser,
+          }),
 
     [
       authState,
@@ -310,6 +333,7 @@ export function AuthProvider({
       signInWithGoogle,
       register,
       signOut,
+      updateUser,
     ]
   );
 

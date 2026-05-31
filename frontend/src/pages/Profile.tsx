@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { springPresets } from '@/lib/motion';
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { favoriteFilms, favoriteAssets } = useFavorites();
 
   const [films, setFilms] = useState<FilmType[]>([]);
@@ -42,6 +42,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('uploaded-films');
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.name || '');
+  const [editFullName, setEditFullName] = useState(user?.name || '');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -56,7 +57,7 @@ export default function Profile() {
       .catch(console.error);
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
   if (!user?.id) return;
 
   const loadProfile = async () => {
@@ -71,13 +72,18 @@ export default function Profile() {
       return;
     }
 
-    setFullName(data?.full_name || user.name || '');
+    const loadedName = data?.full_name || user.name || '';
+
+    setFullName(loadedName);
+    setEditFullName(loadedName);
     setBio(data?.bio || '');
-    setAvatarUrl(data?.profile_image || user.avatar || '');
+    setAvatarUrl(data?.profile_image || '');
   };
 
   loadProfile();
 }, [user?.id]);
+
+
 
 
   const savedFilmsData = films.filter((film) =>
@@ -106,9 +112,117 @@ const uploadedAssetsData = assets.filter(
     setIsAssetModalOpen(true);
   };
 
+  const getStoragePathFromPublicUrl = (url: string) => {
+  const marker = '/profile-images/';
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return url.substring(index + marker.length);
+};
+
+const handleProfileImageChange = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = e.target.files?.[0];
+  if (!file || !user?.id) return;
+  const previewUrl = URL.createObjectURL(file);
+setAvatarUrl(previewUrl);
+
+  setUploadingImage(true);
+
+  const oldImagePath = avatarUrl
+    ? getStoragePathFromPublicUrl(avatarUrl)
+    : null;
+
+  if (oldImagePath) {
+    await supabase.storage.from('profile-images').remove([oldImagePath]);
+  }
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('profile-images')
+    .upload(fileName, file);
+
+  if (uploadError) {
+    console.error('Image upload failed:', uploadError);
+    setUploadingImage(false);
+    return;
+  }
+
+  const { data } = supabase.storage
+    .from('profile-images')
+    .getPublicUrl(fileName);
+
+  setAvatarUrl(data.publicUrl);
+  setUploadingImage(false);
+};
+
+const handleRemoveProfileImage = async () => {
+  if (!user?.id) return;
+
+  const oldImagePath = avatarUrl
+    ? getStoragePathFromPublicUrl(avatarUrl)
+    : null;
+
+  setAvatarUrl('');
+
+  
+
+  updateUser({
+  avatar: '',
+});
+
+  if (oldImagePath) {
+    await supabase.storage
+      .from('profile-images')
+      .remove([oldImagePath]);
+  }
+
+  await supabase
+    .from('users')
+    .update({
+      profile_image: null,
+    })
+    .eq('id', user.id);
+};
+
+const handleSaveProfile = async () => {
+  if (!user?.id) return;
+
+  const { error } = await supabase
+    .from('users')
+    .update({
+      full_name: editFullName,
+      bio,
+      profile_image: avatarUrl.startsWith('blob:') ? null : avatarUrl || null,
+    })
+    .eq('id', user.id);
+
+  if (error) {
+    console.error('Failed to update profile:', error);
+    return;
+  }
+  setFullName(editFullName);
+  updateUser({
+  name: editFullName,
+  avatar: avatarUrl || user.avatar || IMAGES.DEFAULT_AVATAR_3,
+  bio,
+});
+  setIsEditing(false);
+  
+};
+
+const handleCancelEdit = () => {
+  setEditFullName(fullName);
+  setIsEditing(false);
+};
+
   if (!user) {
     return null;
   }
+  const displayedAvatar =
+  avatarUrl || user.avatar || IMAGES.DEFAULT_AVATAR_3;
 
   const dashboardStats = [
     {
@@ -153,35 +267,106 @@ const uploadedAssetsData = assets.filter(
             <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-14">
               <div className="relative">
                 <Avatar className="w-28 h-28 border-4 border-background shadow-xl ring-2 ring-primary/20">
-                  <AvatarImage src={avatarUrl || IMAGES.DEFAULT_AVATAR_3} alt={fullName} />
+                  <AvatarImage
+                    src={displayedAvatar}
+                  />
                   <AvatarFallback className="text-3xl bg-primary/10 text-primary">
                     {fullName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+
+                {isEditing && (
+                  <div className="mt-3 flex flex-col gap-1">
+                    <label className="cursor-pointer text-xs text-primary flex items-center gap-1">
+                      <Camera className="w-3 h-3" />
+                      {uploadingImage ? 'Uploading...' : 'Change Photo'}
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfileImageChange}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={handleRemoveProfileImage}
+                      className="text-xs text-red-400 hover:text-red-300 text-left"
+                    >
+                      Remove Photo
+                    </button>
+                  </div>
+                )}
+
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-background" />
               </div>
 
-              <div className="flex-1 pt-2 space-y-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>
+              <div className="flex-1 pt-2 space-y-2">
+                <div className="flex flex-col items-start gap-3">
+                  {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={editFullName}
+                                    onChange={(e) => setEditFullName(e.target.value)}
+                                    className="relative z-[9999] w-full max-w-md h-12 rounded-lg border border-primary/40 bg-background px-4 text-xl font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"
+                                  />
+                              ) : (
+                                <h1 className="text-2xl font-bold text-foreground">
+                                  {fullName}
+                                </h1>
+                              )}
+
                   <Badge className="text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
                     {user.accountType || 'Creator'}
                   </Badge>
                 </div>
+
                 <p className="text-muted-foreground text-sm">{user.email}</p>
-                <p className="text-sm text-muted-foreground/80 max-w-xl leading-relaxed">
-                  {bio || 'Exploring the intersection of human creativity and artificial intelligence through cinematic storytelling and interactive 3D experiences.'}
-                </p>
+
+                {isEditing ? (
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    className="w-full max-w-xl min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    placeholder="Write something about yourself..."
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground/80 max-w-xl leading-relaxed">
+                    {bio || 'Exploring the intersection of human creativity and artificial intelligence through cinematic storytelling and interactive 3D experiences.'}
+                  </p>
+                )}
               </div>
 
-              <Button
-                  onClick={() => setIsEditing(true)}
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleCancelEdit}
+                    variant="outline"
+                    className="gap-2 border-border/30"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+
+                  <Button onClick={handleSaveProfile} className="gap-2">
+                    <Save className="w-4 h-4" />
+                    Save
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                 onClick={() => {
+                      setEditFullName(fullName);
+                      setIsEditing(true);
+                    }}
                   variant="outline"
                   className="gap-2 border-border/30 hover:border-primary/30 hover:bg-primary/5 transition-all"
                 >
-                <Edit2 className="w-4 h-4" />
-                Edit Profile
-              </Button>
+                  <Edit2 className="w-4 h-4" />
+                  Edit Profile
+                </Button>
+              )}
             </div>
           </div>
         </motion.div>
