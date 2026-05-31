@@ -1,5 +1,5 @@
- import { motion } from 'framer-motion';
-import { Heart, Play } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Heart, Play, Clock, Calendar, Sparkles } from 'lucide-react';
 import { Film } from '@/lib/index';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
@@ -22,86 +22,113 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-      whileHover={{ scale: 1.02 }}
-      className="group"
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      whileHover={{ y: -8, scale: 1.03 }}
+      className="group relative h-full"
     >
-      <Card className="relative overflow-hidden bg-card/50 backdrop-blur-xl border border-border/20 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
-        <div className="relative aspect-[2/3] overflow-hidden bg-black">
+      {/* ─── Cyber Glow Backdrop Shadow ─── */}
+      <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-purple-600/10 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
+
+      {/* ─── Premium Glassmorphic Card ─── */}
+      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/45 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col cursor-none">
+        
+        {/* Border Glint highlight */}
+        <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
+
+        {/* ─── Poster Image Container ─── */}
+        <div className="relative aspect-[16/22] overflow-hidden bg-black/90">
           <img
             src={
-            film.posterUrl ||
-            (film as any).poster_url ||
-            (film as any).thumbnail_url ||
-            "/placeholder.jpg"
-          }
+              film.posterUrl ||
+              (film as any).poster_url ||
+              (film as any).thumbnail_url ||
+              "/placeholder.jpg"
+            }
             alt={film.title}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+          {/* Cinematic Darkening Radial Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#020306] via-[#020306]/35 to-transparent z-10" />
+          <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#020306]/80 opacity-65 z-10" />
 
-          <button
+          {/* Interactive Favoriting Button */}
+          <motion.button
             onClick={handleFavoriteClick}
-            className="absolute top-3 right-3 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/20 hover:border-primary/40 transition-all duration-200 hover:scale-110 active:scale-95"
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
+            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/75 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all duration-300 pointer-events-auto"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart
-              className={`w-5 h-5 transition-colors duration-200 ${
+              className={`w-4 h-4 transition-all duration-300 ${
                 isFavorite
-                  ? 'fill-primary text-primary'
-                  : 'text-muted-foreground hover:text-primary'
+                  ? 'fill-cyan-400 text-cyan-400'
+                  : 'text-gray-300 hover:text-cyan-400'
               }`}
             />
-          </button>
+          </motion.button>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+          {/* Category Badge */}
+          <div className="absolute top-4 left-4 z-20">
             <Badge
               variant="secondary"
-              className="bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm"
+              className="bg-cyan-950/40 text-cyan-300 border border-cyan-400/35 backdrop-blur-md px-2.5 py-1 text-xs font-mono uppercase tracking-widest"
             >
+              <Sparkles className="w-3.5 h-3.5 mr-1 text-cyan-300 animate-pulse" />
               {film.category}
             </Badge>
+          </div>
 
-            <h3 className="text-xl font-semibold text-foreground line-clamp-2">
+          {/* ─── Animated Hover Slide Reveal Overlay ─── */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#020306] via-[#020306]/96 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-15 flex flex-col justify-end p-6 space-y-4">
+            <div className="space-y-1">
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">Story Brief</span>
+              <p className="text-sm text-gray-300 leading-relaxed line-clamp-5">
+                {film.description}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 text-xs font-mono text-gray-400 pt-2 border-t border-white/5">
+              {film.duration && (
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400/80" />
+                  {film.duration}
+                </span>
+              )}
+              {film.releaseYear && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-purple-400/80" />
+                  {film.releaseYear}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Static Detail Panel (Standard View) ─── */}
+        <div className="p-5 flex-grow flex flex-col justify-between space-y-4 relative bg-gradient-to-b from-transparent to-[#03050a]/40 z-10">
+          <div className="space-y-1.5">
+            <h3 className="text-xl font-bold text-white tracking-tight line-clamp-1 group-hover:text-cyan-300 transition-colors duration-300">
               {film.title}
             </h3>
 
             {film.director && (
-              <p className="text-sm text-muted-foreground">
-                Directed by {film.director}
+              <p className="text-xs font-sans text-gray-400">
+                Directed by <span className="text-gray-300 font-medium">{film.director}</span>
               </p>
             )}
-          </div>
-        </div>
-
-        <div className="p-4 space-y-3">
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {film.description}
-          </p>
-
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {film.duration && <span>{film.duration}</span>}
-
-              {film.releaseYear && (
-                <>
-                  <span>•</span>
-                  <span>{film.releaseYear}</span>
-                </>
-              )}
-            </div>
           </div>
 
           <Button
             onClick={() => onViewDetails(film)}
-            className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all duration-200 group/btn"
+            className="w-full transition-all duration-300"
             variant="outline"
           >
-            <Play className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
-            View Details
+            <Play className="w-4 h-4 mr-2 text-cyan-300" />
+            Watch Details
           </Button>
         </div>
       </Card>

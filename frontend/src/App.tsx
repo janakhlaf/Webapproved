@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import { ROUTE_PATHS } from "@/lib/index";
 
@@ -27,6 +27,38 @@ import CineVerseBackground from "@/components/CineVerseBackground";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const location = useLocation();
+  return (
+    <Layout>
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path={ROUTE_PATHS.HOME}
+          element={
+            <>
+              <Slider />
+              <Home />
+            </>
+          }
+        />
+
+        <Route path={ROUTE_PATHS.FILMS} element={<Films />} />
+        <Route path={ROUTE_PATHS.ASSETS} element={<Assets />} />
+        <Route path={ROUTE_PATHS.ABOUT} element={<About />} />
+        <Route path={ROUTE_PATHS.CART} element={<Cart />} />
+        <Route path={ROUTE_PATHS.PROFILE} element={<Profile />} />
+        <Route path={ROUTE_PATHS.SIGNIN} element={<SignIn />} />
+        <Route path={ROUTE_PATHS.REGISTER} element={<Register />} />
+
+        <Route
+          path="/my-library"
+          element={<Library />}
+        />
+      </Routes>
+    </Layout>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -37,35 +69,7 @@ const App = () => (
 
           <HashRouter>
             <CineVerseBackground />
-            <Routes>
-              <Route
-                path={ROUTE_PATHS.HOME}
-                element={
-                  <Layout>
-                    <Slider />
-                    <Home />
-                  </Layout>
-                }
-              />
-
-              <Route path={ROUTE_PATHS.FILMS} element={<Layout><Films /></Layout>} />
-              <Route path={ROUTE_PATHS.ASSETS} element={<Layout><Assets /></Layout>} />
-              <Route path={ROUTE_PATHS.ABOUT} element={<Layout><About /></Layout>} />
-              <Route path={ROUTE_PATHS.CART} element={<Layout><Cart /></Layout>} />
-              <Route path={ROUTE_PATHS.PROFILE} element={<Layout><Profile /></Layout>} />
-              <Route path={ROUTE_PATHS.SIGNIN} element={<Layout><SignIn /></Layout>} />
-              <Route path={ROUTE_PATHS.REGISTER} element={<Layout><Register /></Layout>} />
-
-              <Route
-                path="/my-library"
-                element={
-                  <Layout>
-                    <Library />
-                  </Layout>
-                }
-              />
-            </Routes>
-
+            <AppContent />
             <Chatbot />
           </HashRouter>
         </CartProvider>

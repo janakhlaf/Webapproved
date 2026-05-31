@@ -377,7 +377,7 @@
 
   body {
     @apply text-foreground font-sans min-h-screen;
-    background-color: #000000 !important;
+    background-color: #020306 !important;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: hidden;
   }
@@ -397,21 +397,24 @@
 
 /* ─── CINEVERSE DESIGN INTEGRATION ─── */
 :root {
-  --bg: #000000;
-  --card: #080C14;
-  --panel: #0D111A;
-  --border: #131A26;
-  --accent: #7C3AED;
-  --cyan: #22D3EE;
+  --bg: #020306;
+  --card: rgba(6, 11, 22, 0.45);
+  --panel: rgba(3, 5, 10, 0.65);
+  --border: rgba(0, 240, 255, 0.12);
+  --accent: #8b5cf6;
+  --cyan: #00f0ff;
   --text: #F5F5F5;
-  --muted: #A1A1AA;
-  --glow-p: rgba(124, 58, 237, 0.35);
-  --glow-c: rgba(34, 211, 238, 0.25);
+  --muted: #8E9196;
+  --glow-p: rgba(139, 92, 246, 0.25);
+  --glow-c: rgba(0, 240, 255, 0.2);
 }
 
 /* Override dark mode background token to make it transparent, letting the body background show */
 .dark {
   --background: transparent;
+  --card: rgba(6, 11, 22, 0.45);
+  --popover: rgba(3, 5, 10, 0.85);
+  --border: rgba(0, 240, 255, 0.12);
 }
 
 /* Custom Scrollbar */

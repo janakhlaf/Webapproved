@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, Tag, User, ShieldCheck } from 'lucide-react';
+import { Heart, Tag, User, Box, HardDrive, Cpu } from 'lucide-react';
 import { Asset, formatPrice } from '@/lib/index';
 import { LazyAsset3DViewer } from '@/components/LazyAsset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -35,118 +35,117 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-      whileHover={{ scale: 1.02 }}
-      className="group cursor-pointer"
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      whileHover={{ y: -8, scale: 1.025 }}
+      className="group relative cursor-none h-full flex flex-col"
       onClick={handleCardClick}
     >
-      <Card className="relative overflow-hidden bg-card/50 backdrop-blur-xl border-border/20 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* ─── Cyber Glow Backdrop Shadow ─── */}
+      <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-purple-500/15 via-cyan-500/20 to-blue-600/15 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
-        <div className="relative aspect-square bg-background/80 overflow-hidden">
+      {/* ─── Premium Glassmorphic Card ─── */}
+      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/45 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col justify-between cursor-none">
+        
+        {/* Border Glint highlight */}
+        <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
+
+        {/* ─── 3D Model / Thumbnail Viewer Container ─── */}
+        <div className="relative aspect-square bg-[#03050a]/90 overflow-hidden border-b border-white/5">
+          <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#020306]/85 opacity-65 z-10 pointer-events-none" />
+          
           <LazyAsset3DViewer
             modelType={asset.modelType}
             modelUrl={asset.modelUrl}
             viewMode="card"
-            className="w-full h-full"
+            className="w-full h-full transform transition-transform duration-700 ease-out group-hover:scale-108 z-0"
           />
 
+          {/* Favoriting Circle Button */}
           <motion.button
             onClick={handleFavoriteClick}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute top-3 right-3 z-10 p-2 rounded-full bg-background/80 backdrop-blur-md border border-border/40 hover:border-primary/60 transition-all duration-200"
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
+            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/75 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all duration-300 pointer-events-auto"
           >
             <Heart
-              className={`w-5 h-5 transition-all duration-200 ${
+              className={`w-4 h-4 transition-all duration-300 ${
                 isFavorite
-                  ? 'fill-primary text-primary'
-                  : 'text-muted-foreground hover:text-primary'
+                  ? 'fill-cyan-400 text-cyan-400'
+                  : 'text-gray-300 hover:text-cyan-400'
               }`}
             />
           </motion.button>
 
-          <div className="absolute top-3 left-3 z-10">
-            <Badge className="bg-primary/15 text-primary border border-primary/40">
+          {/* Telemetry Status Badges */}
+          <div className="absolute top-4 left-4 z-20">
+            <Badge className="bg-cyan-950/45 text-cyan-300 border border-cyan-400/35 backdrop-blur-md px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest">
               {statusLabel}
             </Badge>
           </div>
 
-          <div className="absolute bottom-3 left-3 z-10">
-            <Badge className="bg-background/90 backdrop-blur-md border-border/40 text-foreground">
-              <Tag className="w-3 h-3 mr-1" />
+          <div className="absolute bottom-4 left-4 z-20">
+            <Badge className="bg-[#080c14]/80 backdrop-blur-md border border-white/10 text-gray-300 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
+              <Tag className="w-3 h-3 mr-1 text-cyan-400" />
               {asset.type}
             </Badge>
           </div>
         </div>
 
-        <div className="relative p-5 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors duration-200">
-                {asset.title}
-              </h3>
+        {/* ─── Detail Description & Metadata Panel ─── */}
+        <div className="p-5 flex-grow flex flex-col justify-between space-y-4 bg-gradient-to-b from-transparent to-[#03050a]/40 relative z-10">
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white tracking-tight truncate group-hover:text-cyan-300 transition-colors duration-300">
+              {asset.title}
+            </h3>
 
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {asset.description}
-              </p>
+            <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
+              {asset.description}
+            </p>
+          </div>
+
+          {/* Technical Telemetry Grid */}
+          <div className="grid grid-cols-2 gap-2.5 text-[11px] font-mono text-gray-400 border-t border-white/5 pt-3.5">
+            <div className="flex items-center gap-1.5 bg-[#080c14]/30 px-2 py-1 rounded-md border border-white/5">
+              <User className="w-3.5 h-3.5 text-cyan-400/70" />
+              <span className="truncate">{uploaderLabel}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-[#080c14]/30 px-2 py-1 rounded-md border border-white/5">
+              <Cpu className="w-3.5 h-3.5 text-purple-400/70" />
+              <span className="truncate uppercase">{sourceLabel}</span>
             </div>
           </div>
 
-          <div className="space-y-2 text-xs text-muted-foreground border-t border-border/40 pt-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5" />
-                Uploader
-              </span>
-
-              <span className="text-foreground font-medium">
-                {uploaderLabel}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Source
-              </span>
-
-              <span className="text-foreground font-medium">
-                {sourceLabel}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-border/40">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-primary">
-                {formatPrice(asset.price)}
-              </span>
-            </div>
+          {/* Purchase details & primary details link button */}
+          <div className="flex items-center justify-between pt-3 border-t border-white/5">
+            <span className="text-xl font-black text-cyan-300 bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent font-mono">
+              {formatPrice(asset.price)}
+            </span>
 
             <Button
               size="sm"
-              className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/40 hover:border-primary/60 transition-all duration-200"
+              className="px-4 transition-all duration-300"
               onClick={handleCardClick}
             >
-              View Details
+              Get Asset
             </Button>
           </div>
 
+          {/* Technical Formats & Size Telemetry */}
           {(asset.fileSize || asset.format) && (
-            <div className="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 text-[10px] font-mono text-gray-500 pt-1 border-t border-white/5">
               {asset.format && (
                 <span className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                  <HardDrive className="w-3 h-3 text-cyan-400/60" />
                   {asset.format}
                 </span>
               )}
 
               {asset.fileSize && (
                 <span className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent/60" />
+                  <Box className="w-3 h-3 text-purple-400/60" />
                   {asset.fileSize}
                 </span>
               )}
