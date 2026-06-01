@@ -4,6 +4,7 @@ import { MessageCircle, X, Send, Sparkles, History, Plus, Trash2 } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
+import { Robot3D } from './Robot3D';
 
 interface Message {
   id: string;
@@ -266,7 +267,7 @@ export function Chatbot() {
   return (
     <>
       <motion.div
-        className="fixed bottom-6 right-6 z-50"
+        className="fixed bottom-16 right-2 z-50 pointer-events-none"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{
@@ -275,13 +276,7 @@ export function Chatbot() {
           damping: 30,
         }}
       >
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          size="lg"
-          className="h-14 w-14 rounded-full bg-primary/90 backdrop-blur-sm hover:bg-primary shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/60 transition-all duration-300 hover:scale-110"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
+        <Robot3D isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
       </motion.div>
 
       <AnimatePresence>
