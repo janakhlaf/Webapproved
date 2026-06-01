@@ -78,7 +78,7 @@ export default function MyLibrary() {
       url.endsWith(".obj") ||
       url.endsWith(".stl")
     ) {
-      return `${SUPABASE_PUBLIC_STORAGE_URL}/assets_preview/${url}`;
+      return `${SUPABASE_PUBLIC_STORAGE_URL}/assets_previwe/${url}`;
     }
 
     return `${SUPABASE_PUBLIC_STORAGE_URL}/${url}`;
@@ -189,99 +189,105 @@ export default function MyLibrary() {
             gap: "20px",
           }}
         >
-          {libraryItems.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                background: "#111",
-                borderRadius: "16px",
-                overflow: "hidden",
-                border: "1px solid #222",
-              }}
-            >
+          {libraryItems.map((item) => {
+           const modelPath =
+  item.bucket_path || item.download_url || item.file_url || item.asset_url || "";
+            const modelUrl = getFullStorageUrl(modelPath);
+
+            return (
               <div
+                key={item.id}
                 style={{
-                  width: "100%",
-                  height: "350px",
-                  background: "#222",
+                  background: "#111",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  border: "1px solid #222",
                 }}
               >
-                {item.item_type === "asset" ? (
-                  <Asset3DViewer
-                    modelUrl={item.preview_url}
-                    modelType={getModelType(item.preview_url)}
-                    viewMode="card"
-                    className="w-full h-full"
-                  />
-                ) : isImageUrl(item.preview_url) ? (
-                  <img
-                    src={item.preview_url}
-                    alt={item.title}
-                    onError={(e) => {
-                      console.log("IMAGE FAILED:", item.title);
-                      console.log(item.preview_url);
-                      e.currentTarget.style.display = "none";
-                    }}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "350px",
+                    background: "#222",
+                  }}
+                >
+                  {item.item_type === "asset" && modelUrl ? (
+                    <Asset3DViewer
+                      modelUrl={modelUrl}
+                      modelType={getModelType(modelPath)}
+                      viewMode="card"
+                      className="w-full h-full"
+                    />
+                  ) : isImageUrl(item.preview_url) ? (
+                    <img
+                      src={item.preview_url}
+                      alt={item.title}
+                      onError={(e) => {
+                        console.log("IMAGE FAILED:", item.title);
+                        console.log(item.preview_url);
+                        e.currentTarget.style.display = "none";
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "350px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "350px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#888",
+                      }}
+                    >
+                      No preview image
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ padding: "15px" }}>
+                  <h2 style={{ fontSize: "22px", marginBottom: "10px" }}>
+                    {item.title}
+                  </h2>
+
+                  <p style={{ color: "#00e5ff", fontWeight: "bold" }}>
+                    ${item.price}
+                  </p>
+
+                  <p
                     style={{
-                      width: "100%",
-                      height: "350px",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "350px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      marginTop: "10px",
                       color: "#888",
+                      textTransform: "capitalize",
                     }}
                   >
-                    No preview image
-                  </div>
-                )}
+                    {item.item_type}
+                  </p>
+
+                  <button
+                    onClick={() => handleDownload(item)}
+                    style={{
+                      marginTop: "15px",
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "10px",
+                      border: "none",
+                      background: "#00e5ff",
+                      color: "black",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Download
+                  </button>
+                </div>
               </div>
-
-              <div style={{ padding: "15px" }}>
-                <h2 style={{ fontSize: "22px", marginBottom: "10px" }}>
-                  {item.title}
-                </h2>
-
-                <p style={{ color: "#00e5ff", fontWeight: "bold" }}>
-                  ${item.price}
-                </p>
-
-                <p
-                  style={{
-                    marginTop: "10px",
-                    color: "#888",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {item.item_type}
-                </p>
-
-                <button
-                  onClick={() => handleDownload(item)}
-                  style={{
-                    marginTop: "15px",
-                    width: "100%",
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#00e5ff",
-                    color: "black",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                  }}
-                >
-                  Download
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
