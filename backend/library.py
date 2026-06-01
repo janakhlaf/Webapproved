@@ -65,6 +65,27 @@ def add_to_library(data: dict):
         with conn.cursor() as cur:
 
             cur.execute("""
+                SELECT id
+                FROM library
+                WHERE user_id = %s
+                  AND item_id = %s
+                  AND item_type = %s
+            """, (
+                data["user_id"],
+                data["item_id"],
+                data["item_type"]
+            ))
+
+            existing = cur.fetchone()
+
+            if existing:
+                return {
+                    "message": "Item already exists in library",
+                    "library_id": existing[0],
+                    "already_exists": True
+                }
+
+            cur.execute("""
                 INSERT INTO library (
                     user_id,
                     item_id,
@@ -85,10 +106,10 @@ def add_to_library(data: dict):
             ))
 
             library_id = cur.fetchone()[0]
-
             conn.commit()
 
     return {
         "message": "Added to library successfully",
-        "library_id": library_id
+        "library_id": library_id,
+        "already_exists": False
     }

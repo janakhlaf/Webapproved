@@ -64,7 +64,7 @@ export default function Cart() {
     for (const item of cartItems) {
 
       await fetch(
-        'http://127.0.0.1:9000/library/add',
+        'http://localhost:8000/library/add',
         {
           method: 'POST',
 

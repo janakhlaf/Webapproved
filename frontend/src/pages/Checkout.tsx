@@ -2,24 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "@/lib/index";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-
-type LibraryItem = {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  image: string;
-  itemType: "film" | "asset";
-  videoUrl?: string;
-  downloadUrl?: string;
-};
-
-const LIBRARY_STORAGE_KEY = "my_library_items";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cartItems, clearCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
 
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
@@ -29,6 +18,37 @@ export default function Checkout() {
   const [error, setError] = useState("");
 
   const total = cartItems.reduce((sum, item) => sum + item.price, 0);
+
+  const getOriginalId = (id: string) => {
+    return Number(id.replace("film-", "").replace("asset-", ""));
+  };
+
+  const saveItemsToDatabaseLibrary = async () => {
+    if (!isAuthenticated || !user?.id) {
+      throw new Error("User is not authenticated");
+    }
+
+    for (const item of cartItems) {
+      const response = await fetch("http://localhost:8000/library/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          item_id: getOriginalId(item.id),
+          item_type: item.itemType,
+          title: item.title,
+          preview_url: item.image || "",
+          price: item.price,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save item to library");
+      }
+    }
+  };
 
   const validateForm = () => {
     if (!cardNumber.trim() || !cardName.trim() || !expiry.trim() || !cvc.trim()) {
@@ -46,10 +66,16 @@ export default function Checkout() {
     return "";
   };
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isAuthenticated || !user?.id) {
+      navigate(ROUTE_PATHS.SIGNIN);
+      return;
+    }
+
     const validationError = validateForm();
+
     if (validationError) {
       setError(validationError);
       return;
@@ -64,40 +90,14 @@ export default function Checkout() {
     setLoading(true);
 
     try {
-      const existingLibrary: LibraryItem[] = JSON.parse(
-        localStorage.getItem(LIBRARY_STORAGE_KEY) || "[]"
-      );
-
-      const itemsToSave: LibraryItem[] = cartItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        category: item.category,
-        price: item.price,
-        image: item.image,
-        itemType: item.itemType,
-        videoUrl: item.itemType === "film" ? (item as any).videoUrl || "" : undefined,
-        downloadUrl:
-          item.itemType === "asset"
-            ? (item as any).downloadUrl || (item as any).fileUrl || ""
-            : undefined,
-      }));
-
-      const mergedLibrary = [...existingLibrary];
-
-      itemsToSave.forEach((newItem) => {
-        const alreadyExists = mergedLibrary.some((item) => item.id === newItem.id);
-        if (!alreadyExists) {
-          mergedLibrary.push(newItem);
-        }
-      });
-
-      localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(mergedLibrary));
+      await saveItemsToDatabaseLibrary();
 
       clearCart();
 
       navigate(ROUTE_PATHS.MY_LIBRARY);
     } catch (err) {
-      setError("Something went wrong while processing checkout.");
+      console.error("Checkout error:", err);
+      setError("Something went wrong while saving your purchase.");
     } finally {
       setLoading(false);
     }
@@ -114,6 +114,7 @@ export default function Checkout() {
               <label htmlFor="cardNumber" className="block text-sm font-medium mb-2">
                 Card Number
               </label>
+
               <input
                 id="cardNumber"
                 type="text"
@@ -129,6 +130,7 @@ export default function Checkout() {
               <label htmlFor="cardName" className="block text-sm font-medium mb-2">
                 Cardholder Name
               </label>
+
               <input
                 id="cardName"
                 type="text"
@@ -144,6 +146,7 @@ export default function Checkout() {
                 <label htmlFor="expiry" className="block text-sm font-medium mb-2">
                   Expiry Date
                 </label>
+
                 <input
                   id="expiry"
                   type="text"
@@ -158,6 +161,7 @@ export default function Checkout() {
                 <label htmlFor="cvc" className="block text-sm font-medium mb-2">
                   CVC
                 </label>
+
                 <input
                   id="cvc"
                   type="text"
