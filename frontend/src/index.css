@@ -435,15 +435,13 @@ body, body * {
   cursor: none !important;
 }
 
-body:has(a:hover) #cursor,
-body:has(button:hover) #cursor,
-body:has(input:hover) #cursor,
-body:has(select:hover) #cursor,
-body:has(textarea:hover) #cursor,
-body:has([role="button"]:hover) #cursor {
-  width: 20px !important;
-  height: 20px !important;
-  background-color: var(--accent) !important;
+@keyframes robotFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+.animate-robot-float {
+  animation: robotFloat 3.5s ease-in-out infinite;
 }
 
 /* Reveal classes for scroll animation */

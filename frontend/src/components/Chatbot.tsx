@@ -267,13 +267,21 @@ export function Chatbot() {
   return (
     <>
       <motion.div
-        className="fixed bottom-16 right-2 z-50 pointer-events-none"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        className="fixed z-50 pointer-events-none"
+        initial={{ scale: 0, opacity: 0, x: 0, bottom: '64px' }}
+        animate={{
+          scale: 1,
+          opacity: 1,
+          x: isOpen ? -390 : 0, // Slides smoothly to the left of the opened chat panel (which is 380px wide)
+          bottom: isOpen ? '180px' : '64px', // Float slightly higher to sit beautifully in the middle-left of the chat panel!
+        }}
         transition={{
           type: 'spring',
-          stiffness: 400,
-          damping: 30,
+          stiffness: 120, // Lower stiffness and higher damping for elegant, smooth slide
+          damping: 24,
+        }}
+        style={{
+          right: '8px',
         }}
       >
         <Robot3D isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
