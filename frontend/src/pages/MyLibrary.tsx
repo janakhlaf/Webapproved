@@ -12,7 +12,16 @@ interface LibraryItem {
   title: string;
   preview_url: string;
   price: number;
+
+  download_url?: string;
+  file_url?: string;
+  bucket_path?: string;
+  asset_url?: string;
+  film_url?: string;
 }
+
+const SUPABASE_PUBLIC_STORAGE_URL =
+  "https://aqfjcdjqjxuqgyyzrvpf.supabase.co/storage/v1/object/public";
 
 export default function MyLibrary() {
   const navigate = useNavigate();
@@ -40,13 +49,83 @@ export default function MyLibrary() {
       });
   }, [isAuthenticated, user?.id, navigate]);
 
-  const handleDownload = (item: LibraryItem) => {
-    if (!item.preview_url) {
-      alert("No file available for this item.");
+  const getDownloadUrl = (item: LibraryItem) => {
+    return (
+      item.download_url ||
+      item.file_url ||
+      item.bucket_path ||
+      item.asset_url ||
+      item.film_url ||
+      ""
+    );
+  };
+
+  const getFullStorageUrl = (url: string) => {
+    if (!url) return "";
+
+    if (url.startsWith("http")) {
+      return url;
+    }
+
+    if (url.startsWith("films/")) {
+      return `${SUPABASE_PUBLIC_STORAGE_URL}/films_private/${url}`;
+    }
+
+    if (
+      url.endsWith(".glb") ||
+      url.endsWith(".gltf") ||
+      url.endsWith(".fbx") ||
+      url.endsWith(".obj") ||
+      url.endsWith(".stl")
+    ) {
+      return `${SUPABASE_PUBLIC_STORAGE_URL}/assets_preview/${url}`;
+    }
+
+    return `${SUPABASE_PUBLIC_STORAGE_URL}/${url}`;
+  };
+
+  const getFileExtension = (url: string) => {
+    const cleanUrl = url.split("?")[0];
+    const parts = cleanUrl.split(".");
+    return parts.length > 1 ? parts.pop() || "file" : "file";
+  };
+
+  const handleDownload = async (item: LibraryItem) => {
+    const downloadUrl = getDownloadUrl(item);
+
+    if (!downloadUrl) {
+      alert("No downloadable file available for this item.");
       return;
     }
 
-    window.open(item.preview_url, "_blank");
+    const fullUrl = getFullStorageUrl(downloadUrl);
+
+    try {
+      const response = await fetch(fullUrl);
+
+      if (!response.ok) {
+        throw new Error("Download failed");
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const extension = getFileExtension(fullUrl);
+      const fileName = `${item.title}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Failed to download file:", error);
+      alert("Failed to download file.");
+    }
   };
 
   const getModelType = (url: string) => {
@@ -135,21 +214,20 @@ export default function MyLibrary() {
                     className="w-full h-full"
                   />
                 ) : isImageUrl(item.preview_url) ? (
-                 <img
-  src={item.preview_url}
-  alt={item.title}
-  onError={(e) => {
-    console.log("IMAGE FAILED:", item.title);
-    console.log(item.preview_url);
-
-    e.currentTarget.style.display = "none";
-  }}
-  style={{
-    width: "100%",
-    height: "350px",
-    objectFit: "cover",
-  }}
-/>
+                  <img
+                    src={item.preview_url}
+                    alt={item.title}
+                    onError={(e) => {
+                      console.log("IMAGE FAILED:", item.title);
+                      console.log(item.preview_url);
+                      e.currentTarget.style.display = "none";
+                    }}
+                    style={{
+                      width: "100%",
+                      height: "350px",
+                      objectFit: "cover",
+                    }}
+                  />
                 ) : (
                   <div
                     style={{

@@ -26,16 +26,32 @@ def get_library(user_id: int):
 
             cur.execute("""
                 SELECT
-                    id,
-                    user_id,
-                    item_id,
-                    item_type,
-                    title,
-                    preview_url,
-                    price
-                FROM library
-                WHERE user_id = %s
-                ORDER BY id DESC
+                    l.id,
+                    l.user_id,
+                    l.item_id,
+                    l.item_type,
+                    l.title,
+                    l.preview_url,
+                    l.price,
+
+                    CASE
+                        WHEN l.item_type = 'film' THEN f.bucket_path
+                        WHEN l.item_type = 'asset' THEN a.bucket_path
+                        ELSE NULL
+                    END AS download_url
+
+                FROM library l
+
+                LEFT JOIN films f
+                    ON l.item_type = 'film'
+                    AND l.item_id = f.id
+
+                LEFT JOIN assets a
+                    ON l.item_type = 'asset'
+                    AND l.item_id = a.id
+
+                WHERE l.user_id = %s
+                ORDER BY l.id DESC
             """, (user_id,))
 
             rows = cur.fetchall()
@@ -51,6 +67,7 @@ def get_library(user_id: int):
             "title": row[4],
             "preview_url": row[5],
             "price": float(row[6]) if row[6] else 0,
+            "download_url": row[7],
         })
 
     return {
