@@ -98,20 +98,19 @@ export default function Assets() {
   }, []);
 
   const filteredAssets = assets
-    .filter((asset) => {
-      const matchesSearch =
-        asset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        asset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        asset.tags?.some((tag) =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+  .filter((asset) => {
+    const search = searchQuery.trim().toLowerCase();
 
-      const matchesCategory =
-        selectedCategory === 'All Categories' ||
-        asset.category === selectedCategory;
+    const matchesSearch =
+      search === '' ||
+      asset.title.toLowerCase().startsWith(search);
 
-      return matchesSearch && matchesCategory;
-    })
+    const matchesCategory =
+      selectedCategory === 'All Categories' ||
+      asset.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  })
     .sort((a, b) => {
       return sortOrder === 'highest' ? b.price - a.price : a.price - b.price;
     });

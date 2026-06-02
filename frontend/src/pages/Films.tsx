@@ -86,19 +86,18 @@ export default function Films() {
   );
 
   const filteredFilms = allFilms.filter((film) => {
-    const matchesSearch =
-      film.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      film.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      film.tags?.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const search = searchQuery.trim().toLowerCase();
 
-    const matchesCategory =
-      selectedCategory === 'All Categories' ||
-      film.category === selectedCategory;
+  const matchesSearch =
+    search === '' ||
+    film.title.toLowerCase().startsWith(search);
 
-    return matchesSearch && matchesCategory;
-  });
+  const matchesCategory =
+    selectedCategory === 'All Categories' ||
+    film.category === selectedCategory;
+
+  return matchesSearch && matchesCategory;
+});
 
   const handleUploadClick = () => {
     if (!isAuthenticated) {
