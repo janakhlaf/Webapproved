@@ -114,6 +114,26 @@ if (profile && profile.auth_user_id !== data.session.user.id) {
   profile = updatedProfile;
 }
 
+const googleAvatar =
+  data.session.user.user_metadata?.avatar_url ||
+  data.session.user.user_metadata?.picture ||
+  getDefaultAvatar();
+
+if (!profile.default_profile_image) {
+  const { data: updatedProfile } = await supabase
+    .from('users')
+    .update({
+      default_profile_image: googleAvatar,
+      profile_image:
+        profile.profile_image || googleAvatar,
+    })
+    .eq('id', profile.id)
+    .select()
+    .single();
+
+  profile = updatedProfile;
+}
+
 
 
       setAuthState({
@@ -162,6 +182,26 @@ if (profile && profile.auth_user_id !== session.user.id) {
     .from('users')
     .update({
       auth_user_id: session.user.id,
+    })
+    .eq('id', profile.id)
+    .select()
+    .single();
+
+  profile = updatedProfile;
+}
+
+const googleAvatar =
+  session.user.user_metadata?.avatar_url ||
+  session.user.user_metadata?.picture ||
+  getDefaultAvatar();
+
+if (!profile.default_profile_image) {
+  const { data: updatedProfile } = await supabase
+    .from('users')
+    .update({
+      default_profile_image: googleAvatar,
+      profile_image:
+        profile.profile_image || googleAvatar,
     })
     .eq('id', profile.id)
     .select()

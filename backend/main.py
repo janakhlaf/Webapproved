@@ -1,3 +1,6 @@
+import os
+import requests
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -11,6 +14,7 @@ from library import router as library_router
 from ai.intent_classifier import classify_intent
 from orchestrator import get_response_by_intent
 
+
 from chat_history import (
     create_chat_session,
     get_user_sessions,
@@ -19,7 +23,7 @@ from chat_history import (
     delete_chat_session,
     get_recent_conversation_context
 )
-
+load_dotenv()
 app = FastAPI()
 
 print("THIS IS MY MAIN.PY")
@@ -51,6 +55,8 @@ class ChatRequest(BaseModel):
 class CreateChatSessionRequest(BaseModel):
     user_id: int
 
+class DeleteProfileImagesRequest(BaseModel):
+    file_names: list[str]
 
 # ========================
 # ROOT
@@ -70,6 +76,43 @@ async def root():
 async def health():
     return {"status": "ok"}
 
+@app.post("/profile-images/delete")
+async def delete_profile_images(request: DeleteProfileImagesRequest):
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    if not supabase_url or not service_key:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Missing Supabase env variables"}
+        )
+
+    if not request.file_names:
+        return {"deleted": True, "files": []}
+
+    response = requests.delete(
+      f"{supabase_url}/storage/v1/object/profile-images",
+
+        headers={
+            "Authorization": f"Bearer {service_key}",
+            "apikey": service_key,
+            "Content-Type": "application/json",
+        },
+        json={
+            "prefixes": request.file_names
+        },
+    )
+
+    if response.status_code >= 400:
+        return JSONResponse(
+            status_code=response.status_code,
+            content={"error": response.text}
+        )
+
+    return {
+        "deleted": True,
+        "files": request.file_names
+    }
 
 # ========================
 # SAFE ERROR HANDLER

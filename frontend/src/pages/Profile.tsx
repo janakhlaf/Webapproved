@@ -46,6 +46,7 @@ export default function Profile() {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [defaultAvatarUrl, setDefaultAvatarUrl] = useState(user?.avatar || '');
 
   useEffect(() => {
     getFilmsFromDatabase()
@@ -63,7 +64,7 @@ export default function Profile() {
   const loadProfile = async () => {
     const { data, error } = await supabase
       .from('users')
-      .select('full_name, bio, profile_image')
+      .select('full_name, bio, profile_image, default_profile_image')
       .eq('id', user.id)
       .single();
 
@@ -78,6 +79,12 @@ export default function Profile() {
     setEditFullName(loadedName);
     setBio(data?.bio || '');
     setAvatarUrl(data?.profile_image || '');
+    setDefaultAvatarUrl(
+  data?.default_profile_image ||
+  data?.profile_image ||
+  user.avatar ||
+  IMAGES.DEFAULT_AVATAR_3
+);
   };
 
   loadProfile();
@@ -112,11 +119,15 @@ const uploadedAssetsData = assets.filter(
     setIsAssetModalOpen(true);
   };
 
-  const getStoragePathFromPublicUrl = (url: string) => {
+ const getStoragePathFromPublicUrl = (url: string) => {
   const marker = '/profile-images/';
   const index = url.indexOf(marker);
+
   if (index === -1) return null;
-  return url.substring(index + marker.length);
+
+  return decodeURIComponent(
+    url.substring(index + marker.length)
+  );
 };
 
 const handleProfileImageChange = async (
@@ -132,8 +143,12 @@ setAvatarUrl(previewUrl);
   const oldImagePath = avatarUrl
     ? getStoragePathFromPublicUrl(avatarUrl)
     : null;
+    console.log('UPLOAD avatarUrl =', avatarUrl);
+console.log('UPLOAD oldImagePath =', oldImagePath);
 
   if (oldImagePath) {
+    console.log('avatarUrl =', avatarUrl);
+console.log('oldImagePath =', oldImagePath);
     await supabase.storage.from('profile-images').remove([oldImagePath]);
   }
 
@@ -161,28 +176,60 @@ setAvatarUrl(previewUrl);
 const handleRemoveProfileImage = async () => {
   if (!user?.id) return;
 
-  const oldImagePath = avatarUrl
-    ? getStoragePathFromPublicUrl(avatarUrl)
-    : null;
+  const { data: profile } = await supabase
+    .from('users')
+    .select('default_profile_image')
+    .eq('id', user.id)
+    .single();
 
-  setAvatarUrl('');
+  const baseAvatar =
+    profile?.default_profile_image ||
+    defaultAvatarUrl ||
+    user.avatar ||
+    IMAGES.DEFAULT_AVATAR_3;
 
-  
+  const { data: files } = await supabase.storage
+    .from('profile-images')
+    .list('');
+
+  const filesToRemove =
+    files
+      ?.filter((file: { name: string }) =>
+        file.name.startsWith(`${user.id}-`)
+      )
+      .map((file: { name: string }) => file.name)
+
+  console.log('filesToRemove:', filesToRemove);
+
+  if (filesToRemove.length > 0) {
+  const response = await fetch(
+    'http://localhost:8000/profile-images/delete',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file_names: filesToRemove,
+      }),
+    }
+  );
+
+  const result = await response.json();
+
+  console.log('delete result:', result);
+}
+
+  setAvatarUrl(baseAvatar);
 
   updateUser({
-  avatar: '',
-});
-
-  if (oldImagePath) {
-    await supabase.storage
-      .from('profile-images')
-      .remove([oldImagePath]);
-  }
+    avatar: baseAvatar,
+  });
 
   await supabase
     .from('users')
     .update({
-      profile_image: null,
+      profile_image: baseAvatar,
     })
     .eq('id', user.id);
 };

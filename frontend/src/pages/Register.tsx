@@ -149,8 +149,8 @@ const { error: updateError } =
   await supabase
     .from('users')
     .update({
-      profile_image:
-        defaultAvatar,
+      profile_image: defaultAvatar,
+      default_profile_image: defaultAvatar,
     })
     .eq(
       'auth_user_id',
