@@ -66,7 +66,7 @@ export default function Slider() {
   // Dynamic glare reflection background declared at top level
   const glareBackground = useTransform(
     [reflectionX, reflectionY],
-    ([rx, ry]) => `radial-gradient(circle at ${rx} ${ry}, rgba(255, 255, 255, 0.12) 0%, transparent 60%)`
+    ([rx, ry]) => `radial-gradient(circle at ${rx} ${ry}, rgba(125, 235, 255, 0.055) 0%, rgba(125, 235, 255, 0.018) 22%, transparent 58%)`
   );
 
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function Slider() {
           style={{
             background: glareBackground
           }}
-          className="absolute inset-0 z-30 pointer-events-none"
+          className="absolute inset-0 z-30 pointer-events-none mix-blend-screen opacity-70"
         />
 
         {/* ─── Slide Media Layers ─── */}
@@ -177,48 +177,44 @@ export default function Slider() {
                 muted
                 loop
                 playsInline
-                className="w-full h-full object-cover opacity-90 scale-105"
+                className="w-full h-full object-cover opacity-100 scale-105 saturate-125 contrast-105 brightness-105"
               />
             ) : (
               <img
                 src={s.media_url}
                 alt={s.title}
                 loading="eager"
-                className="w-full h-full object-cover opacity-90 scale-105"
+                className="w-full h-full object-cover opacity-100 scale-105 saturate-125 contrast-105 brightness-105"
               />
             )}
-
-            {/* Premium Dark Cinematic Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#020306]/98 via-[#020306]/55 to-transparent z-10" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#020306]/90 via-[#020306]/10 to-transparent z-10" />
           </div>
         ))}
 
         {/* ─── Glassmorphic HUD Text Panel (Preserves 3D depth) ─── */}
-        <div 
-          className="absolute inset-0 flex flex-col justify-center px-8 md:px-16 z-20 pointer-events-none"
+        <div
+          className="absolute left-5 bottom-5 md:left-8 md:bottom-7 z-20 pointer-events-none"
           style={{ transform: "translateZ(50px) scale(0.95)" }} // Pops out forward
         >
-          {activeSlide.tag && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-cyan-400/40 bg-cyan-400/10 text-cyan-300 text-xs font-semibold w-max mb-3 uppercase tracking-wider">
-              <ShieldCheck className="w-3 h-3 text-cyan-300 animate-pulse" />
-              {activeSlide.tag}
-            </div>
-          )}
-          
-          <h2 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent tracking-tight max-w-xl leading-none">
-            {activeSlide.title || "Human Mind & AI Logic"}
-          </h2>
-          
-          <p className="mt-4 text-sm md:text-base text-gray-300 max-w-md md:max-w-lg leading-relaxed font-sans font-light">
-            {activeSlide.description || "Synthesizing immersive holographic environments at the intersection of consciousness and machine learning."}
-          </p>
+          <div className="relative space-y-1.5">
+            {activeSlide.tag && (
+              <div
+                className="inline-flex items-center gap-1.5 text-cyan-200 text-[9px] md:text-[10px] font-semibold uppercase tracking-wider"
+                style={{ textShadow: "0 1px 10px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 240, 255, 0.45)" }}
+              >
+                <ShieldCheck className="w-3 h-3 text-cyan-300" />
+                {activeSlide.tag}
+              </div>
+            )}
 
-          <div className="mt-6 flex items-center gap-4">
-            <span className="text-xs font-mono text-cyan-400/60 uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-              Core AI Subsystem Active
-            </span>
+            <div className="flex items-center gap-4">
+              <span
+                className="text-[9px] md:text-[10px] font-mono text-cyan-300/70 uppercase tracking-widest flex items-center gap-1.5"
+                style={{ textShadow: "0 1px 10px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 240, 255, 0.45)" }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                Core AI Subsystem Active
+              </span>
+            </div>
           </div>
         </div>
 

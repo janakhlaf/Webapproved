@@ -321,9 +321,9 @@ export default function CineVerseBackground() {
       ctx.globalCompositeOperation = 'screen';
       const auroraTime = Date.now() * 0.00018;
       const auroraLayers = [
-        { y: H * 0.24, amp: H * 0.055, color: '0, 240, 255', alpha: 0.038, speed: 1.0 },
-        { y: H * 0.38, amp: H * 0.045, color: '70, 150, 255', alpha: 0.03, speed: -0.8 },
-        { y: H * 0.54, amp: H * 0.04, color: '139, 92, 246', alpha: 0.024, speed: 0.6 },
+        { y: H * 0.24, amp: H * 0.055, color: '0, 240, 255', alpha: 0.044, speed: 1.0 },
+        { y: H * 0.38, amp: H * 0.045, color: '70, 150, 255', alpha: 0.035, speed: -0.8 },
+        { y: H * 0.54, amp: H * 0.04, color: '139, 92, 246', alpha: 0.028, speed: 0.6 },
       ];
 
       auroraLayers.forEach((layer, layerIndex) => {
@@ -393,7 +393,7 @@ export default function CineVerseBackground() {
       ctx.fillRect(0, gridY - 50, W, H - gridY + 50);
 
       // Vertical perspective lines
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.045)';
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.052)';
       ctx.lineWidth = 0.8;
       const lineCount = 38;
       for (let i = -lineCount / 2; i <= lineCount / 2; i++) {
@@ -414,7 +414,7 @@ export default function CineVerseBackground() {
         const ratio = (i + scrollOffset / 60) / horizCount;
         const lineY = gridY + (H - gridY) * Math.pow(ratio, 2.3);
 
-        ctx.strokeStyle = `rgba(0, 240, 255, ${0.05 * Math.pow(ratio, 2.2)})`;
+        ctx.strokeStyle = `rgba(0, 240, 255, ${0.058 * Math.pow(ratio, 2.2)})`;
         ctx.beginPath();
         ctx.moveTo(0, lineY);
         ctx.lineTo(W, lineY);
@@ -913,141 +913,114 @@ export default function CineVerseBackground() {
 
   const getRobotSVG = (state: string) => {
     let primary = '#00f0ff';
-    let secondary = '#8b5cf6';
-    let visorFill = '#00f0ff';
-    let glow = 'rgba(0, 240, 255, 0.45)';
-    let scale = 1.0;
-    
-    // Custom eye/pupil shapes based on state
-    let eyes = (
-      <>
-        <circle cx="18" cy="22" r="2" fill="#ffffff" />
-        <circle cx="30" cy="22" r="2" fill="#ffffff" />
-      </>
-    );
-    
-    let bracketsPath = (
-      <>
-        <path d="M6 10C6 10 2 14 2 18V26C2 30 6 34 6 34" stroke={secondary} strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
-        <path d="M42 10C42 10 46 14 46 18V26C46 30 42 34 42 34" stroke={secondary} strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
-      </>
-    );
+    let secondary = '#67e8f9';
+    let accent = '#8b5cf6';
+    let glow = 'rgba(0, 240, 255, 0.55)';
+    let scale = 1;
+    let ringOpacity = 0.42;
+    let coreRadius = 2.5;
+    let dash = '5 7';
 
     switch (state) {
       case 'hover':
-        primary = '#a855f7';
-        secondary = '#00f0ff';
-        visorFill = '#a855f7';
-        glow = 'rgba(168, 85, 247, 0.65)';
-        scale = 1.1;
-        eyes = (
-          <>
-            <ellipse cx="18" cy="22" rx="2.5" ry="1.5" fill="#ffffff" />
-            <ellipse cx="30" cy="22" rx="2.5" ry="1.5" fill="#ffffff" />
-          </>
-        );
+        primary = '#67e8f9';
+        secondary = '#38bdf8';
+        accent = '#00f0ff';
+        glow = 'rgba(103, 232, 249, 0.72)';
+        scale = 1.08;
+        ringOpacity = 0.62;
+        coreRadius = 3.2;
+        dash = '4 5';
         break;
       case 'button':
-        primary = '#10b981';
-        secondary = '#00f0ff';
-        visorFill = '#10b981';
-        glow = 'rgba(16, 185, 129, 0.75)';
-        scale = 1.2;
-        eyes = (
-          <>
-            <circle cx="24" cy="22" r="3" fill="#ffffff" />
-            <circle cx="24" cy="22" r="6" stroke="#ffffff" strokeWidth="1" fill="none" className="animate-pulse" />
-          </>
-        );
+        primary = '#22d3ee';
+        secondary = '#a5f3fc';
+        accent = '#00f0ff';
+        glow = 'rgba(34, 211, 238, 0.85)';
+        scale = 1.16;
+        ringOpacity = 0.78;
+        coreRadius = 3.8;
+        dash = '2 4';
         break;
       case 'link':
-        primary = '#f43f5e';
-        secondary = '#8b5cf6';
-        visorFill = '#f43f5e';
-        glow = 'rgba(244, 63, 94, 0.65)';
-        scale = 1.15;
-        eyes = (
-          <>
-            <line x1="14" y1="22" x2="34" y2="22" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-          </>
-        );
-        bracketsPath = (
-          <>
-            <path d="M4 14L1 22L4 30" stroke={secondary} strokeWidth="2" strokeLinecap="round" />
-            <path d="M44 14L47 22L44 30" stroke={secondary} strokeWidth="2" strokeLinecap="round" />
-          </>
-        );
+        primary = '#60a5fa';
+        secondary = '#00f0ff';
+        accent = '#93c5fd';
+        glow = 'rgba(96, 165, 250, 0.78)';
+        scale = 1.12;
+        ringOpacity = 0.68;
+        coreRadius = 3.4;
+        dash = '7 4';
         break;
       case 'chatbot':
         primary = '#00f0ff';
-        secondary = '#ec4899';
-        visorFill = 'url(#chatbotVisorGrad)';
-        glow = 'rgba(0, 240, 255, 0.8)';
-        scale = 1.25;
-        eyes = (
-          <>
-            <path d="M15 24C16 22 17 22 18 24" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" fill="none" />
-            <path d="M27 24C28 22 29 22 30 24" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" fill="none" />
-          </>
-        );
+        secondary = '#e0faff';
+        accent = '#38bdf8';
+        glow = 'rgba(0, 240, 255, 0.95)';
+        scale = 1.22;
+        ringOpacity = 0.86;
+        coreRadius = 4.2;
+        dash = '1 5';
         break;
       default:
         break;
     }
 
     return (
-      <svg 
-        width="48" 
-        height="48" 
-        viewBox="0 0 48 48" 
-        fill="none" 
+      <svg
+        width="54"
+        height="54"
+        viewBox="0 0 54 54"
+        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{
           transform: `scale(${scale})`,
           transition: 'all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1)',
-          filter: `drop-shadow(0 0 8px ${glow})`,
+          filter: `drop-shadow(0 0 10px ${glow})`,
           willChange: 'transform, filter',
         }}
       >
         <defs>
-          <linearGradient id="chatbotVisorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00f0ff" />
-            <stop offset="100%" stopColor="#ec4899" />
+          <radialGradient id="cursorCoreGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+            <stop offset="45%" stopColor={primary} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={primary} stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="cursorGlassGrad" x1="12" y1="10" x2="42" y2="44">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
+            <stop offset="42%" stopColor={primary} stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#020617" stopOpacity="0.12" />
           </linearGradient>
         </defs>
 
-        {/* Decorative Outer HUD elements */}
-        {bracketsPath}
-
-        {/* Premium Metallic/Glassy Robot Head Shield */}
-        <path 
-          d="M14 12C14 10 16 8 19 8H29C32 8 34 10 34 12L38 18V28C38 31 36 33 33 35L27 39C25 40 23 40 21 39L15 35C12 33 10 31 10 28V18L14 12Z" 
-          fill="rgba(5, 8, 16, 0.93)" 
-          stroke={primary} 
-          strokeWidth="2" 
-          strokeLinejoin="round"
+        <circle cx="27" cy="27" r="18" fill="rgba(2, 6, 23, 0.18)" stroke={primary} strokeWidth="1.2" opacity={ringOpacity} />
+        <circle
+          cx="27"
+          cy="27"
+          r="22"
+          stroke={secondary}
+          strokeWidth="0.9"
+          strokeDasharray={dash}
+          opacity={ringOpacity * 0.78}
+          className="animate-spin-slow"
+          style={{ transformOrigin: '27px 27px', animationDuration: state === 'chatbot' ? '8s' : '14s' }}
         />
+        <path d="M27 5V12 M27 42V49 M5 27H12 M42 27H49" stroke={primary} strokeWidth="1.2" strokeLinecap="round" opacity="0.78" />
+        <path d="M16 11H10V17 M38 11H44V17 M16 43H10V37 M38 43H44V37" stroke={accent} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
+        <path d="M27 18L31.5 31.2L27.5 29.4L24.2 36L21.8 34.8L25.1 28.3L21.2 27.6L27 18Z" fill="url(#cursorGlassGrad)" stroke={secondary} strokeWidth="1.15" strokeLinejoin="round" />
+        <circle cx="27" cy="27" r={coreRadius + 7} fill={primary} opacity="0.045" />
+        <circle cx="27" cy="27" r={coreRadius} fill="url(#cursorCoreGrad)" className="animate-pulse" />
+        <circle cx="27" cy="27" r="1.1" fill="#ffffff" opacity="0.95" />
 
-        {/* Futuristic Robotic Visor Area */}
-        <path 
-          d="M12 18H36V26C36 27.5 35 29 33 30L26 33C25 33.5 23 33.5 22 33L15 30C13 29 12 27.5 12 26V18Z" 
-          fill="rgba(10, 15, 30, 0.95)"
-          stroke={primary} 
-          strokeWidth="1"
-        />
-        
-        {/* Dynamic Glowing Visor Background */}
-        <rect x="13" y="19" width="22" height="6" rx="1.5" fill={visorFill} opacity="0.3" />
-
-        {/* Dynamic Interactive Eyes */}
-        {eyes}
-
-        {/* Micro tech indicators/ears */}
-        <rect x="8" y="20" width="2" height="6" rx="1" fill={secondary} />
-        <rect x="38" y="20" width="2" height="6" rx="1" fill={secondary} />
-        
-        {/* Sub-core energy dot */}
-        <circle cx="24" cy="36" r="1.5" fill={primary} className="animate-pulse" />
+        {state === 'button' && (
+          <path d="M19 27H35 M27 19V35" stroke={secondary} strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+        )}
+        {state === 'link' && (
+          <path d="M33 18H40V25 M39 19L29 29" stroke={secondary} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+        )}
+        {state === 'chatbot' && (
+          <path d="M17 16C17 13.8 18.8 12 21 12H33C35.2 12 37 13.8 37 16V24C37 26.2 35.2 28 33 28H27L22 32V28H21C18.8 28 17 26.2 17 24V16Z" fill="rgba(2, 6, 23, 0.82)" stroke={primary} strokeWidth="1.1" opacity="0.92" />
+        )}
       </svg>
     );
   };
@@ -1109,7 +1082,7 @@ export default function CineVerseBackground() {
         <canvas
           ref={canvasRef}
           id="particles"
-          className="absolute inset-0 w-full h-full opacity-90"
+          className="absolute inset-0 w-full h-full opacity-95"
           style={{ pointerEvents: 'none', mixBlendMode: 'screen' }}
         />
       </div>
