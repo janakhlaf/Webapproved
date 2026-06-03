@@ -8,8 +8,7 @@ Edit2, Star, BarChart3, Camera, X, Save
 
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
-import { supabase } from '@/supabaseClient';
-
+import { supabase } from '@/lib/supabase';
 import { FilmCard } from '@/components/FilmCard';
 import { AssetCard } from '@/components/AssetCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';

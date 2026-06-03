@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../lib/supabase";
 import { IMAGES } from "@/assets/images";
 import { Play, Calendar, Eye, ArrowRight, ShieldCheck } from "lucide-react";
 

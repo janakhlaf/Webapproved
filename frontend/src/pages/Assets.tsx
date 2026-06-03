@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AssetCard } from '@/components/AssetCard';
 import { AssetDetailModal } from '@/components/AssetDetailModal';
 import { getAssetsFromDatabase } from '@/api/assetsApi';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Asset,

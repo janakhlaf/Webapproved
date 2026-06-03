@@ -4,7 +4,7 @@ import { Search, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
