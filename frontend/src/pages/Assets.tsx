@@ -56,6 +56,7 @@ export default function Assets() {
     'cartoon',
     'stylized',
     'lowpoly',
+    'Decor',
     'scifi',
     'fantasy',
     'cyberpunk',
@@ -107,7 +108,7 @@ export default function Assets() {
 
     const matchesCategory =
       selectedCategory === 'All Categories' ||
-      asset.category === selectedCategory;
+     asset.category?.trim() === selectedCategory.trim()
 
     return matchesSearch && matchesCategory;
   })

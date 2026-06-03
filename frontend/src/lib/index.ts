@@ -115,6 +115,7 @@ export const ASSET_CATEGORIES = [
   'Vehicles',
   'Drones',
   'Animals',
+  'Decor',
   'Environments',
   'Buildings',
   'Architecture',

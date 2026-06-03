@@ -34,7 +34,7 @@ export async function getAssetsFromDatabase(): Promise<Asset[]> {
 
     description: asset.description ?? '',
 
-    category: asset.category ?? 'Uncategorized',
+    category: (asset.category ?? 'Uncategorized').trim(),
 
     type: asset.file_type || 'Asset',
 
