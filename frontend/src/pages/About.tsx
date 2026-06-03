@@ -88,7 +88,7 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-5xl mx-auto mb-32"
           >
-            <div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_-6px_rgba(0,217,255,0.15)]">
+            <div className="bg-[#060b16]/90 backdrop-blur-xl border border-border/50 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_-6px_rgba(0,217,255,0.15)]">
               <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-primary">
                 Our Vision
               </h2>
@@ -123,7 +123,7 @@ export default function About() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.5 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
                     whileHover={{ scale: 1.02, y: -4 }}
-                    className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-2xl p-8 shadow-[0_4px_12px_rgba(0,217,255,0.1)] hover:shadow-[0_8px_24px_rgba(0,217,255,0.2)] transition-all duration-300"
+                    className="bg-[#060b16]/90 backdrop-blur-xl border border-border/40 rounded-2xl p-8 shadow-[0_4px_12px_rgba(0,217,255,0.1)] hover:shadow-[0_8px_24px_rgba(0,217,255,0.2)] transition-all duration-300"
                   >
                     <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center mb-6">
                       <Icon className="w-7 h-7 text-primary" />
@@ -156,7 +156,7 @@ export default function About() {
                   initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.7 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-[0_4px_12px_rgba(168,85,247,0.1)] hover:shadow-[0_8px_24px_rgba(168,85,247,0.2)] transition-all duration-300"
+                  className="bg-[#060b16]/90 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-[0_4px_12px_rgba(168,85,247,0.1)] hover:shadow-[0_8px_24px_rgba(168,85,247,0.2)] transition-all duration-300"
                 >
                   <h3 className="text-2xl font-semibold mb-3 text-accent">
                     {member.role}
@@ -175,7 +175,7 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-4xl mx-auto text-center"
           >
-            <div className="bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 backdrop-blur-xl border border-primary/30 rounded-3xl p-12 shadow-[0_8px_30px_-6px_rgba(0,217,255,0.2)]">
+            <div className="bg-[#060b16]/90 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 backdrop-blur-xl border border-primary/30 rounded-3xl p-12 shadow-[0_8px_30px_-6px_rgba(0,217,255,0.2)]">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-primary">
                 Join the Journey
               </h2>

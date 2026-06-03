@@ -346,7 +346,7 @@ export function Chatbot() {
               </div>
 
               {isAuthenticated && isHistoryOpen && (
-                <div className="border-b border-border/50 bg-background/70 backdrop-blur-xl p-3 max-h-40 overflow-y-auto space-y-2">
+                <div className="border-b border-border/50 bg-[#060b16]/90 backdrop-blur-xl p-3 max-h-40 overflow-y-auto space-y-2">
                   {sessions.length === 0 ? (
                     <p className="text-xs text-muted-foreground">
                       No chat history yet.
@@ -358,7 +358,7 @@ export function Chatbot() {
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
                           activeSessionId === session.id
                             ? 'bg-primary/20 text-foreground border border-primary/30'
-                            : 'bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                            : 'bg-[#060b16]/90 text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                         }`}
                       >
                         <button
@@ -454,7 +454,7 @@ export function Chatbot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t border-border/50 bg-card/50">
+              <div className="p-4 border-t border-border/50 bg-[#060b16]/90">
                 <div className="flex gap-2">
                   <textarea
                     value={inputValue}
@@ -483,7 +483,7 @@ export function Chatbot() {
                     rows={1}
                     className="
                       flex-1
-                      bg-background/50
+                      bg-[#060b16]/90
                       border
                       border-border/50
                       focus:border-primary/50

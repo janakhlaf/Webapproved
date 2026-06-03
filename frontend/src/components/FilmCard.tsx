@@ -32,7 +32,7 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
       <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-purple-600/10 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       {/* ─── Premium Glassmorphic Card ─── */}
-      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/45 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col cursor-none">
+      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col cursor-none">
         
         {/* Border Glint highlight */}
         <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
@@ -59,7 +59,7 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
             onClick={handleFavoriteClick}
             whileHover={{ scale: 1.12 }}
             whileTap={{ scale: 0.92 }}
-            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/75 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all duration-300 pointer-events-auto"
+            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/90 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all duration-300 pointer-events-auto"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart
@@ -75,7 +75,7 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
           <div className="absolute top-4 left-4 z-20">
             <Badge
               variant="secondary"
-              className="bg-cyan-950/40 text-cyan-300 border border-cyan-400/35 backdrop-blur-md px-2.5 py-1 text-xs font-mono uppercase tracking-widest"
+              className="bg-cyan-950/90 text-cyan-300 border border-cyan-400/35 backdrop-blur-md px-2.5 py-1 text-xs font-mono uppercase tracking-widest"
             >
               <Sparkles className="w-3.5 h-3.5 mr-1 text-cyan-300 animate-pulse" />
               {film.category}

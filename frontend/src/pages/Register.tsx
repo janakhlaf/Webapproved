@@ -264,7 +264,7 @@ if (updateError) {
                 <motion.div
                   key={feature.title}
                   whileHover={{ x: 6 }}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-card/40 border border-border/20 backdrop-blur-sm"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-[#060b16]/90 border border-border/20 backdrop-blur-sm"
                 >
                   <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
                     <feature.icon className="h-5 w-5 text-accent" />
@@ -294,7 +294,7 @@ if (updateError) {
           }}
           className="relative"
         >
-          <div className="relative bg-card/60 backdrop-blur-xl border border-border/20 rounded-3xl p-8 shadow-2xl shadow-black/20">
+          <div className="relative bg-[#060b16]/90 backdrop-blur-xl border border-border/20 rounded-3xl p-8 shadow-2xl shadow-black/20">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-accent/5 via-primary/5 to-accent/5 rounded-3xl blur-xl" />
 
             <div className="relative">
@@ -338,7 +338,7 @@ if (updateError) {
                           email: e.target.value,
                         });
                       }}
-                      className={`pl-10 h-11 bg-background/50 border-border/20 ${
+                      className={`pl-10 h-11 bg-[#060b16]/90 border-border/20 ${
                         emailError ? 'border-red-500 focus:border-red-500' : ''
                       }`}
                       required
@@ -368,7 +368,7 @@ if (updateError) {
                           password: e.target.value,
                         })
                       }
-                      className="pl-10 pr-10 h-11 bg-background/50 border-border/20"
+                      className="pl-10 pr-10 h-11 bg-[#060b16]/90 border-border/20"
                       required
                     />
 
@@ -432,7 +432,7 @@ if (updateError) {
                           confirmPassword: e.target.value,
                         })
                       }
-                      className="pl-10 pr-10 h-11 bg-background/50 border-border/20"
+                      className="pl-10 pr-10 h-11 bg-[#060b16]/90 border-border/20"
                       required
                     />
 

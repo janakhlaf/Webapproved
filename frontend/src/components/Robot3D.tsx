@@ -36,6 +36,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
   const leftLegRef = useRef<THREE.Group | null>(null);
   const rightLegRef = useRef<THREE.Group | null>(null);
   const torsoRef = useRef<THREE.Group | null>(null);
+  const raisedHandRef = useRef<THREE.Group | null>(null);
   const pedestalRef = useRef<THREE.Group | null>(null);
   const pedestalRing1Ref = useRef<THREE.Mesh | null>(null);
   const pedestalRing2Ref = useRef<THREE.Mesh | null>(null);
@@ -45,8 +46,6 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
   // Material refs for pulsing emission
   const antennaBallMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const chestGlowMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const blushMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const mouthRef = useRef<THREE.Mesh | null>(null);
 
   const prevIsOpen = useRef(isOpen);
   const isOpenRef = useRef(isOpen);
@@ -55,7 +54,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
   const stateRef = useRef({
     time: 0,
     mouse: { x: 0, y: 0, targetX: 0, targetY: 0 },
-    currentAction: 'entrance', // 'entrance', 'idle', 'waving', 'hopping', 'walking', 'clickReaction', 'openReaction', 'closeReaction', 'attentionTilt', 'attentionSpin', 'attentionFlash'
+    currentAction: 'entrance', // 'entrance', 'idle', 'footTap', 'curiousScan', 'shoulderShimmy', 'happyNod', 'clickReaction', 'openReaction', 'closeReaction', 'attentionTilt'
     actionTimer: 2.0, // 2 seconds entrance animation
     actionProgress: 0,
     clickActionPending: false,
@@ -74,8 +73,11 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       leftArmRotZ: 0,
       rightArmRotX: 0,
       rightArmRotZ: 0,
+      rightHandRotY: 0,
       leftLegRotX: 0,
       rightLegRotX: 0,
+      leftLegRotZ: 0,
+      rightLegRotZ: 0,
       squashX: 0,
       squashY: 0,
       squashZ: 0,
@@ -92,8 +94,11 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       leftArmRotZ: 0,
       rightArmRotX: 0,
       rightArmRotZ: 0,
+      rightHandRotY: 0,
       leftLegRotX: 0,
       rightLegRotX: 0,
+      leftLegRotZ: 0,
+      rightLegRotZ: 0,
       squashX: 0,
       squashY: 0,
       squashZ: 0,
@@ -107,8 +112,8 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       const { clientX, clientY } = event;
       const { innerWidth, innerHeight } = window;
       // Normalised coordinates [-1, 1]
-      stateRef.current.targetX = (clientX / innerWidth) * 2 - 1;
-      stateRef.current.targetY = -(clientY / innerHeight) * 2 + 1;
+      stateRef.current.mouse.targetX = (clientX / innerWidth) * 2 - 1;
+      stateRef.current.mouse.targetY = -(clientY / innerHeight) * 2 + 1;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -227,12 +232,12 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       scene.add(keyLight);
 
       // Cyber cyan fill light from front-left
-      const fillLight = new THREE.DirectionalLight(0x00f0ff, 1.3);
+      const fillLight = new THREE.DirectionalLight(0x4ddfff, 1.55);
       fillLight.position.set(-3.5, 0.5, 3.5);
       scene.add(fillLight);
 
-      // Purple-magenta rim light from top-back-right
-      const rimLight = new THREE.DirectionalLight(0x7c3aed, 2.8);
+      // Cool cyan rim light from top-back-right
+      const rimLight = new THREE.DirectionalLight(0x66ccff, 2.6);
       rimLight.position.set(-1, 3.5, -4);
       scene.add(rimLight);
 
@@ -240,6 +245,24 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       const baseLight = new THREE.PointLight(0x00d9ff, 2.5, 3.0);
       baseLight.position.set(0, -0.85, 0.5);
       scene.add(baseLight);
+
+      const particlePositions = new Float32Array(72);
+      for (let i = 0; i < particlePositions.length; i += 3) {
+        particlePositions[i] = (Math.random() - 0.5) * 2.6;
+        particlePositions[i + 1] = Math.random() * 2.1 - 0.85;
+        particlePositions[i + 2] = -0.7 - Math.random() * 0.9;
+      }
+      const particlesGeo = new THREE.BufferGeometry();
+      particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+      const particlesMat = new THREE.PointsMaterial({
+        color: 0x38dfff,
+        size: 0.018,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+      });
+      const particles = new THREE.Points(particlesGeo, particlesMat);
+      scene.add(particles);
 
       // 5. Build Robot Mesh
       const robotGroup = new THREE.Group();
@@ -249,33 +272,51 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       // --- MATERIALS DEFINITION ---
       // MeshPhysicalMaterial gives a beautiful premium lacquer / glossy ceramic coating
       const whiteCeramicMat = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        roughness: 0.12,
-        metalness: 0.08,
+        color: 0x8f99a6,
+        roughness: 0.13,
+        metalness: 0.72,
         clearcoat: 1.0,
         clearcoatRoughness: 0.05,
+        sheen: 0.2,
+        sheenColor: new THREE.Color(0xb8c4d0),
       });
 
-      const darkVisorMat = new THREE.MeshPhysicalMaterial({
+      const facePanelMat = new THREE.MeshPhysicalMaterial({
         color: 0x030712,
-        roughness: 0.02,
-        metalness: 0.98,
+        roughness: 0.06,
+        metalness: 0.88,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.02,
+        clearcoatRoughness: 0.015,
+      });
+
+      const eyeInkMat = new THREE.MeshStandardMaterial({
+        color: 0x07111f,
+        emissive: 0x28dfff,
+        emissiveIntensity: 0.45,
+        roughness: 0.16,
+        metalness: 0.25,
       });
 
       const chromeJointMat = new THREE.MeshStandardMaterial({
-        color: 0x7c3aed, // Metallic brand purple joint/accent
-        roughness: 0.18,
+        color: 0x9ca9ba,
+        roughness: 0.16,
         metalness: 0.92,
       });
 
       const carbonMat = new THREE.MeshPhysicalMaterial({
-        color: 0x0f172a, // Premium dark slate casing accent
-        roughness: 0.25,
-        metalness: 0.8,
-        clearcoat: 0.5,
-        clearcoatRoughness: 0.1,
+        color: 0x111827,
+        roughness: 0.18,
+        metalness: 0.85,
+        clearcoat: 0.7,
+        clearcoatRoughness: 0.08,
+      });
+
+      const armorPanelMat = new THREE.MeshPhysicalMaterial({
+        color: 0x7f8a98,
+        roughness: 0.16,
+        metalness: 0.66,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.05,
       });
 
       const cyanGlowMat = new THREE.MeshStandardMaterial({
@@ -285,10 +326,10 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
         roughness: 0.1,
       });
 
-      const violetGlowMat = new THREE.MeshStandardMaterial({
-        color: 0x8b5cf6,
-        emissive: 0x8b5cf6,
-        emissiveIntensity: 2.5,
+      const softBlueGlowMat = new THREE.MeshStandardMaterial({
+        color: 0x67e8f9,
+        emissive: 0x67e8f9,
+        emissiveIntensity: 1.7,
         roughness: 0.1,
       });
 
@@ -308,16 +349,6 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       });
       chestGlowMatRef.current = chestGlowMat;
 
-      const blushMat = new THREE.MeshStandardMaterial({
-        color: 0xff4d7d,
-        emissive: 0xff4d7d,
-        emissiveIntensity: 1.5,
-        transparent: true,
-        opacity: 0.45,
-        roughness: 0.5,
-      });
-      blushMatRef.current = blushMat;
-
       const holoConeMat = new THREE.MeshBasicMaterial({
         color: 0x00f0ff,
         transparent: true,
@@ -329,14 +360,8 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       // --- PEDESTAL (Stage Base) ---
       const pedestalGroup = new THREE.Group();
       pedestalGroup.position.y = -0.92;
-      robotGroup.add(pedestalGroup);
+      scene.add(pedestalGroup);
       pedestalRef.current = pedestalGroup;
-
-      // Base Disk
-      const baseGeo = new THREE.CylinderGeometry(0.72, 0.78, 0.08, 32);
-      const baseMesh = new THREE.Mesh(baseGeo, chromeJointMat);
-      baseMesh.receiveShadow = true;
-      pedestalGroup.add(baseMesh);
 
       // Inner Glowing Ring
       const ring1Geo = new THREE.RingGeometry(0.56, 0.61, 32);
@@ -348,11 +373,17 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
       // Outer Glowing Ring
       const ring2Geo = new THREE.RingGeometry(0.66, 0.69, 32);
-      const ring2 = new THREE.Mesh(ring2Geo, violetGlowMat);
+      const ring2 = new THREE.Mesh(ring2Geo, softBlueGlowMat);
       ring2.rotation.x = -Math.PI / 2;
       ring2.position.y = 0.045;
       pedestalGroup.add(ring2);
       pedestalRing2Ref.current = ring2;
+
+      const ring3Geo = new THREE.RingGeometry(0.28, 0.31, 32);
+      const ring3 = new THREE.Mesh(ring3Geo, cyanGlowMat);
+      ring3.rotation.x = -Math.PI / 2;
+      ring3.position.y = 0.052;
+      pedestalGroup.add(ring3);
 
       // Volumetric Hologram Projection Cone
       const holoConeGeo = new THREE.ConeGeometry(0.68, 1.45, 32, 1, true);
@@ -362,168 +393,140 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       pedestalGroup.add(holoCone);
       holoConeRef.current = holoCone;
 
+      const roundedRectShape = (width: number, height: number, radius: number) => {
+        const shape = new THREE.Shape();
+        const x = -width / 2;
+        const y = -height / 2;
+        shape.moveTo(x + radius, y);
+        shape.lineTo(x + width - radius, y);
+        shape.quadraticCurveTo(x + width, y, x + width, y + radius);
+        shape.lineTo(x + width, y + height - radius);
+        shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        shape.lineTo(x + radius, y + height);
+        shape.quadraticCurveTo(x, y + height, x, y + height - radius);
+        shape.lineTo(x, y + radius);
+        shape.quadraticCurveTo(x, y, x + radius, y);
+        return shape;
+      };
+
+      const roundedPanelGeometry = (width: number, height: number, depth: number, radius: number, bevel: number) => {
+        const geometry = new THREE.ExtrudeGeometry(roundedRectShape(width, height, radius), {
+          depth,
+          bevelEnabled: true,
+          bevelSize: bevel,
+          bevelThickness: bevel,
+          bevelSegments: 8,
+          curveSegments: 18,
+        });
+        geometry.center();
+        return geometry;
+      };
+
       // --- HEAD GROUP ---
       const headGroup = new THREE.Group();
-      headGroup.position.set(0, 0.40, 0); // Slightly adjusted upward
+      headGroup.position.set(0, 0.42, 0);
       robotGroup.add(headGroup);
       headGroupRef.current = headGroup;
 
-      // Outer Helmet shell - Oval profile for humanoid look
-      const helmetGeo = new THREE.SphereGeometry(0.56, 32, 32);
-      helmetGeo.scale(1.02, 1.06, 1.0);
+      // Large rounded-square helmet shell like the reference mascot.
+      const helmetGeo = roundedPanelGeometry(0.9, 0.72, 0.48, 0.38, 0.054);
       const helmet = new THREE.Mesh(helmetGeo, whiteCeramicMat);
       helmet.castShadow = true;
       headGroup.add(helmet);
 
-      // Front Glossy Visor Screen
-      const visorGeo = new THREE.SphereGeometry(0.53, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.52);
-      visorGeo.scale(1.03, 0.88, 0.88);
-      visorGeo.rotateX(Math.PI / 2); // face forward
-      const visor = new THREE.Mesh(visorGeo, darkVisorMat);
-      visor.position.set(0, -0.02, 0.1);
+      // Front glossy rounded-square glass screen.
+      const visorGeo = roundedPanelGeometry(0.66, 0.38, 0.045, 0.21, 0.014);
+      const visor = new THREE.Mesh(visorGeo, facePanelMat);
+      visor.position.set(0, -0.04, 0.315);
       headGroup.add(visor);
 
+      const visorSheenGeo = roundedPanelGeometry(0.48, 0.1, 0.01, 0.05, 0.004);
+      const visorSheenMat = new THREE.MeshBasicMaterial({
+        color: 0x9beafe,
+        transparent: true,
+        opacity: 0.1,
+        blending: THREE.AdditiveBlending,
+      });
+      const visorSheen = new THREE.Mesh(visorSheenGeo, visorSheenMat);
+      visorSheen.position.set(-0.07, 0.13, 0.345);
+      visorSheen.rotation.z = 0.08;
+      headGroup.add(visorSheen);
+
+      const foreheadPanelGeo = roundedPanelGeometry(0.28, 0.064, 0.02, 0.033, 0.006);
+      const foreheadPanel = new THREE.Mesh(foreheadPanelGeo, armorPanelMat);
+      foreheadPanel.position.set(0, 0.405, 0.285);
+      headGroup.add(foreheadPanel);
+
       // Curved Headphones Band (Connects ear cups)
-      const headbandGeo = new THREE.TorusGeometry(0.58, 0.035, 12, 32, Math.PI);
+      const headbandGeo = new THREE.TorusGeometry(0.49, 0.032, 12, 32, Math.PI);
       const headband = new THREE.Mesh(headbandGeo, carbonMat);
       headband.position.set(0, 0.05, 0);
       headGroup.add(headband);
 
-      // Detailed Human-like Expressive Eye System
+      // Minimal cyan smile-arc eyes on the glossy face screen.
       const eyeGroup = new THREE.Group();
-      eyeGroup.position.set(0, -0.01, 0.55);
+      eyeGroup.position.set(0, 0.005, 0.355);
       headGroup.add(eyeGroup);
-
-      const eyeBackGeo = new THREE.SphereGeometry(0.09, 32, 16);
-      eyeBackGeo.scale(1.0, 1.25, 0.15);
-
-      const irisGeo = new THREE.SphereGeometry(0.07, 32, 16);
-      irisGeo.scale(1.0, 1.1, 0.2);
-
-      const pupilGeo = new THREE.SphereGeometry(0.04, 16, 16);
-      pupilGeo.scale(1.0, 1.0, 0.4);
-
-      const highlight1Geo = new THREE.SphereGeometry(0.018, 12, 12);
-      const highlight2Geo = new THREE.SphereGeometry(0.009, 12, 12);
-      const whiteHighlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
       // Left Eye Group
       const leftEyeGroup = new THREE.Group();
-      leftEyeGroup.position.set(-0.19, -0.02, 0.02);
+      leftEyeGroup.position.set(-0.145, 0.012, 0.02);
       eyeGroup.add(leftEyeGroup);
       leftEyeRef.current = leftEyeGroup;
 
-      const leftEyeBack = new THREE.Mesh(eyeBackGeo, new THREE.MeshStandardMaterial({
-        color: 0x020306,
-        roughness: 0.1,
-        metalness: 0.9,
-      }));
-      leftEyeGroup.add(leftEyeBack);
-
-      const leftIris = new THREE.Mesh(irisGeo, violetGlowMat);
-      leftIris.position.set(0, 0, 0.01);
-      leftEyeGroup.add(leftIris);
-
-      const leftPupil = new THREE.Mesh(pupilGeo, cyanGlowMat);
-      leftPupil.position.set(0, 0, 0.02);
-      leftEyeGroup.add(leftPupil);
+      const invisiblePupilGeo = new THREE.SphereGeometry(0.001, 8, 8);
+      const leftPupil = new THREE.Mesh(invisiblePupilGeo, eyeInkMat);
       leftPupilRef.current = leftPupil;
-
-      const leftHighlight1 = new THREE.Mesh(highlight1Geo, whiteHighlightMat);
-      leftHighlight1.position.set(0.025, 0.025, 0.055);
-      leftEyeGroup.add(leftHighlight1);
-
-      const leftHighlight2 = new THREE.Mesh(highlight2Geo, whiteHighlightMat);
-      leftHighlight2.position.set(-0.015, -0.015, 0.055);
-      leftEyeGroup.add(leftHighlight2);
 
       // Right Eye Group
       const rightEyeGroup = new THREE.Group();
-      rightEyeGroup.position.set(0.19, -0.02, 0.02);
+      rightEyeGroup.position.set(0.145, 0.012, 0.02);
       eyeGroup.add(rightEyeGroup);
       rightEyeRef.current = rightEyeGroup;
 
-      const rightEyeBack = new THREE.Mesh(eyeBackGeo, new THREE.MeshStandardMaterial({
-        color: 0x020306,
-        roughness: 0.1,
-        metalness: 0.9,
-      }));
-      rightEyeGroup.add(rightEyeBack);
-
-      const rightIris = new THREE.Mesh(irisGeo, violetGlowMat);
-      rightIris.position.set(0, 0, 0.01);
-      rightEyeGroup.add(rightIris);
-
-      const rightPupil = new THREE.Mesh(pupilGeo, cyanGlowMat);
-      rightPupil.position.set(0, 0, 0.02);
-      rightEyeGroup.add(rightPupil);
+      const rightPupil = new THREE.Mesh(invisiblePupilGeo, eyeInkMat);
       rightPupilRef.current = rightPupil;
 
-      const rightHighlight1 = new THREE.Mesh(highlight1Geo, whiteHighlightMat);
-      rightHighlight1.position.set(0.025, 0.025, 0.055);
-      rightEyeGroup.add(rightHighlight1);
+      const happyEyeCurve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-0.058, -0.008, 0),
+        new THREE.Vector3(0, 0.064, 0),
+        new THREE.Vector3(0.058, -0.008, 0),
+      );
+      const happyEyeGeo = new THREE.TubeGeometry(happyEyeCurve, 24, 0.015, 8, false);
+      const leftHappyEye = new THREE.Mesh(happyEyeGeo, cyanGlowMat);
+      leftHappyEye.position.set(0, 0.035, 0.018);
+      leftEyeGroup.add(leftHappyEye);
 
-      const rightHighlight2 = new THREE.Mesh(highlight2Geo, whiteHighlightMat);
-      rightHighlight2.position.set(-0.015, -0.015, 0.055);
-      rightEyeGroup.add(rightHighlight2);
+      const rightHappyEye = new THREE.Mesh(happyEyeGeo, cyanGlowMat);
+      rightHappyEye.position.set(0, 0.035, 0.018);
+      rightEyeGroup.add(rightHappyEye);
 
-      // Cute blush cheeks under the eyes
-      const blushGeo = new THREE.SphereGeometry(0.04, 16, 16);
-      blushGeo.scale(1.2, 0.6, 0.2);
+      const noseGeo = new THREE.SphereGeometry(0.03, 16, 16);
+      noseGeo.scale(0.9, 0.62, 0.32);
+      const nose = new THREE.Mesh(noseGeo, cyanGlowMat);
+      nose.position.set(0, -0.055, 0.376);
+      headGroup.add(nose);
 
-      const leftBlush = new THREE.Mesh(blushGeo, blushMat);
-      leftBlush.position.set(-0.19, -0.15, 0.52);
-      headGroup.add(leftBlush);
-
-      const rightBlush = new THREE.Mesh(blushGeo, blushMat);
-      rightBlush.position.set(0.19, -0.15, 0.52);
-      headGroup.add(rightBlush);
-
-      // Micro-details: Brow Plates for welcoming expression (slightly raised outer edges for happiness)
-      const leftBrowGeo = new THREE.BoxGeometry(0.12, 0.016, 0.03);
-      const leftBrow = new THREE.Mesh(leftBrowGeo, carbonMat);
-      leftBrow.position.set(-0.19, 0.11, 0.52);
-      leftBrow.rotation.z = -0.05;
-      headGroup.add(leftBrow);
-
-      const rightBrowGeo = new THREE.BoxGeometry(0.12, 0.016, 0.03);
-      const rightBrow = new THREE.Mesh(rightBrowGeo, carbonMat);
-      rightBrow.position.set(0.19, 0.11, 0.52);
-      rightBrow.rotation.z = 0.05;
-      headGroup.add(rightBrow);
-
-      // Forehead Camera/Sensor Node
-      const sensorCoreGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.02, 16);
-      sensorCoreGeo.rotateX(Math.PI / 2);
-      const foreheadSensor = new THREE.Mesh(sensorCoreGeo, cyanGlowMat);
-      foreheadSensor.position.set(0, 0.22, 0.47);
-      headGroup.add(foreheadSensor);
-
-      // Happy Smiling Visor Plate Detail (larger, highly visible and welcoming)
-      const mouthGeo = new THREE.TorusGeometry(0.075, 0.008, 10, 32, Math.PI * 0.85);
-      mouthGeo.rotateX(Math.PI);
+      const mouthCurve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-0.076, 0, 0),
+        new THREE.Vector3(0, -0.05, 0),
+        new THREE.Vector3(0.076, 0, 0),
+      );
+      const mouthGeo = new THREE.TubeGeometry(mouthCurve, 24, 0.011, 8, false);
       const mouth = new THREE.Mesh(mouthGeo, cyanGlowMat);
-      mouth.position.set(0, -0.16, 0.52);
+      mouth.position.set(0, -0.14, 0.375);
       headGroup.add(mouth);
-      mouthRef.current = mouth;
-
-      // Defined Chin Panel for defined humanoid facial proportions
-      const chinGeo = new THREE.SphereGeometry(0.08, 16, 16);
-      chinGeo.scale(1.2, 0.6, 0.8);
-      const chin = new THREE.Mesh(chinGeo, whiteCeramicMat);
-      chin.position.set(0, -0.28, 0.44);
-      headGroup.add(chin);
 
       // Side Headphones/Ear Cups
-      const earGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 24);
+      const earGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.12, 28);
       earGeo.rotateZ(Math.PI / 2);
 
       const leftEar = new THREE.Mesh(earGeo, whiteCeramicMat);
-      leftEar.position.set(-0.58, 0, 0);
+      leftEar.position.set(-0.515, 0, 0);
       headGroup.add(leftEar);
 
       const rightEar = new THREE.Mesh(earGeo, whiteCeramicMat);
-      rightEar.position.set(0.58, 0, 0);
+      rightEar.position.set(0.515, 0, 0);
       headGroup.add(rightEar);
 
       // Ear concentric joints
@@ -531,39 +534,49 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       earJointGeo.rotateZ(Math.PI / 2);
 
       const leftEarJoint = new THREE.Mesh(earJointGeo, chromeJointMat);
-      leftEarJoint.position.set(-0.58, 0, 0);
+      leftEarJoint.position.set(-0.505, 0, 0);
       headGroup.add(leftEarJoint);
 
       const rightEarJoint = new THREE.Mesh(earJointGeo, chromeJointMat);
-      rightEarJoint.position.set(0.58, 0, 0);
+      rightEarJoint.position.set(0.505, 0, 0);
       headGroup.add(rightEarJoint);
 
       const earGlowGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.02, 24);
       earGlowGeo.rotateZ(Math.PI / 2);
 
-      const leftEarGlow = new THREE.Mesh(earGlowGeo, violetGlowMat);
-      leftEarGlow.position.set(-0.65, 0, 0);
+      const leftEarGlow = new THREE.Mesh(earGlowGeo, softBlueGlowMat);
+      leftEarGlow.position.set(-0.57, 0, 0);
       headGroup.add(leftEarGlow);
 
-      const rightEarGlow = new THREE.Mesh(earGlowGeo, violetGlowMat);
-      rightEarGlow.position.set(0.65, 0, 0);
+      const leftEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.012, 8, 28), cyanGlowMat);
+      leftEarInnerGlow.position.set(-0.585, 0, 0);
+      leftEarInnerGlow.rotation.y = Math.PI / 2;
+      headGroup.add(leftEarInnerGlow);
+
+      const rightEarGlow = new THREE.Mesh(earGlowGeo, softBlueGlowMat);
+      rightEarGlow.position.set(0.57, 0, 0);
       headGroup.add(rightEarGlow);
+
+      const rightEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.012, 8, 28), cyanGlowMat);
+      rightEarInnerGlow.position.set(0.585, 0, 0);
+      rightEarInnerGlow.rotation.y = Math.PI / 2;
+      headGroup.add(rightEarInnerGlow);
 
       // Temple structural panels
       const templeGeo = new THREE.BoxGeometry(0.03, 0.16, 0.28);
       const leftTemple = new THREE.Mesh(templeGeo, chromeJointMat);
-      leftTemple.position.set(-0.52, 0.06, 0.12);
+      leftTemple.position.set(-0.445, 0.06, 0.12);
       leftTemple.rotation.y = -0.1;
       headGroup.add(leftTemple);
 
       const rightTemple = new THREE.Mesh(templeGeo, chromeJointMat);
-      rightTemple.position.set(0.52, 0.06, 0.12);
+      rightTemple.position.set(0.445, 0.06, 0.12);
       rightTemple.rotation.y = 0.1;
       headGroup.add(rightTemple);
 
       // Antenna on Left Ear
       const antennaGroup = new THREE.Group();
-      antennaGroup.position.set(-0.42, 0.44, 0);
+      antennaGroup.position.set(-0.35, 0.4, 0);
       antennaGroup.rotation.z = 0.28;
       headGroup.add(antennaGroup);
 
@@ -579,7 +592,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
       // --- TORSO GROUP (Compact round chibi proportions) ---
       const torsoGroup = new THREE.Group();
-      torsoGroup.position.set(0, -0.2, 0);
+      torsoGroup.position.set(0, -0.24, 0);
       robotGroup.add(torsoGroup);
       torsoRef.current = torsoGroup;
 
@@ -589,96 +602,122 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       collar.position.set(0, 0.42, 0);
       torsoGroup.add(collar);
 
-      // White Torso Shell (Slightly smaller for cuter balance)
-      const bodyGeo = new THREE.SphereGeometry(0.33, 32, 32);
-      bodyGeo.scale(1, 1.12, 0.94);
+      // Armored rounded-rectangle torso shell: cute, but less spherical.
+      const bodyGeo = roundedPanelGeometry(0.5, 0.58, 0.28, 0.085, 0.028);
       const bodyMesh = new THREE.Mesh(bodyGeo, whiteCeramicMat);
+      bodyMesh.position.set(0, 0.02, 0);
       bodyMesh.castShadow = true;
       torsoGroup.add(bodyMesh);
 
-      // Chest emblem plate (metallic circle)
-      const chestPlateGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.025, 24);
-      chestPlateGeo.rotateX(Math.PI / 2);
-      const chestPlate = new THREE.Mesh(chestPlateGeo, carbonMat);
-      chestPlate.position.set(0, 0.10, 0.28);
+      const torsoSidePanelGeo = new THREE.BoxGeometry(0.04, 0.36, 0.06);
+      const leftTorsoPanel = new THREE.Mesh(torsoSidePanelGeo, armorPanelMat);
+      leftTorsoPanel.position.set(-0.28, 0.02, 0.045);
+      leftTorsoPanel.rotation.z = -0.08;
+      torsoGroup.add(leftTorsoPanel);
+
+      const rightTorsoPanel = new THREE.Mesh(torsoSidePanelGeo, armorPanelMat);
+      rightTorsoPanel.position.set(0.28, 0.02, 0.045);
+      rightTorsoPanel.rotation.z = 0.08;
+      torsoGroup.add(rightTorsoPanel);
+
+      const chestPlateGeo = roundedPanelGeometry(0.28, 0.2, 0.032, 0.045, 0.01);
+      const chestPlate = new THREE.Mesh(chestPlateGeo, armorPanelMat);
+      chestPlate.position.set(0, 0.12, 0.16);
       torsoGroup.add(chestPlate);
+
+      // Chest emblem plate
+      const chestCoreGeo = new THREE.CylinderGeometry(0.105, 0.105, 0.025, 24);
+      chestCoreGeo.rotateX(Math.PI / 2);
+      const chestCore = new THREE.Mesh(chestCoreGeo, carbonMat);
+      chestCore.position.set(0, 0.11, 0.182);
+      torsoGroup.add(chestCore);
 
       // Glowing Triangle Symbol inside chestplate
       const triangleGeo = new THREE.ConeGeometry(0.055, 0.01, 3);
       triangleGeo.rotateX(Math.PI / 2);
       triangleGeo.rotateZ(Math.PI); // triangle pointing up
       const triangleMesh = new THREE.Mesh(triangleGeo, chestGlowMat);
-      triangleMesh.position.set(0, 0.10, 0.296);
+      triangleMesh.position.set(0, 0.11, 0.2);
       torsoGroup.add(triangleMesh);
 
       // Glowing Outer Ring around triangle
       const chestRingGeo = new THREE.TorusGeometry(0.08, 0.01, 8, 24);
-      const chestRingMesh = new THREE.Mesh(chestRingGeo, violetGlowMat);
-      chestRingMesh.position.set(0, 0.10, 0.296);
+      const chestRingMesh = new THREE.Mesh(chestRingGeo, softBlueGlowMat);
+      chestRingMesh.position.set(0, 0.11, 0.2);
       torsoGroup.add(chestRingMesh);
 
       // Belt / Waist joint
-      const beltGeo = new THREE.CylinderGeometry(0.22, 0.20, 0.09, 24);
+      const beltGeo = new THREE.CylinderGeometry(0.25, 0.22, 0.085, 24);
       const belt = new THREE.Mesh(beltGeo, carbonMat);
       belt.position.set(0, -0.38, 0);
       torsoGroup.add(belt);
 
       // Hips pelvis armor
-      const hipsGeo = new THREE.SphereGeometry(0.25, 24, 24);
-      hipsGeo.scale(1, 0.48, 0.95);
+      const hipsGeo = roundedPanelGeometry(0.42, 0.16, 0.22, 0.045, 0.018);
       const hips = new THREE.Mesh(hipsGeo, whiteCeramicMat);
-      hips.position.set(0, -0.45, 0);
+      hips.position.set(0, -0.46, 0);
       hips.castShadow = true;
       torsoGroup.add(hips);
 
       // --- LIMBS: ARMS ---
       // Left Arm
       const leftArmGroup = new THREE.Group();
-      leftArmGroup.position.set(-0.39, 0.18, 0);
+      leftArmGroup.position.set(-0.42, 0.2, 0);
       torsoGroup.add(leftArmGroup);
       leftArmRef.current = leftArmGroup;
 
-      const shoulderJointGeo = new THREE.SphereGeometry(0.075, 16, 16);
+      const shoulderJointGeo = new THREE.SphereGeometry(0.08, 16, 16);
       const leftShoulder = new THREE.Mesh(shoulderJointGeo, chromeJointMat);
       leftArmGroup.add(leftShoulder);
 
-      const shoulderPadGeo = new THREE.SphereGeometry(0.095, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
-      shoulderPadGeo.rotateX(-Math.PI / 2);
+      const shoulderPadGeo = roundedPanelGeometry(0.16, 0.12, 0.12, 0.03, 0.01);
       const leftShoulderPad = new THREE.Mesh(shoulderPadGeo, whiteCeramicMat);
       leftShoulderPad.position.set(0, 0.03, 0);
       leftArmGroup.add(leftShoulderPad);
 
-      const upperArmGeo = new THREE.CylinderGeometry(0.06, 0.05, 0.20, 16);
-      upperArmGeo.translate(0, -0.10, 0);
+      const upperArmGeo = roundedPanelGeometry(0.14, 0.24, 0.105, 0.024, 0.009);
+      upperArmGeo.translate(0, -0.11, 0);
       const leftUpperArm = new THREE.Mesh(upperArmGeo, whiteCeramicMat);
       leftUpperArm.castShadow = true;
       leftArmGroup.add(leftUpperArm);
 
-      const elbowJointGeo = new THREE.SphereGeometry(0.055, 16, 16);
+      const elbowJointGeo = new THREE.SphereGeometry(0.064, 16, 16);
       const leftElbow = new THREE.Mesh(elbowJointGeo, chromeJointMat);
-      leftElbow.position.set(0, -0.20, 0);
+      leftElbow.position.set(0, -0.22, 0);
       leftArmGroup.add(leftElbow);
 
-      const forearmGeo = new THREE.CylinderGeometry(0.055, 0.045, 0.20, 16);
-      forearmGeo.translate(0, -0.10, 0);
+      const forearmGeo = roundedPanelGeometry(0.14, 0.24, 0.105, 0.024, 0.009);
+      forearmGeo.translate(0, -0.11, 0);
       const leftForearm = new THREE.Mesh(forearmGeo, whiteCeramicMat);
-      leftForearm.position.set(0, -0.20, 0);
+      leftForearm.position.set(0, -0.22, 0);
       leftForearm.castShadow = true;
       leftArmGroup.add(leftForearm);
 
-      const handGeo = new THREE.SphereGeometry(0.065, 16, 16);
+      const handGeo = roundedPanelGeometry(0.145, 0.12, 0.105, 0.032, 0.01);
+      const fingerGeo = new THREE.CapsuleGeometry(0.015, 0.082, 4, 8);
       const leftHand = new THREE.Mesh(handGeo, whiteCeramicMat);
-      leftHand.position.set(0, -0.42, 0);
+      leftHand.position.set(0, -0.46, 0);
       leftArmGroup.add(leftHand);
+      [-0.05, -0.018, 0.018, 0.05].forEach((x, index) => {
+        const finger = new THREE.Mesh(fingerGeo, whiteCeramicMat);
+        finger.position.set(x, -0.535, index === 0 || index === 3 ? 0.02 : 0.032);
+        finger.rotation.z = (x < 0 ? 0.18 : -0.18);
+        leftArmGroup.add(finger);
+      });
+      const leftThumb = new THREE.Mesh(fingerGeo, whiteCeramicMat);
+      leftThumb.position.set(0.085, -0.498, 0.016);
+      leftThumb.rotation.z = -0.9;
+      leftThumb.rotation.x = 0.25;
+      leftArmGroup.add(leftThumb);
 
-      const handGlowGeo = new THREE.SphereGeometry(0.03, 8, 8);
+      const handGlowGeo = new THREE.SphereGeometry(0.034, 8, 8);
       const leftHandGlow = new THREE.Mesh(handGlowGeo, cyanGlowMat);
-      leftHandGlow.position.set(0, -0.46, 0);
+      leftHandGlow.position.set(0, -0.5, 0);
       leftArmGroup.add(leftHandGlow);
 
       // Right Arm
       const rightArmGroup = new THREE.Group();
-      rightArmGroup.position.set(0.39, 0.18, 0);
+      rightArmGroup.position.set(0.42, 0.2, 0);
       torsoGroup.add(rightArmGroup);
       rightArmRef.current = rightArmGroup;
 
@@ -694,67 +733,82 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       rightArmGroup.add(rightUpperArm);
 
       const rightElbow = new THREE.Mesh(elbowJointGeo, chromeJointMat);
-      rightElbow.position.set(0, -0.20, 0);
+      rightElbow.position.set(0, -0.22, 0);
       rightArmGroup.add(rightElbow);
 
       const rightForearm = new THREE.Mesh(forearmGeo, whiteCeramicMat);
-      rightForearm.position.set(0, -0.20, 0);
+      rightForearm.position.set(0, -0.22, 0);
       rightForearm.castShadow = true;
       rightArmGroup.add(rightForearm);
 
+      const rightHandGroup = new THREE.Group();
+      rightHandGroup.position.set(0, -0.46, 0);
+      rightHandGroup.rotation.y = -0.65;
+      raisedHandRef.current = rightHandGroup;
+      rightArmGroup.add(rightHandGroup);
+
       const rightHand = new THREE.Mesh(handGeo, whiteCeramicMat);
-      rightHand.position.set(0, -0.42, 0);
-      rightArmGroup.add(rightHand);
+      rightHandGroup.add(rightHand);
+      [-0.05, -0.018, 0.018, 0.05].forEach((x, index) => {
+        const finger = new THREE.Mesh(fingerGeo, whiteCeramicMat);
+        finger.position.set(x, -0.072, index === 0 || index === 3 ? 0.02 : 0.032);
+        finger.rotation.z = (x < 0 ? 0.18 : -0.18);
+        rightHandGroup.add(finger);
+      });
+      const rightThumb = new THREE.Mesh(fingerGeo, whiteCeramicMat);
+      rightThumb.position.set(-0.09, -0.028, 0.02);
+      rightThumb.rotation.z = 0.92;
+      rightThumb.rotation.x = -0.22;
+      rightHandGroup.add(rightThumb);
 
       const rightHandGlow = new THREE.Mesh(handGlowGeo, cyanGlowMat);
-      rightHandGlow.position.set(0, -0.46, 0);
-      rightArmGroup.add(rightHandGlow);
+      rightHandGlow.position.set(0, -0.04, 0.045);
+      rightHandGroup.add(rightHandGlow);
 
       // --- LIMBS: LEGS ---
       // Left Leg
       const leftLegGroup = new THREE.Group();
-      leftLegGroup.position.set(-0.17, -0.45, 0);
+      leftLegGroup.position.set(-0.18, -0.47, 0);
       torsoGroup.add(leftLegGroup);
       leftLegRef.current = leftLegGroup;
 
-      const hipJointGeo = new THREE.SphereGeometry(0.07, 16, 16);
+      const hipJointGeo = new THREE.SphereGeometry(0.074, 16, 16);
       const leftHip = new THREE.Mesh(hipJointGeo, chromeJointMat);
       leftLegGroup.add(leftHip);
 
-      const thighGeo = new THREE.CylinderGeometry(0.07, 0.06, 0.20, 16);
-      thighGeo.translate(0, -0.10, 0);
+      const thighGeo = roundedPanelGeometry(0.16, 0.23, 0.115, 0.026, 0.01);
+      thighGeo.translate(0, -0.11, 0);
       const leftThigh = new THREE.Mesh(thighGeo, whiteCeramicMat);
       leftThigh.castShadow = true;
       leftLegGroup.add(leftThigh);
 
-      const kneeJointGeo = new THREE.SphereGeometry(0.055, 16, 16);
-      const leftKnee = new THREE.Mesh(kneeJointGeo, violetGlowMat);
-      leftKnee.position.set(0, -0.20, 0);
+      const kneeJointGeo = new THREE.SphereGeometry(0.064, 16, 16);
+      const leftKnee = new THREE.Mesh(kneeJointGeo, softBlueGlowMat);
+      leftKnee.position.set(0, -0.22, 0);
       leftLegGroup.add(leftKnee);
 
-      const shinGeo = new THREE.CylinderGeometry(0.06, 0.075, 0.20, 16);
-      shinGeo.translate(0, -0.10, 0);
+      const shinGeo = roundedPanelGeometry(0.16, 0.25, 0.125, 0.026, 0.01);
+      shinGeo.translate(0, -0.11, 0);
       const leftShin = new THREE.Mesh(shinGeo, whiteCeramicMat);
-      leftShin.position.set(0, -0.20, 0);
+      leftShin.position.set(0, -0.22, 0);
       leftShin.castShadow = true;
       leftLegGroup.add(leftShin);
 
       // Feet
-      const footGeo = new THREE.SphereGeometry(0.08, 16, 16);
-      footGeo.scale(1.1, 0.6, 1.45);
+      const footGeo = roundedPanelGeometry(0.24, 0.11, 0.3, 0.032, 0.01);
       const leftFoot = new THREE.Mesh(footGeo, whiteCeramicMat);
-      leftFoot.position.set(0, -0.40, 0.04);
+      leftFoot.position.set(0, -0.44, 0.04);
       leftFoot.castShadow = true;
       leftLegGroup.add(leftFoot);
 
-      const soleGeo = new THREE.BoxGeometry(0.16, 0.02, 0.26);
+      const soleGeo = new THREE.BoxGeometry(0.2, 0.024, 0.29);
       const leftSole = new THREE.Mesh(soleGeo, carbonMat);
-      leftSole.position.set(0, -0.43, 0.04);
+      leftSole.position.set(0, -0.47, 0.04);
       leftLegGroup.add(leftSole);
 
       // Right Leg
       const rightLegGroup = new THREE.Group();
-      rightLegGroup.position.set(0.17, -0.45, 0);
+      rightLegGroup.position.set(0.18, -0.47, 0);
       torsoGroup.add(rightLegGroup);
       rightLegRef.current = rightLegGroup;
 
@@ -765,29 +819,29 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       rightThigh.castShadow = true;
       rightLegGroup.add(rightThigh);
 
-      const rightKnee = new THREE.Mesh(kneeJointGeo, violetGlowMat);
-      rightKnee.position.set(0, -0.20, 0);
+      const rightKnee = new THREE.Mesh(kneeJointGeo, softBlueGlowMat);
+      rightKnee.position.set(0, -0.22, 0);
       rightLegGroup.add(rightKnee);
 
       const rightShin = new THREE.Mesh(shinGeo, whiteCeramicMat);
-      rightShin.position.set(0, -0.20, 0);
+      rightShin.position.set(0, -0.22, 0);
       rightShin.castShadow = true;
       rightLegGroup.add(rightShin);
 
       const rightFoot = new THREE.Mesh(footGeo, whiteCeramicMat);
-      rightFoot.position.set(0, -0.40, 0.04);
+      rightFoot.position.set(0, -0.44, 0.04);
       rightFoot.castShadow = true;
       rightLegGroup.add(rightFoot);
 
       const rightSole = new THREE.Mesh(soleGeo, carbonMat);
-      rightSole.position.set(0, -0.43, 0.04);
+      rightSole.position.set(0, -0.47, 0.04);
       rightLegGroup.add(rightSole);
 
       // Floating data scan ring
       const scanRingGeo = new THREE.RingGeometry(0.68, 0.70, 32);
-      const scanRing = new THREE.Mesh(scanRingGeo, violetGlowMat);
+      const scanRing = new THREE.Mesh(scanRingGeo, softBlueGlowMat);
       scanRing.rotation.x = -Math.PI / 2;
-      scanRing.position.y = -0.45;
+      scanRing.position.y = -0.72;
       robotGroup.add(scanRing);
       holoRingRef.current = scanRing;
 
@@ -804,31 +858,51 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
         const breathe = Math.sin(state.time * 1.8) * 0.5;
         const float = Math.sin(state.time * 1.2) * 0.045;
         const lateralSway = Math.sin(state.time * 0.6) * 0.02;
+        const cuteBounce = Math.sin(state.time * 2.4) * 0.018;
+        const attentionWave = Math.max(0, Math.sin(state.time * 0.85));
+        const smoothStep = (value: number) => value * value * (3 - 2 * value);
+        const greetingCycle = (state.time * 0.22) % 1;
+        let greetingLift = 0;
+        if (greetingCycle < 0.18) {
+          greetingLift = 0;
+        } else if (greetingCycle < 0.42) {
+          greetingLift = smoothStep((greetingCycle - 0.18) / 0.24);
+        } else if (greetingCycle < 0.64) {
+          greetingLift = 1;
+        } else if (greetingCycle < 0.84) {
+          greetingLift = 1 - smoothStep((greetingCycle - 0.64) / 0.2);
+        }
+        const waveWindow = greetingCycle >= 0.42 && greetingCycle < 0.64
+          ? Math.sin(((greetingCycle - 0.42) / 0.22) * Math.PI * 4) * 0.13
+          : 0;
 
         // Reset poses targets default
         const pose = state.pose;
-        pose.robotY = float - 0.08; 
+        pose.robotY = float + cuteBounce - 0.08; 
         pose.robotX = lateralSway;
         pose.robotRotY = 0;
         pose.squashX = 1;
         pose.squashY = 1 + breathe * 0.012; 
         pose.squashZ = 1;
-        pose.holoOpacity = 0.10 + float * 0.03;
+        pose.holoOpacity = 0.12 + Math.abs(float) * 0.8;
 
         // Mouse looking controls (expressive, friendly gaze tracking)
         const lookRange = isHovered ? 0.45 : 0.25;
         pose.headRotY = state.mouse.x * lookRange;
         pose.headRotX = -state.mouse.y * (lookRange * 0.35);
-        pose.headRotZ = 0;
+        pose.headRotZ = Math.sin(state.time * 1.4) * 0.025;
         pose.robotRotY = state.mouse.x * 0.08;
 
         // Playful arm sways
-        pose.leftArmRotZ = -0.22 + Math.sin(state.time * 1.0) * 0.04;
-        pose.leftArmRotX = Math.sin(state.time * 0.8) * 0.04;
-        pose.rightArmRotZ = 0.22 - Math.sin(state.time * 1.0) * 0.04;
-        pose.rightArmRotX = -Math.sin(state.time * 0.8) * 0.04;
+        pose.leftArmRotZ = -0.28 + Math.sin(state.time * 1.2) * 0.04;
+        pose.leftArmRotX = Math.sin(state.time * 0.9) * 0.035;
+        pose.rightArmRotZ = 0.28 + greetingLift * (Math.PI * 0.62 - 0.28) + waveWindow;
+        pose.rightArmRotX = -0.03 + greetingLift * -0.16 + Math.sin(state.time * 0.9) * 0.025;
+        pose.rightHandRotY = -0.22 + greetingLift * -0.48 + waveWindow * 0.9;
         pose.leftLegRotX = 0;
         pose.rightLegRotX = 0;
+        pose.leftLegRotZ = Math.sin(state.time * 0.9) * 0.015;
+        pose.rightLegRotZ = -Math.sin(state.time * 0.9) * 0.015;
 
         // Eye movement tracking: pupils track coordinates + organic focus jitter (playful intelligence)
         const eyeJitterX = Math.sin(state.time * 8.0) * 0.003;
@@ -865,7 +939,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
           pose.squashZ = s;
           pose.robotY = -0.92 + progress * 0.84 + float * 0.05;
           pose.robotRotY = (1.0 - progress) * Math.PI * 2;
-          pose.holoOpacity = progress * 0.12;
+          pose.holoOpacity = 0.1 + progress * 0.12;
 
           if (state.actionTimer <= 0) {
             state.currentAction = 'idle';
@@ -879,7 +953,6 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
           pose.squashY = 1.0 + Math.cos(progress * Math.PI * 2) * 0.06;
           pose.robotRotY = progress * Math.PI * 0.5; // Welcoming pivot
           pose.leftArmRotZ = -0.3 + Math.sin(state.time * 6) * 0.08;
-          pose.rightArmRotZ = 0.3 + Math.sin(state.time * 6) * 0.08;
           pose.headRotX = -0.08;
 
           if (state.actionTimer <= 0) {
@@ -906,7 +979,6 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
           const hopHeight = Math.sin(progress * Math.PI) * 0.18; // Playful hop
           pose.robotY += hopHeight;
           pose.squashY = 1 + Math.cos(progress * Math.PI * 2) * 0.06;
-          pose.rightArmRotZ = Math.PI * 0.45 + Math.sin(state.time * 8) * 0.15;
           pose.leftArmRotZ = -Math.PI * 0.2;
           pose.headRotX = -0.05;
 
@@ -924,31 +996,35 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
           pose.headRotY = state.mouse.x * 0.4;
           pose.headRotX = -state.mouse.y * 0.2;
           
-          // Cheerful welcoming wave
-          pose.rightArmRotZ = Math.PI * 0.65 + Math.sin(state.time * 10) * 0.22;
-          pose.rightArmRotX = Math.sin(state.time * 5) * 0.08;
           pose.leftArmRotZ = -0.22; 
         }
         else {
-          // AUTONOMOUS STATE MACHINE (Restore playful choices: idle, waving, and head tilts)
+          // AUTONOMOUS STATE MACHINE: quiet standing motions that keep the assistant alive.
           if (state.actionTimer <= 0) {
             const roll = Math.random();
-            if (roll < 0.6) {
+            if (roll < 0.34) {
               state.currentAction = 'idle';
-              state.actionTimer = Math.random() * 8 + 6;
-            } else if (roll < 0.85) {
-              state.currentAction = 'waving';
-              state.actionTimer = 2.4;
-            } else {
+              state.actionTimer = Math.random() * 4 + 3;
+            } else if (roll < 0.62) {
               state.currentAction = 'attentionTilt';
-              state.actionTimer = 2.0;
+              state.actionTimer = 2.3;
+            } else if (roll < 0.82) {
+              state.currentAction = 'curiousScan';
+              state.actionTimer = 2.6;
+            } else if (roll < 0.9) {
+              state.currentAction = 'footTap';
+              state.actionTimer = 2.4;
+            } else if (roll < 0.97) {
+              state.currentAction = 'happyNod';
+              state.actionTimer = 1.9;
+            } else {
+              state.currentAction = 'shoulderShimmy';
+              state.actionTimer = 1.8;
             }
           }
 
-          if (state.currentAction === 'waving') {
-            pose.rightArmRotZ = Math.PI * 0.65 + Math.sin(state.time * 8) * 0.20; // Cheerful waving
-            pose.rightArmRotX = Math.sin(state.time * 4) * 0.08;
-            pose.headRotZ = 0.04 * Math.sin(state.time * 4); // happy head nod
+          if (state.currentAction === 'idle' && attentionWave > 0.86) {
+            pose.headRotZ = Math.sin(state.time * 4) * 0.055;
           }
           else if (state.currentAction === 'attentionTilt') {
             const progress = (2.0 - state.actionTimer) / 2.0;
@@ -956,27 +1032,47 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
             pose.headRotZ = tiltAngle;
             pose.headRotY = state.mouse.x * lookRange + tiltAngle * 0.3;
           }
+          else if (state.currentAction === 'curiousScan') {
+            const progress = Math.max(0, Math.min(1, (2.6 - state.actionTimer) / 2.6));
+            const scan = Math.sin(progress * Math.PI * 2);
+            pose.headRotY = scan * 0.42;
+            pose.headRotX = -0.08 + Math.sin(progress * Math.PI) * 0.08;
+            pose.robotRotY = scan * 0.12;
+            pose.leftArmRotZ = -0.32 - Math.sin(progress * Math.PI) * 0.08;
+          }
+          else if (state.currentAction === 'footTap') {
+            const tap = Math.max(0, Math.sin(state.time * 9));
+            pose.robotY += tap * 0.018;
+            pose.rightLegRotX = -tap * 0.24;
+            pose.rightLegRotZ = -0.08 - tap * 0.05;
+            pose.leftLegRotZ = 0.04;
+            pose.headRotZ = -0.04 + Math.sin(state.time * 3) * 0.025;
+          }
+          else if (state.currentAction === 'happyNod') {
+            const progress = Math.max(0, Math.min(1, (1.9 - state.actionTimer) / 1.9));
+            const nod = Math.sin(progress * Math.PI * 3);
+            const cheer = Math.sin(progress * Math.PI);
+            pose.headRotX = -0.1 * cheer + nod * 0.045;
+            pose.robotY += cheer * 0.045;
+            pose.squashX = 1 + cheer * 0.025;
+            pose.squashY = 1 - cheer * 0.025;
+            pose.leftArmRotZ = -0.34 - cheer * 0.08;
+          }
+          else if (state.currentAction === 'shoulderShimmy') {
+            const shimmy = Math.sin(state.time * 12);
+            pose.robotX += shimmy * 0.018;
+            pose.robotRotY = shimmy * 0.18;
+            pose.leftArmRotZ = -0.28 - shimmy * 0.12;
+            pose.headRotZ = -shimmy * 0.04;
+          }
         }
 
         // Standard glowing pulses for antenna and core
         if (antennaBallMatRef.current) {
           antennaBallMatRef.current.emissiveIntensity = 2.5 + Math.sin(state.time * 4.0) * 0.8;
         }
-        if (blushMatRef.current) {
-          const targetOpacity = isHovered ? 0.90 : 0.50;
-          const targetIntensity = isHovered ? 2.5 : 1.5;
-          blushMatRef.current.opacity += (targetOpacity - blushMatRef.current.opacity) * 0.1;
-          blushMatRef.current.emissiveIntensity += (targetIntensity - blushMatRef.current.emissiveIntensity) * 0.1;
-        }
         if (chestGlowMatRef.current) {
           chestGlowMatRef.current.emissiveIntensity = 3.0 + Math.sin(state.time * 2.0) * 0.8;
-        }
-
-        // Playful smile micro-movements (pulsing scale and dynamic emission based on breathing/hover)
-        if (mouthRef.current) {
-          const mouthPulseX = 1.0 + Math.sin(state.time * 2.5) * 0.08;
-          const mouthPulseY = 1.0 + Math.cos(state.time * 2.5) * 0.04;
-          mouthRef.current.scale.set(mouthPulseX, mouthPulseY, 1.0);
         }
 
         // LERP current pose coordinates to targets for smooth transitions
@@ -993,8 +1089,11 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
         current.leftArmRotZ += (pose.leftArmRotZ - current.leftArmRotZ) * lerpFactor;
         current.rightArmRotX += (pose.rightArmRotX - current.rightArmRotX) * lerpFactor;
         current.rightArmRotZ += (pose.rightArmRotZ - current.rightArmRotZ) * lerpFactor;
+        current.rightHandRotY += (pose.rightHandRotY - current.rightHandRotY) * lerpFactor;
         current.leftLegRotX += (pose.leftLegRotX - current.leftLegRotX) * lerpFactor;
         current.rightLegRotX += (pose.rightLegRotX - current.rightLegRotX) * lerpFactor;
+        current.leftLegRotZ += (pose.leftLegRotZ - current.leftLegRotZ) * lerpFactor;
+        current.rightLegRotZ += (pose.rightLegRotZ - current.rightLegRotZ) * lerpFactor;
         current.squashX += (pose.squashX - current.squashX) * lerpFactor;
         current.squashY += (pose.squashY - current.squashY) * lerpFactor;
         current.squashZ += (pose.squashZ - current.squashZ) * lerpFactor;
@@ -1023,9 +1122,18 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
           rightArmRef.current.rotation.x = current.rightArmRotX;
           rightArmRef.current.rotation.z = current.rightArmRotZ;
         }
+        if (raisedHandRef.current) {
+          raisedHandRef.current.rotation.y = current.rightHandRotY;
+        }
 
-        if (leftLegRef.current) leftLegRef.current.rotation.x = current.leftLegRotX;
-        if (rightLegRef.current) rightLegRef.current.rotation.x = current.rightLegRotX;
+        if (leftLegRef.current) {
+          leftLegRef.current.rotation.x = current.leftLegRotX;
+          leftLegRef.current.rotation.z = current.leftLegRotZ;
+        }
+        if (rightLegRef.current) {
+          rightLegRef.current.rotation.x = current.rightLegRotX;
+          rightLegRef.current.rotation.z = current.rightLegRotZ;
+        }
 
         // Adjust hologram cone opacity
         if (holoConeRef.current) {
@@ -1039,7 +1147,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
         // Animate floating scan ring
         if (holoRingRef.current) {
-          holoRingRef.current.position.y = -0.45 + Math.sin(state.time * 2.5) * 0.15;
+          holoRingRef.current.position.y = -0.72 + Math.sin(state.time * 2.5) * 0.04;
           holoRingRef.current.rotation.z += 0.015;
           const ringScale = 1.0 + Math.sin(state.time * 1.8) * 0.08;
           holoRingRef.current.scale.set(ringScale, ringScale, 1.0);

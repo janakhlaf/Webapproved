@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           "border border-cyan-500/25 bg-transparent hover:bg-cyan-500/8 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.18)] text-cyan-300",
         secondary:
-          "bg-[#080c14]/65 backdrop-blur-xl text-foreground border border-cyan-500/10 hover:border-cyan-400/45 hover:bg-cyan-500/8 hover:shadow-[0_0_15px_rgba(0,240,255,0.15)]",
+          "bg-[#080c14]/90 backdrop-blur-xl text-foreground border border-cyan-500/10 hover:border-cyan-400/45 hover:bg-cyan-500/8 hover:shadow-[0_0_15px_rgba(0,240,255,0.15)]",
         ghost: "hover:bg-cyan-500/8 hover:text-cyan-300 text-muted-foreground",
         link: "text-cyan-400 underline-offset-4 hover:underline",
       },
@@ -23,7 +23,7 @@ const buttonVariants = cva(
         default: "h-10 px-5 py-2.5 rounded-lg",
         sm: "h-9 rounded-md px-3.5 text-xs",
         lg: "h-11 rounded-lg px-8 text-base",
-        icon: "h-10 w-10 rounded-full border border-white/5 bg-[#080c14]/50 backdrop-blur-md hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-105 transition-all duration-300",
+        icon: "h-10 w-10 rounded-full border border-white/5 bg-[#080c14]/90 backdrop-blur-md hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-105 transition-all duration-300",
       },
     },
     defaultVariants: {

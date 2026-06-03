@@ -302,11 +302,11 @@ const handleCancelEdit = () => {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={springPresets.gentle}
-          className="relative rounded-3xl overflow-hidden mb-8 border border-border/20 bg-card/40 backdrop-blur-xl shadow-2xl shadow-black/20"
+          className="relative rounded-3xl overflow-hidden mb-8 border border-border/20 bg-[#060b16]/95 backdrop-blur-xl shadow-2xl shadow-black/20"
         >
           <div className="h-36 bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,217,255,0.15),transparent_70%)]" />
-            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#060b16]/95 to-transparent" />
           </div>
 
           <div className="px-8 pb-8">
@@ -426,10 +426,10 @@ const handleCancelEdit = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...springPresets.gentle, delay: 0.1 + index * 0.07 }}
-                className={`relative rounded-2xl border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-sm p-5 overflow-hidden group hover:scale-[1.02] transition-transform duration-300`}
+                className={`relative rounded-2xl border ${stat.border} bg-[#060b16]/95 bg-gradient-to-br ${stat.gradient} backdrop-blur-sm p-5 overflow-hidden group hover:scale-[1.02] transition-transform duration-300`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`p-2 rounded-xl bg-card/60 ${stat.iconColor}`}>
+                  <div className={`p-2 rounded-xl bg-[#060b16]/90 ${stat.iconColor}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                 </div>
@@ -445,7 +445,7 @@ const handleCancelEdit = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...springPresets.gentle, delay: 0.3 }}
-          className="rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl overflow-hidden shadow-xl shadow-black/10"
+          className="rounded-3xl border border-border/20 bg-[#060b16]/95 backdrop-blur-xl overflow-hidden shadow-xl shadow-black/10"
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="border-b border-border/20 px-6 pt-4">
@@ -459,7 +459,7 @@ const handleCancelEdit = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-t-xl rounded-b-none data-[state=active]:bg-background/60 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-all text-sm"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-t-xl rounded-b-none data-[state=active]:bg-[#060b16]/95 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary text-muted-foreground hover:text-foreground transition-all text-sm"
                   >
                     <tab.icon className="w-4 h-4" />
                     <span className="hidden sm:inline">{tab.label}</span>

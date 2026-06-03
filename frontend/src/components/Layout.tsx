@@ -100,7 +100,7 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-foreground">
       {/* ─── Persistent Glassmorphic Header ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-cyan-500/10 backdrop-blur-2xl bg-[#020306]/55 shadow-[0_8px_32px_rgba(0,0,0,0.65)]">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-cyan-500/10 backdrop-blur-2xl bg-[#020306]/90 shadow-[0_8px_32px_rgba(0,0,0,0.65)]">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             to={ROUTE_PATHS.HOME}
@@ -142,7 +142,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-3">
                 <Link
                   to={ROUTE_PATHS.MY_LIBRARY}
-                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-white/5 bg-[#080c14]/40 hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] transition-all cursor-none"
+                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-white/5 bg-[#080c14]/90 hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] transition-all cursor-none"
                   aria-label="My Library"
                   title="My Library"
                 >
@@ -151,7 +151,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
                 <Link
                   to={ROUTE_PATHS.CART}
-                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-white/5 bg-[#080c14]/40 hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] transition-all cursor-none"
+                  className="relative flex items-center justify-center w-10 h-10 rounded-full border border-white/5 bg-[#080c14]/90 hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_12px_rgba(0,240,255,0.2)] transition-all cursor-none"
                   aria-label="Shopping Cart"
                   title="Cart"
                 >
@@ -282,7 +282,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     <Link
                       to={ROUTE_PATHS.MY_LIBRARY}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/40 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/90 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
                     >
                       <Library className="h-5 w-5 text-cyan-400" />
                       <span className="text-sm font-medium">My Library</span>
@@ -291,7 +291,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     <Link
                       to={ROUTE_PATHS.CART}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/40 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/90 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
                     >
                       <ShoppingCart className="h-5 w-5 text-cyan-400" />
                       <span className="text-sm font-medium">Cart</span>
@@ -310,7 +310,7 @@ export function Layout({ children }: { children: ReactNode }) {
                       <Link
                         to={ROUTE_PATHS.PROFILE}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/40 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-[#080c14]/90 border border-white/5 hover:border-cyan-400/40 transition-colors cursor-none"
                       >
                         <Avatar className="h-10 w-10 border border-cyan-500/20">
                           <AvatarImage src={user.avatar} alt={user.name} />
@@ -386,7 +386,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </main>
 
       {/* ─── Persistent Glassmorphic Footer ─── */}
-      <footer className="border-t border-cyan-500/10 bg-[#080c14]/20 backdrop-blur-md relative z-10">
+      <footer className="border-t border-cyan-500/10 bg-[#080c14]/90 backdrop-blur-md relative z-10">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>

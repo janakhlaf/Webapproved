@@ -140,7 +140,7 @@ export default function Slider() {
           rotateY,
           transformStyle: "preserve-3d"
         }}
-        className="relative w-full aspect-[21/6.5] md:aspect-[21/5.5] overflow-hidden rounded-2xl border border-cyan-500/20 bg-[#080c14]/45 backdrop-blur-xl group transition-all duration-300 shadow-[0_30px_90px_rgba(0,0,0,0.85)] cursor-none hover:border-cyan-400/50"
+        className="relative w-full aspect-[21/6.5] md:aspect-[21/5.5] overflow-hidden rounded-2xl border border-cyan-500/20 bg-[#080c14]/90 backdrop-blur-xl group transition-all duration-300 shadow-[0_30px_90px_rgba(0,0,0,0.85)] cursor-none hover:border-cyan-400/50"
       >
         {/* ─── Edge Lighting Inner Glow ─── */}
         <div className="absolute inset-0 rounded-2xl pointer-events-none z-40 border border-cyan-400/0 group-hover:border-cyan-400/30 group-hover:shadow-[inset_0_0_25px_rgba(0,240,255,0.18)] transition-all duration-500" />

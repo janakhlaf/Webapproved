@@ -99,7 +99,7 @@ export default function SignIn() {
         transition={springPresets.gentle}
         className="relative w-full max-w-md"
       >
-        <div className="relative bg-card/60 backdrop-blur-xl border border-border/20 rounded-3xl p-8 shadow-2xl shadow-black/20">
+        <div className="relative bg-[#060b16]/90 backdrop-blur-xl border border-border/20 rounded-3xl p-8 shadow-2xl shadow-black/20">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-3xl blur-xl" />
 
           <div className="relative">
@@ -145,7 +145,7 @@ export default function SignIn() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="pl-10 h-12 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
+                    className="pl-10 h-12 bg-[#060b16]/90 border-border/20 focus:border-border/50 transition-colors"
                     required
                   />
                 </div>
@@ -165,7 +165,7 @@ export default function SignIn() {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="pl-10 pr-10 h-12 bg-background/50 border-border/20 focus:border-border/50 transition-colors"
+                    className="pl-10 pr-10 h-12 bg-[#060b16]/90 border-border/20 focus:border-border/50 transition-colors"
                     required
                   />
                   <button

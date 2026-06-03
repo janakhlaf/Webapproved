@@ -254,24 +254,36 @@ formData.append('auth_user_id', authUser.id);
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search films..."
-                title="Search films"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+             <Input
+  type="text"
+  placeholder="Search films..."
+  title="Search films"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="
+    pl-10
+    bg-[#060b16]/90
+    backdrop-blur-xl
+    border-border/20
+    shadow-2xl shadow-black/20
+    text-white
+  "
+/>
             </div>
 
             <Select
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
-              <SelectTrigger
-                className="w-full md:w-[200px]"
-                title="Filter films by category"
-              >
+             <SelectTrigger
+  className="
+    w-full md:w-[200px]
+    bg-[#060b16]/90
+    backdrop-blur-xl
+    border-cyan-500/20
+  "
+  title="Filter films by category"
+>
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
 
@@ -288,7 +300,18 @@ formData.append('auth_user_id', authUser.id);
 
         {/* Upload Form */}
         {uploadFormVisible && (
-          <div className="mb-10 p-8 rounded-2xl bg-card/50 border border-border/50">
+          <div
+  className="
+    mb-10
+    p-8
+    rounded-2xl
+    bg-[#060b16]/90
+    backdrop-blur-xl
+    border
+    border-border/20
+    shadow-2xl shadow-black/20
+  "
+>
             <h3 className="text-2xl font-bold mb-6">Upload Your Film</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -297,15 +320,15 @@ formData.append('auth_user_id', authUser.id);
                   Film Title
                 </label>
                 <Input
-                  placeholder="Enter film title"
-                  value={filmTitle}
-                  onChange={(e) => setFilmTitle(e.target.value)}
-                  className={
-                    submitError && !filmTitle
-                      ? 'border-red-500 focus-visible:ring-red-500'
-                      : ''
-                  }
-                />
+  placeholder="Enter film title"
+  value={filmTitle}
+  onChange={(e) => setFilmTitle(e.target.value)}
+  className="
+    bg-[#060b16]/90
+    backdrop-blur-xl
+    border-cyan-500/20
+  "
+/>
 
                 {submitError && !filmTitle && (
                   <p className="text-red-500 text-xs mt-1">
@@ -451,15 +474,15 @@ formData.append('auth_user_id', authUser.id);
                   Price
                 </label>
                 <Input
-                  placeholder="Enter film price"
-                  value={filmPrice}
-                  onChange={(e) => setFilmPrice(e.target.value)}
-                  className={
-                    submitError && !filmPrice
-                      ? 'border-red-500 focus-visible:ring-red-500'
-                      : ''
-                  }
-                />
+  placeholder="Enter film title"
+  value={filmTitle}
+  onChange={(e) => setFilmTitle(e.target.value)}
+  className="
+    bg-[#060b16]/90
+    backdrop-blur-xl
+    border-cyan-500/20
+  "
+/>
 
                 {submitError && !filmPrice && (
                   <p className="text-red-500 text-xs mt-1">

@@ -116,7 +116,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
             </div>
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'signin' | 'register')} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/50">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-[#060b16]/90">
                 <TabsTrigger value="signin" className="data-[state=active]:bg-primary/20">
                   Sign In
                 </TabsTrigger>
@@ -139,7 +139,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="your@email.com"
                         value={signInData.email}
                         onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -157,7 +157,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="••••••••"
                         value={signInData.password}
                         onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -223,7 +223,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="John Doe"
                         value={registerData.name}
                         onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -241,7 +241,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="your@email.com"
                         value={registerData.email}
                         onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -259,7 +259,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="••••••••"
                         value={registerData.password}
                         onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -277,7 +277,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                         placeholder="••••••••"
                         value={registerData.confirmPassword}
                         onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                        className="pl-10 bg-background/50 border-primary/20 focus:border-primary/50"
+                        className="pl-10 bg-[#060b16]/90 border-primary/20 focus:border-primary/50"
                         required
                       />
                     </div>
@@ -291,7 +291,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
                       value={registerData.accountType}
                       onValueChange={(value) => setRegisterData({ ...registerData, accountType: value })}
                     >
-                      <SelectTrigger className="bg-background/50 border-primary/20 focus:border-primary/50">
+                      <SelectTrigger className="bg-[#060b16]/90 border-primary/20 focus:border-primary/50">
                         <SelectValue placeholder="Select account type" />
                       </SelectTrigger>
                       <SelectContent>

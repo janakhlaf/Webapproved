@@ -316,6 +316,65 @@ export default function CineVerseBackground() {
       // Handled primarily via hardware-accelerated CSS blobs
 
       // ─── LAYER 2: 3D PERSPECTIVE GRID (Scroll-reactive & Travel sliding) ───
+      // Aurora AI Waves: soft premium ribbons behind the tech grid.
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      const auroraTime = Date.now() * 0.00018;
+      const auroraLayers = [
+        { y: H * 0.24, amp: H * 0.055, color: '0, 240, 255', alpha: 0.038, speed: 1.0 },
+        { y: H * 0.38, amp: H * 0.045, color: '70, 150, 255', alpha: 0.03, speed: -0.8 },
+        { y: H * 0.54, amp: H * 0.04, color: '139, 92, 246', alpha: 0.024, speed: 0.6 },
+      ];
+
+      auroraLayers.forEach((layer, layerIndex) => {
+        const pOff = getMouseOffset(0.12 + layerIndex * 0.05);
+        const waveWarpX = warpActive ? warpDir * warpFactor * 80 * (0.15 + layerIndex * 0.05) : 0;
+        const gradient = ctx.createLinearGradient(0, layer.y - layer.amp * 2, 0, layer.y + layer.amp * 2.6);
+        gradient.addColorStop(0, `rgba(${layer.color}, 0)`);
+        gradient.addColorStop(0.42, `rgba(${layer.color}, ${layer.alpha})`);
+        gradient.addColorStop(0.62, `rgba(${layer.color}, ${layer.alpha * 0.72})`);
+        gradient.addColorStop(1, `rgba(${layer.color}, 0)`);
+
+        ctx.beginPath();
+        ctx.moveTo(-40, H);
+        for (let x = -40; x <= W + 40; x += 22) {
+          const t = x / W;
+          const y =
+            layer.y +
+            pOff.y * 0.18 -
+            scrollY * (0.035 + layerIndex * 0.012) +
+            Math.sin(t * Math.PI * 2.2 + auroraTime * layer.speed + layerIndex) * layer.amp +
+            Math.sin(t * Math.PI * 5.1 - auroraTime * layer.speed * 1.8) * layer.amp * 0.32;
+          ctx.lineTo(x + pOff.x * 0.16 - waveWarpX, y);
+        }
+        ctx.lineTo(W + 40, H);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.filter = 'blur(18px)';
+        ctx.fill();
+        ctx.filter = 'none';
+
+        ctx.beginPath();
+        for (let x = -40; x <= W + 40; x += 22) {
+          const t = x / W;
+          const y =
+            layer.y +
+            pOff.y * 0.14 -
+            scrollY * (0.035 + layerIndex * 0.012) +
+            Math.sin(t * Math.PI * 2.2 + auroraTime * layer.speed + layerIndex) * layer.amp +
+            Math.sin(t * Math.PI * 5.1 - auroraTime * layer.speed * 1.8) * layer.amp * 0.32;
+          if (x === -40) ctx.moveTo(x + pOff.x * 0.14 - waveWarpX, y);
+          else ctx.lineTo(x + pOff.x * 0.14 - waveWarpX, y);
+        }
+        ctx.strokeStyle = `rgba(${layer.color}, ${layer.alpha * 1.15})`;
+        ctx.lineWidth = 1;
+        ctx.shadowColor = `rgba(${layer.color}, ${layer.alpha * 2.5})`;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+      ctx.restore();
+
       ctx.save();
       const gridY = H * 0.55; // Horizon
       
