@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Heart, Tag, User, Box, HardDrive, Cpu } from 'lucide-react';
-import { useState } from 'react';
 import { Asset, formatPrice } from '@/lib/index';
 import { LazyAsset3DViewer } from '@/components/LazyAsset3DViewer';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -20,7 +19,6 @@ interface AssetCardProps {
 export function AssetCard({ asset, onClick }: AssetCardProps) {
   const { isAssetFavorite, toggleAssetFavorite } = useFavorites();
   const isFavorite = isAssetFavorite(asset.id);
-  const [isPreviewActive, setIsPreviewActive] = useState(false);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -39,33 +37,29 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: 'easeOut' }}
-      whileHover={{ y: -4, scale: 1.01 }}
-      onMouseEnter={() => setIsPreviewActive(true)}
-      onFocusCapture={() => setIsPreviewActive(true)}
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      whileHover={{ y: -8, scale: 1.025 }}
       className="group relative cursor-none h-full flex flex-col"
       onClick={handleCardClick}
     >
       {/* ─── Cyber Glow Backdrop Shadow ─── */}
-      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-cyan-300/12 to-blue-500/10 blur-md opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-purple-500/15 via-cyan-500/20 to-blue-600/15 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       {/* ─── Premium Glassmorphic Card ─── */}
-      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/72 backdrop-blur-sm border border-cyan-400/18 hover:border-cyan-400/36 transition-colors duration-300 shadow-[0_12px_28px_rgba(0,0,0,0.55),0_0_16px_rgba(0,240,255,0.04)] h-full flex flex-col justify-between cursor-none">
+      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col justify-between cursor-none">
         
         {/* Border Glint highlight */}
         <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
 
         {/* ─── 3D Model / Thumbnail Viewer Container ─── */}
-        <div className="relative aspect-square bg-[#03050a]/76 overflow-hidden border-b border-white/5">
-          <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#020306]/75 opacity-45 z-10 pointer-events-none" />
+        <div className="relative aspect-square bg-[#03050a]/90 overflow-hidden border-b border-white/5">
+          <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#020306]/85 opacity-65 z-10 pointer-events-none" />
           
           <LazyAsset3DViewer
             modelType={asset.modelType}
             modelUrl={asset.modelUrl}
             viewMode="card"
-            deferUntilActive
-            isActive={isPreviewActive}
-            className="w-full h-full transform transition-transform duration-500 ease-out group-hover:scale-[1.03] z-0"
+            className="w-full h-full transform transition-transform duration-700 ease-out group-hover:scale-108 z-0"
           />
 
           {/* Favoriting Circle Button */}
@@ -73,7 +67,7 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
             onClick={handleFavoriteClick}
             whileHover={{ scale: 1.12 }}
             whileTap={{ scale: 0.92 }}
-            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/86 backdrop-blur-sm border border-cyan-500/20 hover:border-cyan-400/45 hover:shadow-[0_0_10px_rgba(0,240,255,0.18)] transition-all duration-200 pointer-events-auto"
+            className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-[#080c14]/90 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all duration-300 pointer-events-auto"
           >
             <Heart
               className={`w-4 h-4 transition-all duration-300 ${
@@ -86,13 +80,13 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
 
           {/* Telemetry Status Badges */}
           <div className="absolute top-4 left-4 z-20">
-            <Badge className="bg-cyan-950/82 text-cyan-300 border border-cyan-400/30 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest">
+            <Badge className="bg-cyan-950/90 text-cyan-300 border border-cyan-400/35 backdrop-blur-md px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest">
               {statusLabel}
             </Badge>
           </div>
 
           <div className="absolute bottom-4 left-4 z-20">
-            <Badge className="bg-[#080c14]/82 backdrop-blur-sm border border-white/10 text-gray-300 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
+            <Badge className="bg-[#080c14]/90 backdrop-blur-md border border-white/10 text-gray-300 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
               <Tag className="w-3 h-3 mr-1 text-cyan-400" />
               {asset.type}
             </Badge>

@@ -272,13 +272,13 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       // --- MATERIALS DEFINITION ---
       // MeshPhysicalMaterial gives a beautiful premium lacquer / glossy ceramic coating
       const whiteCeramicMat = new THREE.MeshPhysicalMaterial({
-        color: 0x8f99a6,
-        roughness: 0.13,
-        metalness: 0.72,
+        color: 0xdce3ec,
+        roughness: 0.1,
+        metalness: 0.48,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.05,
-        sheen: 0.2,
-        sheenColor: new THREE.Color(0xb8c4d0),
+        clearcoatRoughness: 0.035,
+        sheen: 0.32,
+        sheenColor: new THREE.Color(0xffffff),
       });
 
       const facePanelMat = new THREE.MeshPhysicalMaterial({
@@ -312,9 +312,9 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       });
 
       const armorPanelMat = new THREE.MeshPhysicalMaterial({
-        color: 0x7f8a98,
-        roughness: 0.16,
-        metalness: 0.66,
+        color: 0xb8c2cf,
+        roughness: 0.13,
+        metalness: 0.62,
         clearcoat: 0.9,
         clearcoatRoughness: 0.05,
       });
@@ -424,23 +424,23 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
       // --- HEAD GROUP ---
       const headGroup = new THREE.Group();
-      headGroup.position.set(0, 0.42, 0);
+      headGroup.position.set(0, 0.44, 0);
       robotGroup.add(headGroup);
       headGroupRef.current = headGroup;
 
       // Large rounded-square helmet shell like the reference mascot.
-      const helmetGeo = roundedPanelGeometry(0.9, 0.72, 0.48, 0.38, 0.054);
+      const helmetGeo = roundedPanelGeometry(0.92, 0.68, 0.5, 0.22, 0.06);
       const helmet = new THREE.Mesh(helmetGeo, whiteCeramicMat);
       helmet.castShadow = true;
       headGroup.add(helmet);
 
       // Front glossy rounded-square glass screen.
-      const visorGeo = roundedPanelGeometry(0.66, 0.38, 0.045, 0.21, 0.014);
+      const visorGeo = roundedPanelGeometry(0.68, 0.4, 0.05, 0.16, 0.014);
       const visor = new THREE.Mesh(visorGeo, facePanelMat);
-      visor.position.set(0, -0.04, 0.315);
+      visor.position.set(0, -0.035, 0.325);
       headGroup.add(visor);
 
-      const visorSheenGeo = roundedPanelGeometry(0.48, 0.1, 0.01, 0.05, 0.004);
+      const visorSheenGeo = roundedPanelGeometry(0.46, 0.09, 0.01, 0.045, 0.004);
       const visorSheenMat = new THREE.MeshBasicMaterial({
         color: 0x9beafe,
         transparent: true,
@@ -448,29 +448,29 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
         blending: THREE.AdditiveBlending,
       });
       const visorSheen = new THREE.Mesh(visorSheenGeo, visorSheenMat);
-      visorSheen.position.set(-0.07, 0.13, 0.345);
+      visorSheen.position.set(-0.08, 0.13, 0.36);
       visorSheen.rotation.z = 0.08;
       headGroup.add(visorSheen);
 
-      const foreheadPanelGeo = roundedPanelGeometry(0.28, 0.064, 0.02, 0.033, 0.006);
+      const foreheadPanelGeo = roundedPanelGeometry(0.3, 0.06, 0.02, 0.03, 0.006);
       const foreheadPanel = new THREE.Mesh(foreheadPanelGeo, armorPanelMat);
-      foreheadPanel.position.set(0, 0.405, 0.285);
+      foreheadPanel.position.set(0, 0.38, 0.3);
       headGroup.add(foreheadPanel);
 
       // Curved Headphones Band (Connects ear cups)
-      const headbandGeo = new THREE.TorusGeometry(0.49, 0.032, 12, 32, Math.PI);
+      const headbandGeo = new THREE.TorusGeometry(0.5, 0.028, 12, 32, Math.PI);
       const headband = new THREE.Mesh(headbandGeo, carbonMat);
       headband.position.set(0, 0.05, 0);
       headGroup.add(headband);
 
       // Minimal cyan smile-arc eyes on the glossy face screen.
       const eyeGroup = new THREE.Group();
-      eyeGroup.position.set(0, 0.005, 0.355);
+      eyeGroup.position.set(0, 0.018, 0.372);
       headGroup.add(eyeGroup);
 
       // Left Eye Group
       const leftEyeGroup = new THREE.Group();
-      leftEyeGroup.position.set(-0.145, 0.012, 0.02);
+      leftEyeGroup.position.set(-0.15, 0.012, 0.02);
       eyeGroup.add(leftEyeGroup);
       leftEyeRef.current = leftEyeGroup;
 
@@ -480,7 +480,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
       // Right Eye Group
       const rightEyeGroup = new THREE.Group();
-      rightEyeGroup.position.set(0.145, 0.012, 0.02);
+      rightEyeGroup.position.set(0.15, 0.012, 0.02);
       eyeGroup.add(rightEyeGroup);
       rightEyeRef.current = rightEyeGroup;
 
@@ -488,11 +488,11 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       rightPupilRef.current = rightPupil;
 
       const happyEyeCurve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(-0.058, -0.008, 0),
-        new THREE.Vector3(0, 0.064, 0),
-        new THREE.Vector3(0.058, -0.008, 0),
+        new THREE.Vector3(-0.064, -0.008, 0),
+        new THREE.Vector3(0, 0.066, 0),
+        new THREE.Vector3(0.064, -0.008, 0),
       );
-      const happyEyeGeo = new THREE.TubeGeometry(happyEyeCurve, 24, 0.015, 8, false);
+      const happyEyeGeo = new THREE.TubeGeometry(happyEyeCurve, 24, 0.017, 8, false);
       const leftHappyEye = new THREE.Mesh(happyEyeGeo, cyanGlowMat);
       leftHappyEye.position.set(0, 0.035, 0.018);
       leftEyeGroup.add(leftHappyEye);
@@ -501,76 +501,60 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       rightHappyEye.position.set(0, 0.035, 0.018);
       rightEyeGroup.add(rightHappyEye);
 
-      const noseGeo = new THREE.SphereGeometry(0.03, 16, 16);
-      noseGeo.scale(0.9, 0.62, 0.32);
-      const nose = new THREE.Mesh(noseGeo, cyanGlowMat);
-      nose.position.set(0, -0.055, 0.376);
-      headGroup.add(nose);
-
-      const mouthCurve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(-0.076, 0, 0),
-        new THREE.Vector3(0, -0.05, 0),
-        new THREE.Vector3(0.076, 0, 0),
-      );
-      const mouthGeo = new THREE.TubeGeometry(mouthCurve, 24, 0.011, 8, false);
-      const mouth = new THREE.Mesh(mouthGeo, cyanGlowMat);
-      mouth.position.set(0, -0.14, 0.375);
-      headGroup.add(mouth);
-
       // Side Headphones/Ear Cups
-      const earGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.12, 28);
+      const earGeo = new THREE.CylinderGeometry(0.19, 0.19, 0.13, 32);
       earGeo.rotateZ(Math.PI / 2);
 
       const leftEar = new THREE.Mesh(earGeo, whiteCeramicMat);
-      leftEar.position.set(-0.515, 0, 0);
+      leftEar.position.set(-0.525, 0, 0);
       headGroup.add(leftEar);
 
       const rightEar = new THREE.Mesh(earGeo, whiteCeramicMat);
-      rightEar.position.set(0.515, 0, 0);
+      rightEar.position.set(0.525, 0, 0);
       headGroup.add(rightEar);
 
       // Ear concentric joints
-      const earJointGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.13, 24);
+      const earJointGeo = new THREE.CylinderGeometry(0.125, 0.125, 0.14, 28);
       earJointGeo.rotateZ(Math.PI / 2);
 
       const leftEarJoint = new THREE.Mesh(earJointGeo, chromeJointMat);
-      leftEarJoint.position.set(-0.505, 0, 0);
+      leftEarJoint.position.set(-0.515, 0, 0);
       headGroup.add(leftEarJoint);
 
       const rightEarJoint = new THREE.Mesh(earJointGeo, chromeJointMat);
-      rightEarJoint.position.set(0.505, 0, 0);
+      rightEarJoint.position.set(0.515, 0, 0);
       headGroup.add(rightEarJoint);
 
-      const earGlowGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.02, 24);
+      const earGlowGeo = new THREE.CylinderGeometry(0.088, 0.088, 0.02, 28);
       earGlowGeo.rotateZ(Math.PI / 2);
 
       const leftEarGlow = new THREE.Mesh(earGlowGeo, softBlueGlowMat);
-      leftEarGlow.position.set(-0.57, 0, 0);
+      leftEarGlow.position.set(-0.592, 0, 0);
       headGroup.add(leftEarGlow);
 
-      const leftEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.012, 8, 28), cyanGlowMat);
-      leftEarInnerGlow.position.set(-0.585, 0, 0);
+      const leftEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.122, 0.012, 8, 32), cyanGlowMat);
+      leftEarInnerGlow.position.set(-0.608, 0, 0);
       leftEarInnerGlow.rotation.y = Math.PI / 2;
       headGroup.add(leftEarInnerGlow);
 
       const rightEarGlow = new THREE.Mesh(earGlowGeo, softBlueGlowMat);
-      rightEarGlow.position.set(0.57, 0, 0);
+      rightEarGlow.position.set(0.592, 0, 0);
       headGroup.add(rightEarGlow);
 
-      const rightEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.012, 8, 28), cyanGlowMat);
-      rightEarInnerGlow.position.set(0.585, 0, 0);
+      const rightEarInnerGlow = new THREE.Mesh(new THREE.TorusGeometry(0.122, 0.012, 8, 32), cyanGlowMat);
+      rightEarInnerGlow.position.set(0.608, 0, 0);
       rightEarInnerGlow.rotation.y = Math.PI / 2;
       headGroup.add(rightEarInnerGlow);
 
       // Temple structural panels
-      const templeGeo = new THREE.BoxGeometry(0.03, 0.16, 0.28);
+      const templeGeo = new THREE.BoxGeometry(0.03, 0.15, 0.27);
       const leftTemple = new THREE.Mesh(templeGeo, chromeJointMat);
-      leftTemple.position.set(-0.445, 0.06, 0.12);
+      leftTemple.position.set(-0.455, 0.05, 0.12);
       leftTemple.rotation.y = -0.1;
       headGroup.add(leftTemple);
 
       const rightTemple = new THREE.Mesh(templeGeo, chromeJointMat);
-      rightTemple.position.set(0.445, 0.06, 0.12);
+      rightTemple.position.set(0.455, 0.05, 0.12);
       rightTemple.rotation.y = 0.1;
       headGroup.add(rightTemple);
 
@@ -597,39 +581,39 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       torsoRef.current = torsoGroup;
 
       // Dark neck collar joint
-      const collarGeo = new THREE.CylinderGeometry(0.11, 0.15, 0.11, 16);
+      const collarGeo = new THREE.CylinderGeometry(0.12, 0.16, 0.1, 18);
       const collar = new THREE.Mesh(collarGeo, carbonMat);
       collar.position.set(0, 0.42, 0);
       torsoGroup.add(collar);
 
       // Armored rounded-rectangle torso shell: cute, but less spherical.
-      const bodyGeo = roundedPanelGeometry(0.5, 0.58, 0.28, 0.085, 0.028);
+      const bodyGeo = roundedPanelGeometry(0.48, 0.52, 0.3, 0.14, 0.03);
       const bodyMesh = new THREE.Mesh(bodyGeo, whiteCeramicMat);
-      bodyMesh.position.set(0, 0.02, 0);
+      bodyMesh.position.set(0, 0.025, 0);
       bodyMesh.castShadow = true;
       torsoGroup.add(bodyMesh);
 
-      const torsoSidePanelGeo = new THREE.BoxGeometry(0.04, 0.36, 0.06);
+      const torsoSidePanelGeo = new THREE.BoxGeometry(0.038, 0.32, 0.06);
       const leftTorsoPanel = new THREE.Mesh(torsoSidePanelGeo, armorPanelMat);
-      leftTorsoPanel.position.set(-0.28, 0.02, 0.045);
+      leftTorsoPanel.position.set(-0.265, 0.015, 0.055);
       leftTorsoPanel.rotation.z = -0.08;
       torsoGroup.add(leftTorsoPanel);
 
       const rightTorsoPanel = new THREE.Mesh(torsoSidePanelGeo, armorPanelMat);
-      rightTorsoPanel.position.set(0.28, 0.02, 0.045);
+      rightTorsoPanel.position.set(0.265, 0.015, 0.055);
       rightTorsoPanel.rotation.z = 0.08;
       torsoGroup.add(rightTorsoPanel);
 
-      const chestPlateGeo = roundedPanelGeometry(0.28, 0.2, 0.032, 0.045, 0.01);
+      const chestPlateGeo = roundedPanelGeometry(0.28, 0.2, 0.034, 0.075, 0.012);
       const chestPlate = new THREE.Mesh(chestPlateGeo, armorPanelMat);
-      chestPlate.position.set(0, 0.12, 0.16);
+      chestPlate.position.set(0, 0.12, 0.172);
       torsoGroup.add(chestPlate);
 
       // Chest emblem plate
-      const chestCoreGeo = new THREE.CylinderGeometry(0.105, 0.105, 0.025, 24);
+      const chestCoreGeo = new THREE.CylinderGeometry(0.105, 0.105, 0.026, 28);
       chestCoreGeo.rotateX(Math.PI / 2);
       const chestCore = new THREE.Mesh(chestCoreGeo, carbonMat);
-      chestCore.position.set(0, 0.11, 0.182);
+      chestCore.position.set(0, 0.11, 0.196);
       torsoGroup.add(chestCore);
 
       // Glowing Triangle Symbol inside chestplate
@@ -637,23 +621,23 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       triangleGeo.rotateX(Math.PI / 2);
       triangleGeo.rotateZ(Math.PI); // triangle pointing up
       const triangleMesh = new THREE.Mesh(triangleGeo, chestGlowMat);
-      triangleMesh.position.set(0, 0.11, 0.2);
+      triangleMesh.position.set(0, 0.11, 0.214);
       torsoGroup.add(triangleMesh);
 
       // Glowing Outer Ring around triangle
       const chestRingGeo = new THREE.TorusGeometry(0.08, 0.01, 8, 24);
       const chestRingMesh = new THREE.Mesh(chestRingGeo, softBlueGlowMat);
-      chestRingMesh.position.set(0, 0.11, 0.2);
+      chestRingMesh.position.set(0, 0.11, 0.214);
       torsoGroup.add(chestRingMesh);
 
       // Belt / Waist joint
-      const beltGeo = new THREE.CylinderGeometry(0.25, 0.22, 0.085, 24);
+      const beltGeo = new THREE.CylinderGeometry(0.25, 0.22, 0.08, 24);
       const belt = new THREE.Mesh(beltGeo, carbonMat);
       belt.position.set(0, -0.38, 0);
       torsoGroup.add(belt);
 
       // Hips pelvis armor
-      const hipsGeo = roundedPanelGeometry(0.42, 0.16, 0.22, 0.045, 0.018);
+      const hipsGeo = roundedPanelGeometry(0.42, 0.15, 0.24, 0.075, 0.018);
       const hips = new THREE.Mesh(hipsGeo, whiteCeramicMat);
       hips.position.set(0, -0.46, 0);
       hips.castShadow = true;
@@ -662,39 +646,39 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       // --- LIMBS: ARMS ---
       // Left Arm
       const leftArmGroup = new THREE.Group();
-      leftArmGroup.position.set(-0.42, 0.2, 0);
+      leftArmGroup.position.set(-0.405, 0.18, 0);
       torsoGroup.add(leftArmGroup);
       leftArmRef.current = leftArmGroup;
 
-      const shoulderJointGeo = new THREE.SphereGeometry(0.08, 16, 16);
+      const shoulderJointGeo = new THREE.SphereGeometry(0.082, 16, 16);
       const leftShoulder = new THREE.Mesh(shoulderJointGeo, chromeJointMat);
       leftArmGroup.add(leftShoulder);
 
-      const shoulderPadGeo = roundedPanelGeometry(0.16, 0.12, 0.12, 0.03, 0.01);
+      const shoulderPadGeo = roundedPanelGeometry(0.17, 0.13, 0.12, 0.055, 0.01);
       const leftShoulderPad = new THREE.Mesh(shoulderPadGeo, whiteCeramicMat);
       leftShoulderPad.position.set(0, 0.03, 0);
       leftArmGroup.add(leftShoulderPad);
 
-      const upperArmGeo = roundedPanelGeometry(0.14, 0.24, 0.105, 0.024, 0.009);
+      const upperArmGeo = roundedPanelGeometry(0.15, 0.235, 0.11, 0.055, 0.01);
       upperArmGeo.translate(0, -0.11, 0);
       const leftUpperArm = new THREE.Mesh(upperArmGeo, whiteCeramicMat);
       leftUpperArm.castShadow = true;
       leftArmGroup.add(leftUpperArm);
 
-      const elbowJointGeo = new THREE.SphereGeometry(0.064, 16, 16);
+      const elbowJointGeo = new THREE.SphereGeometry(0.066, 16, 16);
       const leftElbow = new THREE.Mesh(elbowJointGeo, chromeJointMat);
       leftElbow.position.set(0, -0.22, 0);
       leftArmGroup.add(leftElbow);
 
-      const forearmGeo = roundedPanelGeometry(0.14, 0.24, 0.105, 0.024, 0.009);
+      const forearmGeo = roundedPanelGeometry(0.155, 0.245, 0.11, 0.055, 0.01);
       forearmGeo.translate(0, -0.11, 0);
       const leftForearm = new THREE.Mesh(forearmGeo, whiteCeramicMat);
       leftForearm.position.set(0, -0.22, 0);
       leftForearm.castShadow = true;
       leftArmGroup.add(leftForearm);
 
-      const handGeo = roundedPanelGeometry(0.145, 0.12, 0.105, 0.032, 0.01);
-      const fingerGeo = new THREE.CapsuleGeometry(0.015, 0.082, 4, 8);
+      const handGeo = roundedPanelGeometry(0.15, 0.12, 0.11, 0.052, 0.01);
+      const fingerGeo = new THREE.CapsuleGeometry(0.015, 0.086, 4, 8);
       const leftHand = new THREE.Mesh(handGeo, whiteCeramicMat);
       leftHand.position.set(0, -0.46, 0);
       leftArmGroup.add(leftHand);
@@ -717,7 +701,7 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
 
       // Right Arm
       const rightArmGroup = new THREE.Group();
-      rightArmGroup.position.set(0.42, 0.2, 0);
+      rightArmGroup.position.set(0.405, 0.18, 0);
       torsoGroup.add(rightArmGroup);
       rightArmRef.current = rightArmGroup;
 
@@ -768,26 +752,26 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       // --- LIMBS: LEGS ---
       // Left Leg
       const leftLegGroup = new THREE.Group();
-      leftLegGroup.position.set(-0.18, -0.47, 0);
+      leftLegGroup.position.set(-0.18, -0.46, 0);
       torsoGroup.add(leftLegGroup);
       leftLegRef.current = leftLegGroup;
 
-      const hipJointGeo = new THREE.SphereGeometry(0.074, 16, 16);
+      const hipJointGeo = new THREE.SphereGeometry(0.076, 16, 16);
       const leftHip = new THREE.Mesh(hipJointGeo, chromeJointMat);
       leftLegGroup.add(leftHip);
 
-      const thighGeo = roundedPanelGeometry(0.16, 0.23, 0.115, 0.026, 0.01);
+      const thighGeo = roundedPanelGeometry(0.17, 0.23, 0.12, 0.055, 0.01);
       thighGeo.translate(0, -0.11, 0);
       const leftThigh = new THREE.Mesh(thighGeo, whiteCeramicMat);
       leftThigh.castShadow = true;
       leftLegGroup.add(leftThigh);
 
-      const kneeJointGeo = new THREE.SphereGeometry(0.064, 16, 16);
+      const kneeJointGeo = new THREE.SphereGeometry(0.066, 16, 16);
       const leftKnee = new THREE.Mesh(kneeJointGeo, softBlueGlowMat);
       leftKnee.position.set(0, -0.22, 0);
       leftLegGroup.add(leftKnee);
 
-      const shinGeo = roundedPanelGeometry(0.16, 0.25, 0.125, 0.026, 0.01);
+      const shinGeo = roundedPanelGeometry(0.175, 0.25, 0.13, 0.055, 0.01);
       shinGeo.translate(0, -0.11, 0);
       const leftShin = new THREE.Mesh(shinGeo, whiteCeramicMat);
       leftShin.position.set(0, -0.22, 0);
@@ -795,20 +779,20 @@ export function Robot3D({ isOpen, onClick }: Robot3DProps) {
       leftLegGroup.add(leftShin);
 
       // Feet
-      const footGeo = roundedPanelGeometry(0.24, 0.11, 0.3, 0.032, 0.01);
+      const footGeo = roundedPanelGeometry(0.265, 0.12, 0.31, 0.065, 0.012);
       const leftFoot = new THREE.Mesh(footGeo, whiteCeramicMat);
       leftFoot.position.set(0, -0.44, 0.04);
       leftFoot.castShadow = true;
       leftLegGroup.add(leftFoot);
 
-      const soleGeo = new THREE.BoxGeometry(0.2, 0.024, 0.29);
+      const soleGeo = new THREE.BoxGeometry(0.225, 0.024, 0.29);
       const leftSole = new THREE.Mesh(soleGeo, carbonMat);
       leftSole.position.set(0, -0.47, 0.04);
       leftLegGroup.add(leftSole);
 
       // Right Leg
       const rightLegGroup = new THREE.Group();
-      rightLegGroup.position.set(0.18, -0.47, 0);
+      rightLegGroup.position.set(0.18, -0.46, 0);
       torsoGroup.add(rightLegGroup);
       rightLegRef.current = rightLegGroup;
 

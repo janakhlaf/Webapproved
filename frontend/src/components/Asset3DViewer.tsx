@@ -104,8 +104,6 @@ export function Asset3DViewer({
       scene.add(new THREE.Mesh(fallbackGeometry, fallbackMaterial));
     };
 
-    let renderFrame: (() => void) | null = null;
-
     if (modelType.toLowerCase() === 'glb' && modelUrl) {
       const loader = new GLTFLoader();
 
@@ -136,13 +134,11 @@ export function Asset3DViewer({
 
           fitModel(model);
           scene.add(model);
-          renderFrame?.();
         },
         undefined,
         (error) => {
           console.error('Error loading GLB:', error);
           addFallbackShape();
-          renderFrame?.();
         }
       );
     } else {
@@ -169,21 +165,13 @@ export function Asset3DViewer({
       controls.autoRotateSpeed = 1.2;
     }
 
-    renderFrame = () => {
+    const animate = () => {
+      animationFrameRef.current = requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
     };
 
-    if (viewMode === 'card') {
-      renderFrame();
-    } else {
-      const animate = () => {
-        animationFrameRef.current = requestAnimationFrame(animate);
-        renderFrame?.();
-      };
-
-      animate();
-    }
+    animate();
 
     return () => {
       if (animationFrameRef.current) {
