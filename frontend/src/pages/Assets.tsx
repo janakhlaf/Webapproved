@@ -251,7 +251,7 @@ formData.append('auth_user_id', authUser.id);
                 title="Search assets"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 bg-[#060b16]/90 backdrop-blur-xl border-border/20 shadow-2xl shadow-black/20"
+                className="pl-10 h-10 bg-[#060b16]/90 backdrop-blur-xl border-cyan-400/25 shadow-[0_0_18px_rgba(0,240,255,0.09),inset_0_0_10px_rgba(0,240,255,0.025)]"
               />
             </div>
 
@@ -263,7 +263,7 @@ formData.append('auth_user_id', authUser.id);
             >
               <SelectTrigger
                 title="Select category"
-                className="w-full md:w-[220px] h-10 bg-[#060b16]/90 backdrop-blur-xl border-border/20 shadow-2xl shadow-black/20"
+                className="w-full md:w-[220px] h-10 bg-[#060b16]/90 backdrop-blur-xl border-cyan-400/25 shadow-[0_0_18px_rgba(0,240,255,0.09),inset_0_0_10px_rgba(0,240,255,0.025)]"
               >
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -281,7 +281,7 @@ formData.append('auth_user_id', authUser.id);
 
         {/* Upload Form */}
         {uploadFormVisible && (
-          <div className="mb-10 p-8 rounded-2xl border border-border/20 bg-[#060b16]/90 backdrop-blur-xl shadow-2xl shadow-black/20">
+          <div className="mb-10 p-8 rounded-2xl border border-cyan-400/25 bg-[#060b16]/90 backdrop-blur-xl shadow-[0_0_24px_rgba(0,240,255,0.1),inset_0_0_14px_rgba(0,240,255,0.025)]">
             <h3 className="text-2xl font-bold mb-6">Upload Your Asset</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

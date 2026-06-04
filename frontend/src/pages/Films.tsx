@@ -264,8 +264,8 @@ formData.append('auth_user_id', authUser.id);
     pl-10
     bg-[#060b16]/90
     backdrop-blur-xl
-    border-border/20
-    shadow-2xl shadow-black/20
+    border-cyan-400/25
+    shadow-[0_0_18px_rgba(0,240,255,0.09),inset_0_0_10px_rgba(0,240,255,0.025)]
     text-white
   "
 />
@@ -280,7 +280,8 @@ formData.append('auth_user_id', authUser.id);
     w-full md:w-[200px]
     bg-[#060b16]/90
     backdrop-blur-xl
-    border-cyan-500/20
+    border-cyan-400/25
+    shadow-[0_0_18px_rgba(0,240,255,0.09),inset_0_0_10px_rgba(0,240,255,0.025)]
   "
   title="Filter films by category"
 >
@@ -308,8 +309,8 @@ formData.append('auth_user_id', authUser.id);
     bg-[#060b16]/90
     backdrop-blur-xl
     border
-    border-border/20
-    shadow-2xl shadow-black/20
+    border-cyan-400/25
+    shadow-[0_0_24px_rgba(0,240,255,0.1),inset_0_0_14px_rgba(0,240,255,0.025)]
   "
 >
             <h3 className="text-2xl font-bold mb-6">Upload Your Film</h3>

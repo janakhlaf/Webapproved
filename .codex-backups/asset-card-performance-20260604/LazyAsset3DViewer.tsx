@@ -6,8 +6,6 @@ interface Props {
   modelUrl?: string;
   className?: string;
   viewMode?: 'card' | 'modal';
-  deferUntilActive?: boolean;
-  isActive?: boolean;
 }
 
 export function LazyAsset3DViewer({
@@ -15,8 +13,6 @@ export function LazyAsset3DViewer({
   modelUrl,
   className = '',
   viewMode = 'card',
-  deferUntilActive = false,
-  isActive = false,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -39,11 +35,9 @@ export function LazyAsset3DViewer({
     return () => observer.disconnect();
   }, []);
 
-  const shouldRenderViewer = isVisible && (!deferUntilActive || isActive);
-
   return (
     <div ref={ref} className={`w-full h-full ${className}`}>
-      {shouldRenderViewer ? (
+      {isVisible ? (
         <Asset3DViewer
           modelType={modelType}
           modelUrl={modelUrl}
@@ -52,15 +46,12 @@ export function LazyAsset3DViewer({
         />
       ) : (
         <div
-          className="relative w-full h-full min-h-[300px] rounded-lg overflow-hidden"
+          className="w-full h-full min-h-[300px] rounded-lg overflow-hidden"
           style={{
             background:
               'linear-gradient(135deg, oklch(0.08 0.015 240) 0%, oklch(0.12 0.02 240) 100%)',
           }}
-        >
-          <div className="absolute inset-8 rounded-full border border-cyan-400/10 bg-cyan-400/5 shadow-[0_0_24px_rgba(0,240,255,0.08)]" />
-          <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-cyan-400/18 bg-[#06111d]/55 shadow-[0_0_18px_rgba(0,240,255,0.08)]" />
-        </div>
+        />
       )}
     </div>
   );
