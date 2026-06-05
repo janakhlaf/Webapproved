@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from favorites import router as favorites_router
-
+from cart import router as cart_router
 from assets import router as assets_router
 from films import router as films_router
 from library import router as library_router
@@ -40,6 +40,7 @@ app.include_router(assets_router)
 app.include_router(films_router)
 app.include_router(library_router)
 app.include_router(favorites_router)
+app.include_router(cart_router)
 
 
 # ========================

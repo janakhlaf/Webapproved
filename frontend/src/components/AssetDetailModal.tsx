@@ -17,7 +17,7 @@ interface AssetDetailModalProps {
 
 export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps) {
   const { isAssetFavorite, toggleAssetFavorite } = useFavorites();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { addToCart, cartItems } = useCart();
   const navigate = useNavigate();
 
@@ -27,8 +27,8 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
   const assetCartId = `asset-${asset.id}`;
   const isAdded = cartItems.some((item) => item.id === assetCartId);
 
-  const handlePurchase = () => {
-    if (!isAuthenticated) {
+ const handlePurchase = async () => {
+   if (!isAuthenticated || !user?.id) {
       onClose();
       navigate(ROUTE_PATHS.SIGNIN);
       return;
@@ -43,25 +43,28 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
         fileUrl?: string;
       };
 
-      addToCart({
-        id: assetCartId,
-        title: asset.title,
-        category: asset.category,
-        price: asset.price,
-        image:
-          assetData.image ||
-          assetData.previewUrl ||
-          assetData.thumbnail ||
-          'asset-preview',
-        itemType: 'asset',
-        downloadUrl:
-          assetData.downloadUrl ||
-          assetData.fileUrl ||
-          assetData.image ||
-          assetData.previewUrl ||
-          assetData.thumbnail ||
-          '',
-      });
+     await addToCart(
+  {
+    id: assetCartId,
+    title: asset.title,
+    category: asset.category,
+    price: asset.price,
+    image:
+      assetData.image ||
+      assetData.previewUrl ||
+      assetData.thumbnail ||
+      'asset-preview',
+    itemType: 'asset',
+    downloadUrl:
+      assetData.downloadUrl ||
+      assetData.fileUrl ||
+      assetData.image ||
+      assetData.previewUrl ||
+      assetData.thumbnail ||
+      '',
+  },
+Number(user.id)
+);
     }
   };
 

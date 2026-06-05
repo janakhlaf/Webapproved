@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+
 export interface CartItem {
   id: string;
   title: string;
@@ -26,13 +27,37 @@ export function useCart() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (item: CartItem) => {
-    setCartItems(prev => {
-      const exists = prev.find(i => i.id === item.id);
+  const addToCart = async (item: CartItem, userId: number) => {
+  try {
+    const response = await fetch("http://localhost:8000/cart/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        item_id: Number(item.id.replace("film-", "").replace("asset-", "")),
+        item_type: item.itemType,
+        price: item.price,
+      }),
+    });
+
+    console.log("ADD TO CART STATUS:", response.status);
+    console.log("ADD TO CART RESPONSE:", await response.clone().text());
+
+    if (!response.ok) {
+      throw new Error("Failed to save cart item in database");
+    }
+
+    setCartItems((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) return prev;
       return [...prev, item];
     });
-  };
+  } catch (error) {
+    console.error("Failed to add item to cart", error);
+  }
+};
 
   const removeFromCart = (id: string) => {
     setCartItems(prev => prev.filter(i => i.id !== id));

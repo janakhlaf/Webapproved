@@ -19,37 +19,6 @@ export default function Checkout() {
 
   const total = cartItems.reduce((sum, item) => sum + item.price, 0);
 
-  const getOriginalId = (id: string) => {
-    return Number(id.replace("film-", "").replace("asset-", ""));
-  };
-
-  const saveItemsToDatabaseLibrary = async () => {
-    if (!isAuthenticated || !user?.id) {
-      throw new Error("User is not authenticated");
-    }
-
-    for (const item of cartItems) {
-      const response = await fetch("http://localhost:8000/library/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          item_id: getOriginalId(item.id),
-          item_type: item.itemType,
-          title: item.title,
-          preview_url: item.image || "",
-          price: item.price,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save item to library");
-      }
-    }
-  };
-
   const validateForm = () => {
     if (!cardNumber.trim() || !cardName.trim() || !expiry.trim() || !cvc.trim()) {
       return "Please fill in all card details.";
@@ -90,14 +59,29 @@ export default function Checkout() {
     setLoading(true);
 
     try {
-      await saveItemsToDatabaseLibrary();
+      const response = await fetch("http://localhost:8000/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: Number(user.id),
+          cart_items: cartItems,
+        }),
+      });
+
+      console.log("CHECKOUT STATUS:", response.status);
+      console.log("CHECKOUT RESPONSE:", await response.clone().text());
+
+      if (!response.ok) {
+        throw new Error("Checkout failed");
+      }
 
       clearCart();
-
       navigate(ROUTE_PATHS.MY_LIBRARY);
     } catch (err) {
       console.error("Checkout error:", err);
-      setError("Something went wrong while saving your purchase.");
+      setError("Something went wrong while completing your purchase.");
     } finally {
       setLoading(false);
     }

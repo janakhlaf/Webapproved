@@ -23,7 +23,7 @@ export function FilmDetailModal({
 
   const navigate = useNavigate();
 
-  const { isAuthenticated } = useAuth();
+ const { isAuthenticated, user } = useAuth();
 
   const { addToCart, cartItems } = useCart();
 
@@ -68,24 +68,27 @@ export function FilmDetailModal({
     (item) => item.id === filmCartId
   );
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
 
-    if (!isAuthenticated) {
-      onClose();
-      navigate(ROUTE_PATHS.SIGNIN);
-      return;
-    }
+   if (!isAuthenticated || !user?.id) {
+  onClose();
+  navigate(ROUTE_PATHS.SIGNIN);
+  return;
+}
 
     if (!isAdded) {
 
-      addToCart({
-        id: filmCartId,
-        title: film.title,
-        category: film.category,
-        price: film.price || 19.99,
-        image: film.posterUrl,
-        itemType: "film",
-      });
+      await addToCart(
+  {
+    id: filmCartId,
+    title: film.title,
+    category: film.category,
+    price: film.price || 19.99,
+    image: film.posterUrl,
+    itemType: "film",
+  },
+ Number(user.id)
+);
     }
   };
 
