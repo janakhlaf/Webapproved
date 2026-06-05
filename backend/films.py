@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import psycopg
 import os
 import uuid
@@ -268,7 +268,7 @@ def approve_film(film_id: int):
 @router.delete("/admin/films/{film_id}/reject")
 def reject_film(film_id: int):
 
-    bucket = os.getenv("SUPABASE_FILMS_BUCKET") or os.getenv("SUPABASE_BUCKET")
+    bucket = "films_private"
     preview_bucket = "thumbnail_previw"
 
     supabase_url = os.getenv("SUPABASE_URL")
@@ -318,4 +318,67 @@ def reject_film(film_id: int):
 
     return {
         "message": "Film rejected and deleted"
+    }
+
+@router.delete("/films/{film_id}")
+def delete_user_film(film_id: int, auth_user_id: str):
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    film_bucket = "films_private"
+    thumbnail_bucket = "thumbnail_previw"
+
+    headers = {
+        "Authorization": f"Bearer {service_key}",
+        "apikey": service_key,
+    }
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT f.bucket_path, f.thumbnail_url
+                FROM films f
+                JOIN users u ON f.user_id = u.id
+                WHERE f.id = %s
+                AND u.auth_user_id = %s
+            """, (film_id, auth_user_id))
+
+            film = cur.fetchone()
+
+            if not film:
+                raise HTTPException(status_code=404, detail="Film not found")
+
+            film_path = film[0]
+            thumbnail_url = film[1]
+
+            if film_path:
+                film_delete_url = (
+                    f"{supabase_url}/storage/v1/object/"
+                    f"{film_bucket}/{film_path}"
+                )
+
+                requests.delete(film_delete_url, headers=headers)
+
+            if thumbnail_url:
+                marker = f"/storage/v1/object/public/{thumbnail_bucket}/"
+
+                if marker in thumbnail_url:
+                    thumbnail_path = thumbnail_url.split(marker)[1]
+
+                    thumbnail_delete_url = (
+                        f"{supabase_url}/storage/v1/object/"
+                        f"{thumbnail_bucket}/{thumbnail_path}"
+                    )
+
+                    requests.delete(thumbnail_delete_url, headers=headers)
+
+            cur.execute("""
+                DELETE FROM films
+                WHERE id = %s
+            """, (film_id,))
+
+            conn.commit()
+
+    return {
+        "message": "Film deleted from storage and database successfully"
     }

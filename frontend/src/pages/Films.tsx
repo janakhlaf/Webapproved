@@ -170,9 +170,10 @@ const handleSubmitFilm = async () => {
     !posterFile;
 
   if (isInvalid) {
-    setSubmitError(true);
-    return;
-  }
+  setSubmitError(true);
+  setIsUploading(false);
+  return;
+}
 
   setSubmitError(false);
 
@@ -182,6 +183,7 @@ const handleSubmitFilm = async () => {
 } = await supabase.auth.getUser();
 
 if (!authUser?.id) {
+  setIsUploading(false);
   navigate(ROUTE_PATHS.SIGNIN);
   return;
 }
@@ -207,6 +209,11 @@ formData.append('auth_user_id', authUser.id);
 
     setShowSuccessModal(true);
     setIsUploading(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    }); 
   } catch (error) {
     setIsUploading(false);
     console.error(error);
@@ -299,6 +306,7 @@ formData.append('auth_user_id', authUser.id);
           </div>
         </div>
 
+       
         {/* Upload Form */}
         {uploadFormVisible && (
           <div
@@ -314,6 +322,7 @@ formData.append('auth_user_id', authUser.id);
   "
 >
             <h3 className="text-2xl font-bold mb-6">Upload Your Film</h3>
+            
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -475,9 +484,10 @@ formData.append('auth_user_id', authUser.id);
                   Price
                 </label>
                 <Input
-  placeholder="Enter film title"
-  value={filmTitle}
-  onChange={(e) => setFilmTitle(e.target.value)}
+  type="number"
+  placeholder="Enter film price"
+  value={filmPrice}
+  onChange={(e) => setFilmPrice(e.target.value)}
   className="
     bg-[#060b16]/90
     backdrop-blur-xl
@@ -581,6 +591,29 @@ formData.append('auth_user_id', authUser.id);
             </div>
           </div>
         )}
+          {showSuccessModal && (
+     <div className="absolute inset-0 z-50 flex items-start justify-center rounded-2xl bg-black/60 backdrop-blur-sm pt-[600px]">
+        <div className="w-full max-w-md rounded-2xl border border-cyan-400/40 bg-[#06101c]/95 p-6 text-center shadow-[0_0_30px_rgba(0,255,255,0.25)]">
+          <h3 className="text-xl font-bold mb-3">
+            Film Submitted
+          </h3>
+
+          <p className="text-sm text-muted-foreground mb-6">
+            Your film was submitted successfully and is waiting for admin review.
+          </p>
+
+          <Button
+            onClick={() => {
+              setShowSuccessModal(false);
+              resetForm();
+              setUploadFormVisible(false);
+            }}
+          >
+            OK
+          </Button>
+        </div>
+      </div>
+    )}
 
         {/* Films Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -594,28 +627,6 @@ formData.append('auth_user_id', authUser.id);
         </div>
       </div>
 
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-2xl border border-primary/40 bg-background p-6 text-center shadow-xl">
-            <h3 className="text-xl font-bold mb-3">Film Submitted</h3>
-
-            <p className="text-sm text-muted-foreground mb-6">
-              Your film was submitted successfully and is waiting for admin
-              review.
-            </p>
-
-            <Button
-              type="button"
-              onClick={() => {
-                setShowSuccessModal(false);
-                resetForm();
-              }}
-            >
-              OK
-            </Button>
-          </div>
-        </div>
-      )}
 
       <FilmDetailModal
         film={selectedFilm}

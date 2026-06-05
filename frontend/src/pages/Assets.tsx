@@ -29,6 +29,7 @@ export default function Assets() {
   const navigate = useNavigate();
 
   const assetFileInputRef = useRef<HTMLInputElement | null>(null);
+  const successRef = useRef<HTMLDivElement | null>(null);
 
   const [assets, setAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -209,6 +210,13 @@ formData.append('auth_user_id', authUser.id);
 
     setShowSuccessModal(true);
     setIsUploading(false);
+
+    setTimeout(() => {
+      successRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 100);
   } catch (error) {
     setIsUploading(false);
     console.error(error);
@@ -281,7 +289,7 @@ formData.append('auth_user_id', authUser.id);
 
         {/* Upload Form */}
         {uploadFormVisible && (
-          <div className="mb-10 p-8 rounded-2xl border border-cyan-400/25 bg-[#060b16]/90 backdrop-blur-xl shadow-[0_0_24px_rgba(0,240,255,0.1),inset_0_0_14px_rgba(0,240,255,0.025)]">
+          <div className="relative rounded-2xl border border-cyan-500/40 bg-[#06101c]/80 p-8">
             <h3 className="text-2xl font-bold mb-6">Upload Your Asset</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -537,6 +545,38 @@ formData.append('auth_user_id', authUser.id);
             </div>
           </div>
         )}
+       {showSuccessModal && (
+  <div className="absolute inset-0 z-50 flex items-start justify-center rounded-2xl bg-black/60 backdrop-blur-sm pt-120">
+    <div
+    ref={successRef}
+     className="w-full max-w-md rounded-2xl border border-cyan-400/40 bg-[#06101c]/95 p-6 text-center shadow-[0_0_30px_rgba(0,255,255,0.25)]">
+      <h3 className="text-xl font-bold mb-3">
+        Asset Submitted
+      </h3>
+
+      <p className="text-sm text-muted-foreground mb-6">
+        Your asset was submitted successfully and is waiting for admin review.
+      </p>
+
+      <Button
+        type="button"
+        onClick={() => {
+          setShowSuccessModal(false);
+          setAssetName('');
+          setAssetDescription('');
+          setAssetPrice('');
+          setUploadCategory('');
+          setSelectedTags([]);
+          setSelectedFile(null);
+          setSubmitError(false);
+          setUploadFormVisible(false);
+        }}
+      >
+        OK
+      </Button>
+    </div>
+  </div>
+)}
 
         {/* Assets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -591,35 +631,7 @@ formData.append('auth_user_id', authUser.id);
             </Button>
           </div>
         )}
-        {showSuccessModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-    <div className="w-full max-w-md rounded-2xl border border-primary/40 bg-background p-6 text-center shadow-xl">
-      <h3 className="text-xl font-bold mb-3">Asset Submitted</h3>
-
-      <p className="text-sm text-muted-foreground mb-6">
-        Your asset was submitted successfully and is waiting for admin review.
-      </p>
-
-      <Button
-        type="button"
-        onClick={() => {
-          setShowSuccessModal(false);
-
-          setAssetName('');
-          setAssetDescription('');
-          setAssetPrice('');
-          setUploadCategory('');
-          setSelectedTags([]);
-          setSelectedFile(null);
-          setSubmitError(false);
-          setUploadFormVisible(false);
-        }}
-      >
-        OK
-      </Button>
-    </div>
-  </div>
-)}
+        
       </div>
 
       <AssetDetailModal

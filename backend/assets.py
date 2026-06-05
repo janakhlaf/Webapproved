@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from dotenv import load_dotenv
 import psycopg
 import requests
@@ -229,4 +229,64 @@ def upload_asset(
             "source_type": "user_upload",
             "uploader": f"User {user_id}",
         }
+    }
+@router.delete("/assets/{asset_id}")
+def delete_user_asset(asset_id: int, auth_user_id: str):
+    supabase_url = os.getenv("SUPABASE_URL")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+    preview_bucket = "assets_previwe"
+    private_bucket = "assets_private"
+
+    headers = {
+        "Authorization": f"Bearer {service_key}",
+        "apikey": service_key,
+    }
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT a.preview_url, a.bucket_path
+                FROM assets a
+                JOIN users u ON a.user_id = u.id
+                WHERE a.id = %s
+                AND u.auth_user_id = %s
+            """, (asset_id, auth_user_id))
+
+            asset = cur.fetchone()
+
+            if not asset:
+                raise HTTPException(status_code=404, detail="Asset not found")
+
+            preview_url = asset[0]
+            bucket_path = asset[1]
+
+            if bucket_path:
+                private_delete_url = (
+                    f"{supabase_url}/storage/v1/object/"
+                    f"{private_bucket}/{bucket_path}"
+                )
+                requests.delete(private_delete_url, headers=headers)
+
+            if preview_url:
+                marker = f"/storage/v1/object/public/{preview_bucket}/"
+
+                if marker in preview_url:
+                    preview_path = preview_url.split(marker)[1]
+
+                    preview_delete_url = (
+                        f"{supabase_url}/storage/v1/object/"
+                        f"{preview_bucket}/{preview_path}"
+                    )
+                    requests.delete(preview_delete_url, headers=headers)
+
+            cur.execute("""
+                DELETE FROM assets
+                WHERE id = %s
+            """, (asset_id,))
+
+            conn.commit()
+
+    return {
+        "message": "Asset deleted from storage and database successfully"
     }
