@@ -8,6 +8,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { formatPrice, type Asset, ROUTE_PATHS } from '@/lib/index';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { useState } from 'react';
 
 interface AssetDetailModalProps {
   asset: Asset | null;
@@ -20,6 +23,7 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
   const { isAuthenticated, user } = useAuth();
   const { addToCart, cartItems } = useCart();
   const navigate = useNavigate();
+  const [showCartMessage, setShowCartMessage] = useState(false);
 
   if (!asset) return null;
 
@@ -28,47 +32,73 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
   const isAdded = cartItems.some((item) => item.id === assetCartId);
 
  const handlePurchase = async () => {
-   if (!isAuthenticated || !user?.id) {
-      onClose();
-      navigate(ROUTE_PATHS.SIGNIN);
-      return;
-    }
+  if (!isAuthenticated || !user?.id) {
+    onClose();
+    navigate(ROUTE_PATHS.SIGNIN);
+    return;
+  }
 
-    if (!isAdded) {
-      const assetData = asset as Asset & {
-        image?: string;
-        previewUrl?: string;
-        thumbnail?: string;
-        downloadUrl?: string;
-        fileUrl?: string;
-      };
+  if (isAdded) {
+    setShowCartMessage(true);
+    setTimeout(() => setShowCartMessage(false), 3000);
+    return;
+  }
 
-     await addToCart(
-  {
-    id: assetCartId,
-    title: asset.title,
-    category: asset.category,
-    price: asset.price,
-    image:
-      assetData.image ||
-      assetData.previewUrl ||
-      assetData.thumbnail ||
-      'asset-preview',
-    itemType: 'asset',
-    downloadUrl:
-      assetData.downloadUrl ||
-      assetData.fileUrl ||
-      assetData.image ||
-      assetData.previewUrl ||
-      assetData.thumbnail ||
-      '',
-  },
-Number(user.id)
-);
-    }
+  const assetData = asset as Asset & {
+    image?: string;
+    previewUrl?: string;
+    thumbnail?: string;
+    downloadUrl?: string;
+    fileUrl?: string;
   };
 
+  await addToCart(
+    {
+      id: assetCartId,
+      title: asset.title,
+      category: asset.category,
+      price: asset.price,
+      image:
+        assetData.image ||
+        assetData.previewUrl ||
+        assetData.thumbnail ||
+        'asset-preview',
+      itemType: 'asset',
+      downloadUrl:
+        assetData.downloadUrl ||
+        assetData.fileUrl ||
+        assetData.image ||
+        assetData.previewUrl ||
+        assetData.thumbnail ||
+        '',
+    },
+    Number(user.id)
+  );
+
+  setShowCartMessage(true);
+  setTimeout(() => setShowCartMessage(false), 3000);
+};
+
   return (
+  <>
+    {showCartMessage &&
+      createPortal(
+        <motion.div
+          initial={{ opacity: 0, x: 80 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 80 }}
+          className="fixed top-24 right-8 z-[999999] w-[360px] rounded-xl border border-cyan-400/40 bg-[#07111f]/95 backdrop-blur-xl px-5 py-4 shadow-[0_0_30px_rgba(34,211,238,0.35)]"
+        >
+          <p className="text-cyan-300 font-semibold">
+            Added to Cart Successfully
+          </p>
+          <p className="text-sm text-gray-300">
+            Asset has been added to your cart.
+          </p>
+        </motion.div>,
+        document.body
+      )}
+
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border border-primary/20">
         <DialogHeader>
@@ -169,5 +199,7 @@ Number(user.id)
         </div>
       </DialogContent>
     </Dialog>
-  );
+  </>
+);
+  
 }

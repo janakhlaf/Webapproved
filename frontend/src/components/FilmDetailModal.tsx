@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface FilmDetailModalProps {
   film: Film | null;
@@ -30,6 +31,7 @@ export function FilmDetailModal({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [started, setStarted] = useState(false);
+  const [showCartMessage, setShowCartMessage] = useState(false);
 
   useEffect(() => {
 
@@ -68,30 +70,41 @@ export function FilmDetailModal({
     (item) => item.id === filmCartId
   );
 
-  const handleAddToCart = async () => {
+const handleAddToCart = async () => {
+  if (!isAuthenticated || !user?.id) {
+    onClose();
+    navigate(ROUTE_PATHS.SIGNIN);
+    return;
+  }
 
-   if (!isAuthenticated || !user?.id) {
-  onClose();
-  navigate(ROUTE_PATHS.SIGNIN);
-  return;
-}
+  if (isAdded) {
+    setShowCartMessage(true);
 
-    if (!isAdded) {
+    setTimeout(() => {
+      setShowCartMessage(false);
+    }, 3000);
 
-      await addToCart(
-  {
-    id: filmCartId,
-    title: film.title,
-    category: film.category,
-    price: film.price || 19.99,
-    image: film.posterUrl,
-    itemType: "film",
-  },
- Number(user.id)
-);
-    }
-  };
+    return;
+  }
 
+  await addToCart(
+    {
+      id: filmCartId,
+      title: film.title,
+      category: film.category,
+      price: film.price || 19.99,
+      image: film.posterUrl,
+      itemType: "film",
+    },
+    Number(user.id)
+  );
+
+  setShowCartMessage(true);
+
+  setTimeout(() => {
+    setShowCartMessage(false);
+  }, 3000);
+};
   const handleStartVideo = async () => {
 
     setStarted(true);
@@ -110,10 +123,30 @@ export function FilmDetailModal({
   };
 
   return (
+    <>
+   {showCartMessage &&
+  createPortal(
+    <motion.div
+      initial={{ opacity: 0, x: 80 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 80 }}
+      className="fixed top-24 right-8 z-[999999] w-[360px] rounded-xl border border-cyan-400/40 bg-[#07111f]/95 backdrop-blur-xl px-5 py-4 shadow-[0_0_30px_rgba(34,211,238,0.35)]"
+    >
+      <p className="text-cyan-300 font-semibold">
+        Added to Cart Successfully
+      </p>
+
+      <p className="text-sm text-gray-300">
+        Film has been added to your cart.
+      </p>
+    </motion.div>,
+    document.body
+  )}
+
     <Dialog open={open} onOpenChange={onClose}>
 
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl">
-
+       
         <DialogHeader>
 
           <DialogTitle className="text-3xl font-bold text-foreground">
@@ -272,6 +305,8 @@ export function FilmDetailModal({
           </div>
         </motion.div>
       </DialogContent>
-    </Dialog>
-  );
+   </Dialog>
+  </>
+);
+  
 }
