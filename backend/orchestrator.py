@@ -68,6 +68,22 @@ def get_response_by_intent(
     is_authenticated: bool = False,
     conversation_context: list | None = None
 ) -> str:
+    text = message.lower().strip()
+
+    follow_up_search_words = [
+        "شو في كمان",
+        "في كمان",
+        "كمان",
+        "غيرهم",
+        "غير هيك",
+        "more",
+        "anything else",
+        "else"
+    ]
+
+    if intent == "SIMILAR_REQUEST" or any(word in text for word in follow_up_search_words):
+        return handle_similar(message,is_authenticated,conversation_context)
+
     if is_contextual_follow_up(message, conversation_context):
         follow_up_message = with_language_rule(
             message,
@@ -93,11 +109,7 @@ def get_response_by_intent(
     if intent == "ASSET_QUERY":
         return handle_assets(message, is_authenticated)
 
-    # 🔥 بحث مشابه / اقتراحات
-    # مهم: لا نضيف platform context هنا
-    # لأنه يخرب فهم الطلب ويخلي similar_handler يقرأ كلمات مثل all/assets/robots/drones/cities
-    if intent == "SIMILAR_REQUEST":
-        return handle_similar(message, is_authenticated)
+   
 
     # 👋 Greeting
     if intent == "GREETING":

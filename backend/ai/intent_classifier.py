@@ -33,6 +33,17 @@ def rule_based_intent(message: str) -> str | None:
             .replace("ة", "ه")
     )
 
+    follow_up_search_words = [
+    "شو في كمان",
+    "في كمان",
+    "كمان",
+    "غيرهم",
+    "غير هيك"
+]
+
+    if any(word in text for word in follow_up_search_words):
+        return "SIMILAR_REQUEST"
+
     has_page = (
         "صفحه" in text
         or "page" in text

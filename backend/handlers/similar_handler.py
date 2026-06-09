@@ -1,11 +1,11 @@
 import os
 import json
 import re
+import random
 from openai import OpenAI
 from dotenv import load_dotenv
 
 from ai.embedding_service import create_embedding, embedding_to_pgvector
-from ai.platform_assistant import normal_chat
 from db import get_connection
 
 load_dotenv()
@@ -275,18 +275,9 @@ def get_all_assets(cur, message: str, is_authenticated: bool):
     rows = cur.fetchall()
 
     if not rows:
-        return normal_chat(
-            f"""
-User request:
-{message}
-
-No assets are currently available.
-
-Reply in the same language as the user.
-""",
-            is_authenticated,
-            original_user_message=message
-        )
+        if is_arabic_message(message):
+            return "ما في Assets متاحة داخل الموقع حاليًا."
+        return "No assets are currently available on the platform."
 
     return format_asset_results(rows, message, is_authenticated)
 
@@ -472,39 +463,97 @@ def is_arabic_message(text: str) -> bool:
     return any('\u0600' <= ch <= '\u06FF' for ch in text)
 
 
-def handle_similar(message: str, is_authenticated: bool = False) -> str:
+
+def dynamic_no_more_results(message, result_type):
+    if is_arabic_message(message):
+
+        if result_type == "film":
+            responses = [
+                "عرضت لك كل الأفلام المطابقة الموجودة حالياً داخل الموقع.",
+                "حالياً ما في أفلام إضافية مطابقة داخل الموقع.",
+                "هاي كانت جميع الأفلام المطابقة المتوفرة حالياً."
+            ]
+        else:
+            responses = [
+                "عرضت لك كل الأصول المطابقة الموجودة حالياً داخل الموقع.",
+                "حالياً ما في أصول إضافية مطابقة داخل الموقع.",
+                "هاي كانت جميع الأصول المطابقة المتوفرة حالياً."
+            ]
+
+    else:
+
+        if result_type == "film":
+            responses = [
+                "I already showed all matching films available on the platform.",
+                "No additional matching films are currently available.",
+                "These are all matching films available right now."
+            ]
+        else:
+            responses = [
+                "I already showed all matching assets available on the platform.",
+                "No additional matching assets are currently available.",
+                "These are all matching assets available right now."
+            ]
+
+    return random.choice(responses)
+def handle_similar(
+    message: str,
+    is_authenticated: bool = False,
+    conversation_context: list | None = None
+) -> str:
 
     if not is_authenticated:
-
         if is_arabic_message(message):
             return "عذرًا، لازم تسجل دخول أولًا لتستخدم البحث عن العناصر المشابهة."
-
         return "Sorry, you need to sign in first to use similar search."
 
+    exclude_names = []
+
+    follow_up_words = [
+        "شو في كمان",
+        "في كمان",
+        "كمان",
+        "غيرهم",
+        "غير هيك",
+        "more",
+        "anything else",
+        "else"
+    ]
+
+    is_follow_up = any(word in message.lower() for word in follow_up_words)
+
+    if conversation_context and is_follow_up:
+        last_real_user_message = None
+        last_assistant_reply = None
+
+        for item in reversed(conversation_context):
+            content = item["content"]
+
+            if item["role"] == "assistant" and last_assistant_reply is None:
+                last_assistant_reply = content
+
+            if item["role"] == "user" and not any(word in content.lower() for word in follow_up_words):
+                last_real_user_message = content
+                break
+
+        if last_assistant_reply:
+            for line in last_assistant_reply.splitlines():
+                clean = line.replace("-", "").strip()
+                if clean:
+                    exclude_names.append(clean.lower())
+
+        if last_real_user_message:
+            message = last_real_user_message
+
     intent = analyze_user_request(message)
 
     result_type = intent["result_type"]
     search_query = intent["search_query"]
-
-    intent = analyze_user_request(message)
-
-    result_type = intent["result_type"]
-    search_query = intent["search_query"]
-
-    result_type = force_correct_result_type(message, result_type)
 
     if result_type == "unknown":
-        return normal_chat(
-            f"""
-User request:
-{message}
-
-The request is unclear. Ask the user whether they want films or assets.
-Reply in the same language as the user.
-""",
-            is_authenticated,
-            original_user_message=message
-        )
+        if is_arabic_message(message):
+            return "هل تقصد أفلام أم أصول 3D؟"
+        return "Do you mean films or 3D assets?"
 
     conn = get_connection()
     cur = conn.cursor()
@@ -521,8 +570,18 @@ Reply in the same language as the user.
             if plan_rows:
                 selected_rows = ai_rerank_assets(message, plan_rows)
 
+                if exclude_names:
+                    selected_rows = [
+                        row for row in selected_rows
+                        if row[0].lower() not in exclude_names
+                    ]
+
                 if selected_rows:
-                    return format_asset_results(selected_rows, message, is_authenticated)
+                    return format_asset_results(
+                        selected_rows,
+                        message,
+                        is_authenticated
+                    )
 
             query_embedding = create_embedding(search_query)
             pg_vector = embedding_to_pgvector(query_embedding)
@@ -546,21 +605,27 @@ Reply in the same language as the user.
 
             selected_rows = ai_rerank_assets(message, rows)
 
+            if exclude_names:
+                selected_rows = [
+                    row for row in selected_rows
+                    if row[0].lower() not in exclude_names
+                ]
+
             if not selected_rows:
-                return normal_chat(
-                    f"""
-User request:
-{message}
+                if is_follow_up:
+                    if is_arabic_message(message):
+                        return "لا توجد نتائج إضافية حالياً، تم عرض جميع العناصر المطابقة."
+                    return "No additional matching results were found on the platform."
 
-No matching assets were found.
+                if is_arabic_message(message):
+                   return dynamic_no_more_results(message, "asset")
+                return dynamic_no_more_results(message, "asset")
 
-Reply in the same language as the user.
-""",
-                    is_authenticated,
-                    original_user_message=message
-                )
-
-            return format_asset_results(selected_rows, message, is_authenticated)
+            return format_asset_results(
+                selected_rows,
+                message,
+                is_authenticated
+            )
 
         if result_type == "film":
             query_embedding = create_embedding(search_query)
@@ -585,21 +650,26 @@ Reply in the same language as the user.
 
             selected_rows = ai_rerank_films(message, rows)
 
+            if exclude_names:
+                selected_rows = [
+                    row for row in selected_rows
+                    if row[0].lower() not in exclude_names
+                ]
+
             if not selected_rows:
-                return normal_chat(
-                    f"""
-User request:
-{message}
+                if is_follow_up:
+                   if not selected_rows:
+                    return dynamic_no_more_results(
+                        message,
+                        "film",
+                        is_follow_up=is_follow_up
+                    )
 
-No matching films were found.
-
-Reply in the same language as the user.
-""",
-                    is_authenticated,
-                    original_user_message=message
-                )
-
-            return format_film_results(selected_rows, message, is_authenticated)
+            return format_film_results(
+                selected_rows,
+                message,
+                is_authenticated
+            )
 
     except Exception as e:
         return f"خطأ: {str(e)}"
