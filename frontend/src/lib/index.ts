@@ -76,6 +76,7 @@ export const THEME_KEYWORDS: Record<string, { hue: number; saturation: number; l
   nature: { hue: 140, saturation: 0.28, lightness: 0.10 },
   memory: { hue: 240, saturation: 0.30, lightness: 0.10 },
   'human mind': { hue: 240, saturation: 0.30, lightness: 0.10 },
+  'voxeli.ai': { hue: 195, saturation: 0.32, lightness: 0.10 },
   consciousness: { hue: 270, saturation: 0.32, lightness: 0.10 },
   drama: { hue: 330, saturation: 0.25, lightness: 0.10 },
   action: { hue: 30, saturation: 0.30, lightness: 0.10 },

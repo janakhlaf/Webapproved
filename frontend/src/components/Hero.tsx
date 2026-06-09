@@ -1,6 +1,8 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "@/lib/index";
+import { useState, useEffect } from "react";
+import MascotV3D from "./MascotV3D";
 
 // Stable, deterministic seed array of multi-geometry nodes (squares, diamonds, dashes, glyphs) to avoid hydration mismatch.
 const PARTICLES = Array.from({ length: 48 }, (_, i) => {
@@ -96,6 +98,17 @@ const TECH_SHAPES = Array.from({ length: 22 }, (_, i) => {
 });
 
 export default function Hero() {
+  const [mascotState, setMascotState] = useState<'init' | 'assemble' | 'showcase' | 'docking' | 'idle'>('init');
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+
   const scrollToContent = () => {
     window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
   };
@@ -141,11 +154,12 @@ export default function Hero() {
     <section 
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-transparent text-white"
+      className="relative min-h-[66vh] md:min-h-[70vh] py-12 md:py-16 flex items-center justify-center overflow-hidden bg-transparent text-white"
     >
+      {/* 3D Mascot Canvas Overlay */}
+      <MascotV3D onStateChange={setMascotState} prefersReducedMotion={prefersReducedMotion} />
 
-
-      {/* Content (Completely Untouched as Requested) */}
+      {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 35 }}
         animate={{ opacity: 1, y: 0 }}
@@ -156,16 +170,107 @@ export default function Hero() {
           Graduation Project 2026
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-extrabold leading-tight">
-          <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            Human Mind
-          </span>
-          <br />
-          <span className="text-white">&</span>
-          <br />
-          <span className="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
-            AI Logic
-          </span>
+        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight select-none flex items-center justify-center gap-2.5 min-h-[90px] md:min-h-[140px] font-orbitron">
+          {/* Animatable Brand SVG Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={
+              mascotState === 'idle'
+                ? { opacity: 1, scale: 1, y: [0, -4, 0] }
+                : mascotState === 'docking' || mascotState === 'showcase' || mascotState === 'assemble'
+                  ? { opacity: 1, scale: 1 }
+                  : { opacity: 0, scale: 0.5 }
+            }
+            transition={
+              mascotState === 'idle'
+                ? { y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" } }
+                : { duration: 1 }
+            }
+            className="flex-shrink-0"
+          >
+            <svg className="w-12 h-12 md:w-20 md:h-20 text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.55)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
+              <path d="M4 9 L10 12 V18 L4 15 Z" fill="#0369a1" opacity="0.8"/>
+              <path d="M10 12 L16 9 V15 L10 18 Z" fill="#0284c7" opacity="0.8"/>
+              <path d="M22 6 L28 9 L22 12 L16 9 Z" fill="#a855f7" opacity="0.8"/>
+              <path d="M16 9 L22 12 V18 L16 15 Z" fill="#7e22ce" opacity="0.8"/>
+              <path d="M22 12 L28 9 V15 L22 18 Z" fill="#6b21a8" opacity="0.8"/>
+              <path d="M16 11 L22 14.5 L16 18 L10 14.5 Z" fill="#22d3ee"/>
+              <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
+              <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
+            </svg>
+          </motion.div>
+
+          {/* Combined Brand Name Wrapper (Floats together as a single unit) */}
+          <motion.span 
+            animate={mascotState === 'idle' ? { y: [0, -5, 0] } : {}}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="flex items-center gap-1"
+          >
+            {/* Symmetrical Mascot placeholder at the start of the text to represent the letter V */}
+            <span id="mascot-placeholder" className="relative inline-block text-left flex-shrink-0 select-none">
+              <motion.span
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={
+                  mascotState === 'idle'
+                    ? { opacity: 0, scale: 0.8 } // Voxel V has fully morphed, hide the text letter
+                    : mascotState === 'docking'
+                      ? { opacity: 0.15, scale: 0.95 }
+                      : mascotState === 'showcase' || mascotState === 'assemble'
+                        ? { opacity: 0.55, scale: 1 } // visible in blue/cyan during assembly/showcase
+                        : { opacity: 0, scale: 0.5 }
+                }
+                transition={{ duration: 0.5 }}
+                className="bg-gradient-to-r from-cyan-400 via-blue-200 to-purple-400 bg-clip-text text-transparent inline-block"
+              >
+                v
+              </motion.span>
+            </span>
+
+            {/* Full Brand Text with Zero-Gravity Float and Power-Up shockwave ripple */}
+            <span className="flex overflow-hidden">
+              {"oxeli.ai".split("").map((char, index) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, y: 35, filter: "brightness(0.5) contrast(0.8) blur(8px)" }}
+                  animate={
+                    mascotState === 'idle'
+                      ? {
+                          opacity: 1,
+                          filter: ["brightness(1) contrast(1) blur(0px)", "brightness(1.95) contrast(1.2) blur(0px)", "brightness(1) contrast(1) blur(0px)"],
+                          scale: [1, 1.15, 1],
+                          y: [0, -8, 0],
+                        }
+                      : mascotState === 'docking' || mascotState === 'showcase' || mascotState === 'assemble'
+                        ? { 
+                            opacity: 1, 
+                            y: 0, 
+                            filter: "brightness(1) contrast(1) blur(0px)",
+                            scale: 1,
+                          }
+                        : { opacity: 0, y: 35, filter: "brightness(0.5) contrast(0.8) blur(8px)" }
+                  }
+                  transition={
+                    mascotState === 'idle'
+                      ? {
+                          y: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
+                          scale: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
+                          filter: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
+                        }
+                      : { delay: index * 0.08, duration: 0.8 }
+                  }
+                  className={`bg-gradient-to-r from-cyan-400 via-blue-200 to-purple-400 bg-clip-text text-transparent ${
+                    mascotState === 'idle' ? "animate-shimmer" : ""
+                  }`}
+                  style={{
+                    backgroundSize: "200% auto",
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+          </motion.span>
         </h1>
 
         <p className="mt-8 max-w-2xl mx-auto text-gray-400 text-lg">

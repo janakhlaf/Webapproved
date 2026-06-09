@@ -250,7 +250,7 @@ if (updateError) {
           <div className="space-y-6">
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-4">
-                Join Human Mind & AI Logic
+                Join voxeli.ai
               </h1>
 
               <p className="text-lg text-muted-foreground">

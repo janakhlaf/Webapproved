@@ -110,7 +110,7 @@ export function AuthModal({ open, onClose, defaultTab = 'signin' }: AuthModalPro
           <div className="relative p-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Human Mind & AI Logic
+                voxeli.ai
               </h2>
               <p className="text-muted-foreground mt-2">Welcome to the future</p>
             </div>

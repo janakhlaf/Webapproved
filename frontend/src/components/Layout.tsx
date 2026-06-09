@@ -104,9 +104,20 @@ export function Layout({ children }: { children: ReactNode }) {
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             to={ROUTE_PATHS.HOME}
-            className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-sans tracking-tight cursor-none animate-pulse-glow"
+            className="flex items-center gap-2 text-xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-orbitron tracking-tight cursor-none animate-pulse-glow"
           >
-            Human Mind & AI Logic
+            <svg className="w-6 h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
+              <path d="M4 9 L10 12 V18 L4 15 Z" fill="#0369a1" opacity="0.8"/>
+              <path d="M10 12 L16 9 V15 L10 18 Z" fill="#0284c7" opacity="0.8"/>
+              <path d="M22 6 L28 9 L22 12 L16 9 Z" fill="#a855f7" opacity="0.8"/>
+              <path d="M16 9 L22 12 V18 L16 15 Z" fill="#7e22ce" opacity="0.8"/>
+              <path d="M22 12 L28 9 V15 L22 18 Z" fill="#6b21a8" opacity="0.8"/>
+              <path d="M16 11 L22 14.5 L16 18 L10 14.5 Z" fill="#22d3ee"/>
+              <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
+              <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
+            </svg>
+            <span>voxeli.ai</span>
           </Link>
 
           {/* Nav list - Underlines slide smoothly across pages */}
@@ -390,9 +401,23 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">
-                Human Mind & AI Logic
-              </h3>
+              <Link
+                to={ROUTE_PATHS.HOME}
+                className="flex items-center gap-2 text-xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-orbitron tracking-tight cursor-none animate-pulse-glow mb-4"
+              >
+                <svg className="w-6 h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
+                  <path d="M4 9 L10 12 V18 L4 15 Z" fill="#0369a1" opacity="0.8"/>
+                  <path d="M10 12 L16 9 V15 L10 18 Z" fill="#0284c7" opacity="0.8"/>
+                  <path d="M22 6 L28 9 L22 12 L16 9 Z" fill="#a855f7" opacity="0.8"/>
+                  <path d="M16 9 L22 12 V18 L16 15 Z" fill="#7e22ce" opacity="0.8"/>
+                  <path d="M22 12 L28 9 V15 L22 18 Z" fill="#6b21a8" opacity="0.8"/>
+                  <path d="M16 11 L22 14.5 L16 18 L10 14.5 Z" fill="#22d3ee"/>
+                  <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
+                  <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
+                </svg>
+                <span>voxeli.ai</span>
+              </Link>
               <p className="text-sm text-gray-400 leading-relaxed font-sans font-light">
                 Exploring the cinematic intersection of AI, memory, creativity, and
                 interactive 3D experiences.
@@ -425,7 +450,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="mt-8 pt-8 border-t border-white/5 text-center">
             <p className="text-xs text-gray-500 font-mono">
-              © 2026 Human Mind & AI Logic. All rights reserved.
+              © 2026 voxeli.ai. All rights reserved.
             </p>
           </div>
         </div>

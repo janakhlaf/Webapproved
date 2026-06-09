@@ -36,7 +36,7 @@ const FALLBACK_SLIDES: SlideData[] = [
     id: "fb-3",
     media_type: "image",
     media_url: IMAGES.HERO_BG_9,
-    title: "Human Mind & Logic",
+    title: "voxeli.ai",
     description: "Mapping the neural connections where organic memory merges with silicon logic.",
     tag: "3D Animation"
   }
