@@ -144,7 +144,7 @@ const handleAddToCart = async () => {
   )}
 
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#080c14]/95 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative rounded-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#080c14]/95 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl">
         {/* HUD Corner brackets */}
         <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400 rounded-tl-2xl pointer-events-none" />
         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400 rounded-tr-2xl pointer-events-none" />
