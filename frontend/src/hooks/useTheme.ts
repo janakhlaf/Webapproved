@@ -20,7 +20,16 @@ export const useTheme = () => {
     root.style.setProperty('--border', borderOklch);
     root.style.setProperty('--input', inputOklch);
 
-    root.style.transition = 'background-color 800ms cubic-bezier(0.4, 0, 0.2, 1), color 800ms cubic-bezier(0.4, 0, 0.2, 1)';
+    // Dynamic primary, secondary, and accent colors for website morphing
+    const primaryOklch = `oklch(0.70 0.28 ${colors.hue})`;
+    const cyanOklch = `oklch(0.75 0.30 ${colors.hue})`;
+    const accentOklch = `oklch(0.68 0.32 ${(colors.hue + 75) % 360})`;
+
+    root.style.setProperty('--primary', primaryOklch);
+    root.style.setProperty('--cyan', cyanOklch);
+    root.style.setProperty('--accent', accentOklch);
+
+    root.style.transition = 'background-color 800ms cubic-bezier(0.4, 0, 0.2, 1), color 800ms cubic-bezier(0.4, 0, 0.2, 1), border-color 800ms cubic-bezier(0.4, 0, 0.2, 1)';
   }, []);
 
   const detectAndApplyTheme = useCallback((text: string) => {

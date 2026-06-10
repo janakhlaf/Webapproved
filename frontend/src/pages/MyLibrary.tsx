@@ -28,13 +28,117 @@ interface LibraryItem {
 const SUPABASE_PUBLIC_STORAGE_URL =
   "https://aqfjcdjqjxuqgyyzrvpf.supabase.co/storage/v1/object/public";
 
+// Helper component for 3D Card Hover Tilting & Glare Reflection
+function TiltCard({ children, onMouseEnter, className, ...props }: any) {
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left - width / 2;
+    const mouseY = e.clientY - rect.top - height / 2;
+
+    // Rotate up to 6 degrees depending on position
+    const rX = -(mouseY / (height / 2)) * 6;
+    const rY = (mouseX / (width / 2)) * 6;
+
+    setRotateX(rX);
+    setRotateY(rY);
+
+    // Glare coordinates
+    const gx = ((e.clientX - rect.left) / width) * 100;
+    const gy = ((e.clientY - rect.top) / height) * 100;
+    e.currentTarget.style.setProperty('--mouse-x', `${gx}%`);
+    e.currentTarget.style.setProperty('--mouse-y', `${gy}%`);
+  };
+
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => {
+        if (onMouseEnter) onMouseEnter();
+      }}
+      animate={{ rotateX, rotateY }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      style={{ transformStyle: "preserve-3d" }}
+      className={className}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Reusable component for Matrix decoding text reveal
+function CyberDecoderText({ text, speed = 40, delay = 0 }: { text: string; speed?: number; delay?: number }) {
+  const [displayText, setDisplayText] = useState(text);
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$#@%&*{}[];:";
+
+  useEffect(() => {
+    let isMounted = true;
+    const runDecoder = async () => {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      
+      const textArray = text.split("");
+      let iterations = 0;
+
+      const interval = setInterval(() => {
+        if (!isMounted) {
+          clearInterval(interval);
+          return;
+        }
+
+        const nextText = textArray
+          .map((char, index) => {
+            if (char === " ") return " ";
+            if (index < iterations) return text[index];
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join("");
+
+        setDisplayText(nextText);
+
+        if (iterations >= text.length) {
+          clearInterval(interval);
+          setDisplayText(text);
+        }
+
+        iterations += 1 / 3;
+      }, speed);
+    };
+
+    runDecoder();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [text, speed, delay]);
+
+  return <span>{displayText}</span>;
+}
+
 export default function MyLibrary() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
   const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filtering states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<"all" | "film" | "asset">("all");
+
+  // Download simulation states
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
@@ -96,6 +200,23 @@ export default function MyLibrary() {
     return parts.length > 1 ? parts.pop() || "file" : "file";
   };
 
+  const simulateProgress = (id: number) => {
+    setDownloadProgress((prev) => ({ ...prev, [id]: 0 }));
+    const interval = setInterval(() => {
+      setDownloadProgress((prev) => {
+        const current = prev[id] ?? 0;
+        if (current >= 100) {
+          clearInterval(interval);
+          return prev;
+        }
+        // Increments with random step for realistic telemetry download
+        const step = Math.floor(Math.random() * 12) + 5;
+        return { ...prev, [id]: Math.min(current + step, 100) };
+      });
+    }, 100);
+    return interval;
+  };
+
   const handleDownload = async (item: LibraryItem) => {
     const downloadUrl = getDownloadUrl(item);
 
@@ -106,6 +227,7 @@ export default function MyLibrary() {
 
     const fullUrl = getFullStorageUrl(downloadUrl);
     setDownloadingId(item.id);
+    const progressInterval = simulateProgress(item.id);
 
     try {
       const response = await fetch(fullUrl);
@@ -120,6 +242,9 @@ export default function MyLibrary() {
       const extension = getFileExtension(fullUrl);
       const fileName = `${item.title}.${extension}`;
 
+      // Brief delay to let user see progress complete for premium interface feedback
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = fileName;
@@ -133,6 +258,12 @@ export default function MyLibrary() {
       console.error("Failed to download file:", error);
       alert("Failed to download file.");
     } finally {
+      clearInterval(progressInterval);
+      setDownloadProgress((prev) => {
+        const updated = { ...prev };
+        delete updated[item.id];
+        return updated;
+      });
       setDownloadingId(null);
     }
   };
@@ -159,6 +290,13 @@ export default function MyLibrary() {
       lowerUrl.includes(".webp")
     );
   };
+
+  // Filter items in memory
+  const filteredItems = libraryItems.filter((item) => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedFilter === "all" || item.item_type === selectedFilter;
+    return matchesSearch && matchesType;
+  });
 
   if (loading) {
     return (
@@ -196,12 +334,12 @@ export default function MyLibrary() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-400/20 mb-6">
             <Library className="w-4 h-4 text-cyan-400" />
             <span className="text-sm font-medium text-cyan-400 tracking-wider uppercase font-mono">
-              Secure Digital Vault
+              <CyberDecoderText text="Secure Digital Vault" delay={200} />
             </span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-foreground via-cyan-400 to-purple-400 bg-clip-text text-transparent font-orbitron uppercase tracking-normal">
-            My Digital Library
+            <CyberDecoderText text="My Digital Library" speed={30} />
           </h1>
 
           <p className="text-base md:text-lg text-gray-400 max-w-xl mx-auto mb-8 font-sans font-light">
@@ -237,6 +375,46 @@ export default function MyLibrary() {
           </div>
         </motion.div>
 
+        {/* ─── Search and Filters Telemetry ─── */}
+        {libraryItems.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex flex-col md:flex-row gap-4 mb-10 max-w-4xl mx-auto"
+          >
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search acquired vault..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-5 pr-4 py-2.5 rounded-xl bg-[#060b16]/90 backdrop-blur-xl border border-cyan-400/25 shadow-[0_0_18px_rgba(0,240,255,0.09),inset_0_0_10px_rgba(0,240,255,0.025)] text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/60 transition-all cursor-none"
+              />
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex bg-[#060b16]/90 backdrop-blur-xl p-1.5 rounded-xl border border-cyan-400/25 gap-1 shadow-[0_0_18px_rgba(0,240,255,0.09)]">
+              {(["all", "film", "asset"] as const).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => {
+                    setSelectedFilter(type);
+                  }}
+                  className={`px-5 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-none ${
+                    selectedFilter === type
+                      ? "bg-cyan-500 text-black font-bold shadow-[0_0_12px_rgba(0,255,255,0.35)]"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {type === "all" ? "All Vault" : type === "film" ? "Films" : "3D Assets"}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* ─── Library Items Grid ─── */}
         {libraryItems.length === 0 ? (
           <motion.div
@@ -251,33 +429,35 @@ export default function MyLibrary() {
               You haven't purchased any cinematic experiences or 3D assets yet.
             </p>
             <button
-              onClick={() => navigate(ROUTE_PATHS.FILMS)}
-              className="px-6 py-2.5 rounded-lg bg-cyan-400 text-black font-semibold shadow-lg shadow-cyan-500/20 hover:scale-105 transition duration-300"
+              onClick={() => {
+                navigate(ROUTE_PATHS.FILMS);
+              }}
+              className="px-6 py-2.5 rounded-lg bg-cyan-400 text-black font-semibold shadow-lg shadow-cyan-500/20 hover:scale-105 transition duration-300 cursor-none"
             >
               Browse Marketplace
             </button>
           </motion.div>
+        ) : filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400 font-mono text-sm">No items matching search filter found.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {libraryItems.map((item, index) => {
+            {filteredItems.map((item, index) => {
               const modelPath =
                 item.bucket_path || item.download_url || item.file_url || item.asset_url || "";
               const modelUrl = getFullStorageUrl(modelPath);
 
               return (
-                <motion.div
+                <TiltCard
                   key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 25, delay: index * 0.05 }}
-                  whileHover={{ y: -8, scale: 1.025 }}
-                  className="group relative h-full flex flex-col"
+                  className="group relative h-full flex flex-col cursor-none"
                 >
                   {/* Cyber Glow Backdrop Shadow */}
                   <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-purple-600/10 to-blue-500/15 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
                   {/* Premium Glassmorphic Card */}
-                  <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 group-hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col justify-between cursor-none">
+                  <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 group-hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col justify-between cursor-none cyber-glow-border glass-glare-card">
                     {/* Border Glint highlight */}
                     <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
 
@@ -335,27 +515,41 @@ export default function MyLibrary() {
                       </div>
 
                       <div className="pt-3 border-t border-white/5">
-                        <Button
-                          onClick={() => handleDownload(item)}
-                          disabled={downloadingId === item.id}
-                          className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/30 transition-all duration-300 cursor-none"
-                        >
-                          {downloadingId === item.id ? (
-                            <>
-                              <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
-                              Downloading...
-                            </>
-                          ) : (
-                            <>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download File
-                            </>
-                          )}
-                        </Button>
+                        {downloadingId === item.id ? (
+                          /* Simulated Telemetry Progress Bar */
+                          <div className="space-y-2 py-1">
+                            <div className="flex justify-between text-[10px] font-mono text-cyan-400">
+                              <span>SYS.RX_DATA</span>
+                              <span>{downloadProgress[item.id] || 0}%</span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-cyan-950/50 border border-cyan-400/20 overflow-hidden">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 shadow-[0_0_8px_rgba(0,240,255,0.6)]"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${downloadProgress[item.id] || 0}%` }}
+                                transition={{ duration: 0.1 }}
+                              />
+                            </div>
+                            <div className="text-[9px] font-mono text-gray-500 text-center animate-pulse">
+                              ESTABLISHING QUANTUM LINK...
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(item);
+                            }}
+                            className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/30 transition-all duration-300 cursor-none"
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download File
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </TiltCard>
               );
             })}
           </div>

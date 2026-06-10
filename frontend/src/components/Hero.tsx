@@ -100,17 +100,17 @@ const premiumBrandEase = [0.22, 1, 0.36, 1] as const;
 const BRAND_NAME = "Voxeli.AI";
 const BRAND_LETTERS = BRAND_NAME.split("");
 const BRAND_GRADIENT =
-  "linear-gradient(96deg, #27e6ff 0%, #12dbe6 28%, #28bde9 48%, #557df4 72%, #8b6dff 100%)";
+  "linear-gradient(96deg, #ffffff 0%, #cbd5e1 50%, #22d3ee 100%)";
 const BRAND_LETTER_COLORS = [
-  "#27e6ff",
-  "#27e6ff",
-  "#12dbe6",
-  "#12dbe6",
-  "#28bde9",
-  "#28bde9",
-  "#557df4",
-  "#557df4",
-  "#8b6dff",
+  "#ffffff",
+  "#ffffff",
+  "#f1f5f9",
+  "#cbd5e1",
+  "#94a3b8",
+  "#64748b",
+  "#475569",
+  "#22d3ee",
+  "#22d3ee",
 ];
 const getBrandRevealDelay = (index: number) => {
   return 0.18 + index * 0.055;

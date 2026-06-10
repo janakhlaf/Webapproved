@@ -430,15 +430,16 @@
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px !important;
-  height: 4px !important;
+  width: 6px !important;
+  height: 6px !important;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg) !important;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--accent) !important;
-  border-radius: 4px !important;
+  background: linear-gradient(180deg, var(--cyan), var(--accent)) !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4) !important;
 }
 
 /* Custom Cursor */
@@ -517,4 +518,70 @@ body, body * {
 
 .font-orbitron {
   font-family: 'Orbitron', sans-serif !important;
+}
+
+/* ─── NEW PREMIUM GLOBAL STYLES ─── */
+/* 1. Cyber Glow Rim-Border effect */
+.cyber-glow-border {
+  position: relative;
+}
+.cyber-glow-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.3), rgba(139, 92, 246, 0.3), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 10;
+}
+.cyber-glow-border:hover::before {
+  opacity: 1;
+}
+
+/* 2. Cyber Shimmer Skeleton Loader */
+@keyframes cyber-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(8, 12, 20, 0.6) 25%,
+    rgba(0, 240, 255, 0.08) 37%,
+    rgba(8, 12, 20, 0.6) 63%
+  );
+  background-size: 200% 100%;
+  animation: cyber-shimmer 2s infinite linear;
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: var(--radius);
+}
+
+/* 3. Glass Glare Dynamic Reflection */
+.glass-glare-card {
+  position: relative;
+  overflow: hidden;
+}
+.glass-glare-card::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 5;
+}
+.glass-glare-card:hover::after {
+  opacity: 1;
 }
