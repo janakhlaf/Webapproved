@@ -1038,6 +1038,26 @@ export default function CineVerseBackground() {
         }}
       >
         <div className="absolute inset-0 overflow-hidden bg-[#020306]">
+          {/* Cyber Grid Pattern */}
+          <div
+            className="absolute inset-0 opacity-20 pointer-events-none"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: '48px 48px',
+            }}
+          />
+          {/* Scanlines Effect */}
+          <div
+            className="absolute inset-0 opacity-5 pointer-events-none"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%)',
+              backgroundSize: '100% 4px',
+            }}
+          />
+
           <div className="absolute inset-0 bg-[#020306] opacity-100" />
           <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#010204]/90" />
 

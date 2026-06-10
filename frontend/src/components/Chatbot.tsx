@@ -300,11 +300,11 @@ export function Chatbot() {
               damping: 35,
             }}
           >
-            <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl shadow-primary/20 flex flex-col h-full overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-accent/10">
+            <div className="relative bg-[#080c14]/95 backdrop-blur-xl rounded-2xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.95)] flex flex-col h-full overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-purple-500/10">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-foreground">
+                  <Sparkles className="h-5 w-5 text-cyan-400 animate-pulse" />
+                  <h3 className="font-semibold text-white tracking-wide">
                     AI Assistant
                   </h3>
                 </div>
@@ -406,8 +406,8 @@ export function Chatbot() {
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                         message.sender === 'user'
-                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
-                          : 'bg-muted/80 text-foreground border border-border/30'
+                          ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-400/40 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.15)] font-medium'
+                          : 'bg-[#0f172a]/70 text-gray-200 border border-purple-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(168,85,247,0.1)]'
                       }`}
                     >
                       <p
@@ -430,21 +430,21 @@ export function Chatbot() {
 
                 {isTyping && (
                   <div className="flex justify-start px-4 py-2">
-                    <div className="bg-muted/80 backdrop-blur-sm px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm border border-border/40">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="bg-[#0f172a]/70 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.08)] border border-purple-500/30">
+                      <span className="text-sm text-gray-400">
                         Typing
                       </span>
 
                       <div className="flex items-center gap-1 mt-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" />
 
                         <span
-                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"
+                          className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce"
                           style={{ animationDelay: '0.15s' }}
                         />
 
                         <span
-                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"
+                          className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce"
                           style={{ animationDelay: '0.3s' }}
                         />
                       </div>
@@ -454,7 +454,7 @@ export function Chatbot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t border-border/50 bg-[#060b16]/90">
+              <div className="p-4 border-t border-cyan-500/20 bg-[#060b16]/90">
                 <div className="flex gap-2">
                   <textarea
                     value={inputValue}
@@ -485,8 +485,8 @@ export function Chatbot() {
                       flex-1
                       bg-[#060b16]/90
                       border
-                      border-border/50
-                      focus:border-primary/50
+                      border-cyan-500/20
+                      focus:border-cyan-400/50
                       transition-colors
                       rounded-md
                       px-3
@@ -498,15 +498,16 @@ export function Chatbot() {
                       min-h-10
                       max-h-24
                       leading-5
+                      outline-none
                     "
                   />
 
                   <Button
                     onClick={handleSendMessage}
                     size="icon"
-                    className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-200"
+                    className="bg-cyan-400 hover:bg-cyan-300 text-black shadow-[0_0_15px_rgba(0,240,255,0.25)] border-none transition-all duration-200"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4 text-black fill-current" />
                   </Button>
                 </div>
               </div>

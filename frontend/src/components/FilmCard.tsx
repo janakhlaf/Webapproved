@@ -5,6 +5,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { TiltCard } from '@/components/TiltCard';
 
 interface FilmCardProps {
   film: Film;
@@ -32,13 +33,13 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
       <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-purple-600/10 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       {/* ─── Premium Glassmorphic Card ─── */}
-      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col cursor-none">
+      <Card className="relative overflow-hidden rounded-2xl bg-[#080c14]/90 backdrop-blur-xl border border-cyan-500/15 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.85)] h-full flex flex-col justify-between cursor-pointer glass-glare-card">
         
         {/* Border Glint highlight */}
         <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl border border-white/5" />
 
         {/* ─── Poster Image Container ─── */}
-        <div className="relative aspect-[16/22] overflow-hidden bg-black/90">
+        <div className="relative aspect-[16/22] overflow-hidden bg-black/90 cyber-scanlines">
           <img
             src={
               film.posterUrl ||
@@ -49,6 +50,9 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
             alt={film.title}
             className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
           />
+
+          {/* Subtle horizontal scanline glitch overlay */}
+          <div className="scanline-overlay" />
 
           {/* Cinematic Darkening Radial Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#020306] via-[#020306]/35 to-transparent z-10" />
@@ -124,10 +128,10 @@ export function FilmCard({ film, onViewDetails }: FilmCardProps) {
 
           <Button
             onClick={() => onViewDetails(film)}
-            className="w-full transition-all duration-300"
-            variant="outline"
+            className="w-full transition-all duration-300 bg-cyan-400 text-black hover:bg-cyan-300 hover:text-black shadow-[0_0_15px_rgba(0,240,255,0.25)] font-bold border-none"
+            variant="default"
           >
-            <Play className="w-4 h-4 mr-2 text-cyan-300" />
+            <Play className="w-4 h-4 mr-2 fill-current" />
             Watch Details
           </Button>
         </div>

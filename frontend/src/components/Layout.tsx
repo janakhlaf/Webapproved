@@ -141,10 +141,10 @@ export function Layout({ children }: { children: ReactNode }) {
               <circle cx="41" cy="64" r="2" fill="#27e6ff" opacity="0.9" />
             </svg>
             <span
-              className="bg-clip-text text-transparent drop-shadow-[0_0_7px_rgba(39,230,255,0.32)]"
+              className="bg-clip-text text-transparent drop-shadow-[0_0_7px_rgba(39,230,255,0.32)] font-orbitron"
               style={{
                 backgroundImage:
-                  "linear-gradient(96deg, #27e6ff 0%, #12dbe6 28%, #28bde9 48%, #557df4 72%, #8b6dff 100%)",
+                  "linear-gradient(96deg, #ffffff 0%, #cbd5e1 45%, #22d3ee 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 WebkitTextStrokeColor: "rgba(39, 230, 255, 0.22)",
@@ -186,6 +186,8 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+
+
             {isAuthenticated && user && (
               <div className="flex items-center gap-3">
                 <Link
@@ -440,7 +442,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div>
               <Link
                 to={ROUTE_PATHS.HOME}
-                className="flex items-center gap-2 text-xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-orbitron tracking-tight cursor-none animate-pulse-glow mb-4"
+                className="flex items-center gap-2 text-xl font-extrabold bg-gradient-to-r from-white via-slate-300 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-orbitron tracking-tight cursor-none animate-pulse-glow mb-4"
               >
                 <svg className="w-6 h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
