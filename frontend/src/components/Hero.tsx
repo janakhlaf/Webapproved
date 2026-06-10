@@ -225,6 +225,40 @@ export default function Hero() {
       onMouseLeave={handleMouseLeave}
       className="relative min-h-[66vh] md:min-h-[70vh] py-12 md:py-16 flex items-center justify-center overflow-hidden bg-transparent text-white"
     >
+      {/* Floating Sparks Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        {[...Array(25)].map((_, i) => {
+          // Pre-generate stable values or use calculations
+          const randomX = (i * 17) % 100;
+          const randomDuration = 8 + ((i * 7) % 8);
+          const randomDelay = (i * 13) % 10;
+          return (
+            <motion.div
+              key={i}
+              className="absolute w-[2px] h-[2px] bg-cyan-400 rounded-full shadow-[0_0_8px_#00f0ff]"
+              initial={{ 
+                left: `${randomX}%`, 
+                top: "110%", 
+                opacity: 0, 
+                scale: 0.5 
+              }}
+              animate={{ 
+                top: "-10%", 
+                opacity: [0, 0.7, 0.7, 0],
+                scale: [0.5, 1.5, 1.5, 0.5],
+                left: [`${randomX}%`, `${randomX + ((i % 2 === 0 ? 3 : -3))}%`, `${randomX + ((i % 2 === 0 ? 6 : -6))}%`]
+              }}
+              transition={{ 
+                duration: randomDuration, 
+                repeat: Infinity, 
+                delay: randomDelay,
+                ease: "linear"
+              }}
+            />
+          );
+        })}
+      </div>
+
       {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 35 }}

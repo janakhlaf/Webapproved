@@ -6,6 +6,7 @@ import { AssetDetailModal } from '@/components/AssetDetailModal';
 import { getAssetsFromDatabase } from '@/api/assetsApi';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { CyberDecoderText } from '@/components/CyberDecoderText';
 import {
   Asset,
   ASSET_CATEGORIES,
@@ -233,7 +234,7 @@ formData.append('auth_user_id', authUser.id);
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Asset Marketplace
+                <CyberDecoderText text="Asset Marketplace" />
               </h1>
               <p className="text-sm text-muted-foreground mt-2">
                 Explore our collection of cinematic assets

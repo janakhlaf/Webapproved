@@ -144,8 +144,12 @@ const handleAddToCart = async () => {
   )}
 
     <Dialog open={open} onOpenChange={onClose}>
-
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#080c14]/95 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative rounded-2xl">
+        {/* HUD Corner brackets */}
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400 rounded-tl-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400 rounded-tr-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400 rounded-bl-2xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400 rounded-br-2xl pointer-events-none" />
        
         <DialogHeader>
 
@@ -278,30 +282,25 @@ const handleAddToCart = async () => {
 
             </div>
 
-            <div className="flex gap-3">
+             <div className="flex gap-3">
+               <Button
+                 onClick={handleAddToCart}
+                 className="flex-1 bg-cyan-400 hover:bg-cyan-300 text-black shadow-[0_0_15px_rgba(0,240,255,0.25)] font-bold border-none transition-all duration-200"
+               >
+                 <ShoppingCart className="w-4 h-4 mr-2 fill-current" />
+                 {isAdded
+                   ? "Added to Cart"
+                   : "Add to Cart"}
+               </Button>
 
-              <Button
-                onClick={handleAddToCart}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200"
-              >
-
-                <ShoppingCart className="w-4 h-4 mr-2" />
-
-                {isAdded
-                  ? "Added to Cart"
-                  : "Add to Cart"}
-
-              </Button>
-
-              <Button
-                onClick={onClose}
-                variant="outline"
-                className="px-8 border-border/50 hover:bg-muted/50"
-              >
-                Close
-              </Button>
-
-            </div>
+               <Button
+                 onClick={onClose}
+                 variant="outline"
+                 className="px-8 border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-400/10 text-cyan-300"
+               >
+                 Close
+               </Button>
+             </div>
           </div>
         </motion.div>
       </DialogContent>

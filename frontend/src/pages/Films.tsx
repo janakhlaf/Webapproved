@@ -18,6 +18,7 @@ import type { Film } from '@/lib/index';
 import { FilmCard } from '@/components/FilmCard';
 import { FilmDetailModal } from '@/components/FilmDetailModal';
 import { useAuth } from '@/hooks/useAuth';
+import { CyberDecoderText } from '@/components/CyberDecoderText';
 import { getFilmsFromDatabase } from '@/api/films';
 
 export default function Films() {
@@ -239,7 +240,7 @@ formData.append('auth_user_id', authUser.id);
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Film Marketplace
+                <CyberDecoderText text="Film Marketplace" />
               </h1>
               <p className="text-sm text-muted-foreground mt-2">
                 Explore our collection of cinematic experiences

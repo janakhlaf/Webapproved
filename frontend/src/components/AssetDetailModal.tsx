@@ -100,7 +100,12 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
       )}
 
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border border-primary/20">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-[#080c14]/95 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative rounded-2xl">
+        {/* HUD Corner brackets */}
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400 rounded-tl-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400 rounded-tr-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400 rounded-bl-2xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400 rounded-br-2xl pointer-events-none" />
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-foreground">
             {asset.title}
@@ -179,8 +184,8 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
             <div className="pt-6 border-t border-border">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="text-4xl font-bold text-primary">
+                  <p className="text-sm text-muted-foreground font-mono">Price</p>
+                  <p className="text-4xl font-black text-cyan-300 font-mono">
                     {formatPrice(asset.price)}
                   </p>
                 </div>
@@ -189,9 +194,9 @@ export function AssetDetailModal({ asset, open, onClose }: AssetDetailModalProps
               <Button
                 onClick={handlePurchase}
                 size="lg"
-                className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
+                className="w-full gap-2 bg-cyan-400 hover:bg-cyan-300 text-black font-bold shadow-[0_0_15px_rgba(0,240,255,0.25)] border-none transition-all duration-200"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 fill-current" />
                 {isAdded ? 'Added to Cart' : 'Add to Cart'}
               </Button>
             </div>

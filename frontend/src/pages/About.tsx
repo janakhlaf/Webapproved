@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Brain, Sparkles, Film, Box, Zap, Globe } from "lucide-react";
 import { IMAGES } from "@/assets/images";
+import { CyberDecoderText } from "@/components/CyberDecoderText";
 
 export default function About() {
   const features = [
@@ -75,7 +76,7 @@ export default function About() {
             className="max-w-4xl mx-auto text-center mb-20"
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              voxeli.ai
+              <CyberDecoderText text="voxeli.ai" />
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
               A groundbreaking graduation project exploring the intersection of human consciousness and artificial intelligence through cinematic storytelling and interactive 3D experiences.
