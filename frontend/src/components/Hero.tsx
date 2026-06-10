@@ -1,8 +1,7 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ROUTE_PATHS } from "@/lib/index";
-import { useState, useEffect } from "react";
-import MascotV3D from "./MascotV3D";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 
 // Stable, deterministic seed array of multi-geometry nodes (squares, diamonds, dashes, glyphs) to avoid hydration mismatch.
 const PARTICLES = Array.from({ length: 48 }, (_, i) => {
@@ -97,9 +96,79 @@ const TECH_SHAPES = Array.from({ length: 22 }, (_, i) => {
   };
 });
 
+const premiumBrandEase = [0.22, 1, 0.36, 1] as const;
+const BRAND_NAME = "Voxeli.AI";
+const BRAND_LETTERS = BRAND_NAME.split("");
+const BRAND_GRADIENT =
+  "linear-gradient(96deg, #27e6ff 0%, #12dbe6 28%, #28bde9 48%, #557df4 72%, #8b6dff 100%)";
+const BRAND_LETTER_COLORS = [
+  "#27e6ff",
+  "#27e6ff",
+  "#12dbe6",
+  "#12dbe6",
+  "#28bde9",
+  "#28bde9",
+  "#557df4",
+  "#557df4",
+  "#8b6dff",
+];
+const getBrandRevealDelay = (index: number) => {
+  return 0.18 + index * 0.055;
+};
+
 export default function Hero() {
-  const [mascotState, setMascotState] = useState<'init' | 'assemble' | 'showcase' | 'docking' | 'idle'>('init');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [brandAnimationCycle, setBrandAnimationCycle] = useState(0);
+  const brandHeadingRef = useRef<HTMLHeadingElement>(null);
+  const location = useLocation();
+
+  useLayoutEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const scrollToBrand = () => {
+      const brandRect = brandHeadingRef.current?.getBoundingClientRect();
+      const brandTop = brandRect ? window.scrollY + brandRect.top - 112 : 0;
+
+      window.scrollTo({
+        top: Math.max(0, brandTop),
+        left: 0,
+        behavior: "auto",
+      });
+    };
+
+    scrollToBrand();
+    requestAnimationFrame(scrollToBrand);
+
+    return () => {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = previousScrollRestoration;
+      }
+    };
+  }, [location.key]);
+
+  useEffect(() => {
+    const scrollTimer = window.setTimeout(() => {
+      const brandRect = brandHeadingRef.current?.getBoundingClientRect();
+
+      if (!brandRect) {
+        return;
+      }
+
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + brandRect.top - 112),
+        left: 0,
+        behavior: "auto",
+      });
+
+      setBrandAnimationCycle((cycle) => cycle + 1);
+    }, 50);
+
+    return () => window.clearTimeout(scrollTimer);
+  }, [location.key]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -156,9 +225,6 @@ export default function Hero() {
       onMouseLeave={handleMouseLeave}
       className="relative min-h-[66vh] md:min-h-[70vh] py-12 md:py-16 flex items-center justify-center overflow-hidden bg-transparent text-white"
     >
-      {/* 3D Mascot Canvas Overlay */}
-      <MascotV3D onStateChange={setMascotState} prefersReducedMotion={prefersReducedMotion} />
-
       {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 35 }}
@@ -170,106 +236,200 @@ export default function Hero() {
           Graduation Project 2026
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight select-none flex items-center justify-center gap-2.5 min-h-[90px] md:min-h-[140px] font-orbitron">
-          {/* Animatable Brand SVG Logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={
-              mascotState === 'idle'
-                ? { opacity: 1, scale: 1, y: [0, -4, 0] }
-                : mascotState === 'docking' || mascotState === 'showcase' || mascotState === 'assemble'
-                  ? { opacity: 1, scale: 1 }
-                  : { opacity: 0, scale: 0.5 }
-            }
-            transition={
-              mascotState === 'idle'
-                ? { y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" } }
-                : { duration: 1 }
-            }
-            className="flex-shrink-0"
+        <h1 ref={brandHeadingRef} className="min-h-[120px] md:min-h-[156px] select-none font-orbitron leading-none flex items-center justify-center">
+          <motion.span
+            key={`brand-lockup-${location.key}-${brandAnimationCycle}`}
+            aria-label={BRAND_NAME}
+            initial={{ opacity: 0, y: 24, scale: 0.97, filter: "blur(4px) brightness(0.76)" }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              filter:
+                "blur(0px) brightness(1) drop-shadow(0 0 14px rgba(39, 230, 255, 0.42)) drop-shadow(0 0 28px rgba(85, 125, 244, 0.22))",
+            }}
+            transition={{
+              opacity: { duration: 0.95, ease: premiumBrandEase },
+              y: { duration: 1.12, ease: premiumBrandEase },
+              scale: { duration: 1.12, ease: premiumBrandEase },
+              filter: { duration: 1.08, ease: premiumBrandEase },
+            }}
+            whileHover={!prefersReducedMotion ? { y: -2 } : undefined}
+              className="relative inline-flex items-center justify-center gap-4 sm:gap-5 overflow-hidden px-3 py-5 will-change-transform"
+            style={{
+              WebkitTextStrokeColor: "rgba(39, 230, 255, 0.34)",
+              WebkitTextStrokeWidth: "0.28px",
+              textShadow:
+                "0 0 9px rgba(39, 230, 255, 0.48), 0 0 22px rgba(40, 189, 233, 0.28), 0 0 38px rgba(139, 109, 255, 0.18)",
+            }}
           >
-            <svg className="w-12 h-12 md:w-20 md:h-20 text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.55)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
-              <path d="M4 9 L10 12 V18 L4 15 Z" fill="#0369a1" opacity="0.8"/>
-              <path d="M10 12 L16 9 V15 L10 18 Z" fill="#0284c7" opacity="0.8"/>
-              <path d="M22 6 L28 9 L22 12 L16 9 Z" fill="#a855f7" opacity="0.8"/>
-              <path d="M16 9 L22 12 V18 L16 15 Z" fill="#7e22ce" opacity="0.8"/>
-              <path d="M22 12 L28 9 V15 L22 18 Z" fill="#6b21a8" opacity="0.8"/>
-              <path d="M16 11 L22 14.5 L16 18 L10 14.5 Z" fill="#22d3ee"/>
-              <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
-              <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
-            </svg>
-          </motion.div>
-
-          {/* Combined Brand Name Wrapper (Floats together as a single unit) */}
-          <motion.span 
-            animate={mascotState === 'idle' ? { y: [0, -5, 0] } : {}}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="flex items-center gap-1"
-          >
-            {/* Symmetrical Mascot placeholder at the start of the text to represent the letter V */}
-            <span id="mascot-placeholder" className="relative inline-block text-left flex-shrink-0 select-none">
+            {!prefersReducedMotion && (
               <motion.span
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={
-                  mascotState === 'idle'
-                    ? { opacity: 0, scale: 0.8 } // Voxel V has fully morphed, hide the text letter
-                    : mascotState === 'docking'
-                      ? { opacity: 0.15, scale: 0.95 }
-                      : mascotState === 'showcase' || mascotState === 'assemble'
-                        ? { opacity: 0.55, scale: 1 } // visible in blue/cyan during assembly/showcase
-                        : { opacity: 0, scale: 0.5 }
-                }
-                transition={{ duration: 0.5 }}
-                className="bg-gradient-to-r from-cyan-400 via-blue-200 to-purple-400 bg-clip-text text-transparent inline-block"
-              >
-                v
-              </motion.span>
-            </span>
+                aria-hidden="true"
+                initial={{ x: "-150%", opacity: 0 }}
+                animate={{ x: "580%", opacity: [0, 0.95, 0] }}
+                transition={{ duration: 1.42, delay: 0.58, ease: premiumBrandEase }}
+                className="pointer-events-none absolute inset-y-3 -left-10 z-20 w-16 -skew-x-12"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent, rgba(39,230,255,0.85), rgba(18,219,230,0.75), rgba(139,109,255,0.35), transparent)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            )}
 
-            {/* Full Brand Text with Zero-Gravity Float and Power-Up shockwave ripple */}
-            <span className="flex overflow-hidden">
-              {"oxeli.ai".split("").map((char, index) => (
+            <motion.span
+              aria-hidden="true"
+              initial={{
+                opacity: 0,
+                y: prefersReducedMotion ? 0 : 22,
+                scale: prefersReducedMotion ? 1 : 0.86,
+                filter: prefersReducedMotion ? "blur(0px)" : "blur(3px) brightness(0.72)",
+              }}
+              animate={{
+                opacity: 1,
+                y: prefersReducedMotion ? 0 : [18, -4, 0],
+                scale: prefersReducedMotion ? 1 : [0.82, 1.04, 1],
+                filter: "blur(0px) brightness(1)",
+              }}
+              transition={{
+                opacity: { duration: 0.82, delay: 0.08, ease: premiumBrandEase },
+                y: { duration: 1.12, delay: 0.08, ease: premiumBrandEase },
+                scale: { duration: 1.12, delay: 0.08, ease: premiumBrandEase },
+                filter: { duration: 1, delay: 0.08, ease: premiumBrandEase },
+              }}
+              className="relative flex h-[58px] w-[50px] sm:h-[74px] sm:w-[64px] md:h-[86px] md:w-[74px] shrink-0 items-end justify-center"
+            >
+              <motion.svg
+                viewBox="0 0 82 94"
+                fill="none"
+                className="h-full w-full overflow-visible"
+                animate={!prefersReducedMotion ? { y: [0, -2.5, 0] } : undefined}
+                transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <defs>
+                  <linearGradient id="heroRobotShell" x1="13" y1="5" x2="69" y2="85" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#f8fbff" />
+                    <stop offset="0.3" stopColor="#a9bfff" />
+                    <stop offset="0.68" stopColor="#344574" />
+                    <stop offset="1" stopColor="#111827" />
+                  </linearGradient>
+                  <linearGradient id="heroRobotFace" x1="23" y1="30" x2="59" y2="52" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#081322" />
+                    <stop offset="1" stopColor="#0d1630" />
+                  </linearGradient>
+                  <linearGradient id="heroRobotGlow" x1="22" y1="30" x2="60" y2="74" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#27e6ff" />
+                    <stop offset="1" stopColor="#8b6dff" />
+                  </linearGradient>
+                  <radialGradient id="heroRobotBloom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(41 89) rotate(90) scale(11 29)">
+                    <stop stopColor="#27e6ff" stopOpacity="0.65" />
+                    <stop offset="1" stopColor="#27e6ff" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                <ellipse cx="41" cy="89" rx="28" ry="6.5" fill="url(#heroRobotBloom)" />
+                <path d="M31 58H51C58 58 63 63.2 63 70V77C63 84 57.7 88 50.5 88H31.5C24.3 88 19 84 19 77V70C19 63.2 24 58 31 58Z" fill="url(#heroRobotShell)" stroke="rgba(206,236,255,0.7)" strokeWidth="1.5" />
+                <path d="M28 62C25 64.5 23.5 68 23.5 73V77C23.5 80 25.2 82.5 28 83.8" stroke="rgba(255,255,255,0.34)" strokeWidth="1.2" strokeLinecap="round" />
+                <rect x="21" y="14" width="40" height="43" rx="19" fill="url(#heroRobotShell)" stroke="rgba(226,244,255,0.82)" strokeWidth="1.6" />
+                <path d="M30 13C32.5 6.5 49.5 6.5 52 13C48 15.8 34 15.8 30 13Z" fill="rgba(255,255,255,0.58)" />
+                <rect x="25" y="28" width="32" height="21" rx="9" fill="url(#heroRobotFace)" stroke="rgba(39,230,255,0.58)" strokeWidth="1.2" />
+                <path d="M28 30.5C31 28.5 51 28.5 54 30.5" stroke="rgba(255,255,255,0.18)" strokeLinecap="round" />
+                <rect x="11" y="31" width="9" height="21" rx="4.5" fill="url(#heroRobotShell)" stroke="rgba(187,225,255,0.58)" strokeWidth="1.2" />
+                <rect x="62" y="31" width="9" height="21" rx="4.5" fill="url(#heroRobotShell)" stroke="rgba(187,225,255,0.58)" strokeWidth="1.2" />
+                <circle cx="34" cy="38.5" r="4" fill="#27e6ff" filter="drop-shadow(0 0 5px rgba(39,230,255,0.85))" />
+                <circle cx="48" cy="38.5" r="4" fill="#27e6ff" filter="drop-shadow(0 0 5px rgba(39,230,255,0.85))" />
+                <path d="M35 47C37.8 49 44.2 49 47 47" stroke="url(#heroRobotGlow)" strokeWidth="1.8" strokeLinecap="round" />
+                <rect x="34" y="69" width="14" height="4" rx="2" fill="url(#heroRobotGlow)" />
+                <circle cx="41" cy="64" r="2" fill="#27e6ff" opacity="0.9" />
+                <path d="M24 70L15 74M58 70L67 74" stroke="rgba(39,230,255,0.52)" strokeWidth="2" strokeLinecap="round" />
+              </motion.svg>
+            </motion.span>
+
+            <span className="relative inline-flex items-baseline text-[clamp(2.45rem,8.4vw,5.85rem)] font-medium tracking-[0.035em]">
+              {BRAND_LETTERS.map((char, index) => (
                 <motion.span
-                  key={index}
-                  initial={{ opacity: 0, y: 35, filter: "brightness(0.5) contrast(0.8) blur(8px)" }}
-                  animate={
-                    mascotState === 'idle'
-                      ? {
-                          opacity: 1,
-                          filter: ["brightness(1) contrast(1) blur(0px)", "brightness(1.95) contrast(1.2) blur(0px)", "brightness(1) contrast(1) blur(0px)"],
-                          scale: [1, 1.15, 1],
-                          y: [0, -8, 0],
-                        }
-                      : mascotState === 'docking' || mascotState === 'showcase' || mascotState === 'assemble'
-                        ? { 
-                            opacity: 1, 
-                            y: 0, 
-                            filter: "brightness(1) contrast(1) blur(0px)",
-                            scale: 1,
-                          }
-                        : { opacity: 0, y: 35, filter: "brightness(0.5) contrast(0.8) blur(8px)" }
-                  }
-                  transition={
-                    mascotState === 'idle'
-                      ? {
-                          y: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
-                          scale: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
-                          filter: { delay: index * 0.08, duration: 0.5, ease: "easeOut" },
-                        }
-                      : { delay: index * 0.08, duration: 0.8 }
-                  }
-                  className={`bg-gradient-to-r from-cyan-400 via-blue-200 to-purple-400 bg-clip-text text-transparent ${
-                    mascotState === 'idle' ? "animate-shimmer" : ""
-                  }`}
+                  key={`${char}-${index}`}
+                  aria-hidden="true"
+                  initial={{
+                    opacity: 0,
+                    y: prefersReducedMotion ? 0 : 56,
+                    scale: prefersReducedMotion ? 1 : 0.86,
+                    clipPath: prefersReducedMotion ? "inset(0% 0% 0% 0%)" : "inset(82% 0% 0% 0%)",
+                    filter: prefersReducedMotion
+                      ? "blur(0px)"
+                      : "blur(3px) brightness(0.72)",
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: prefersReducedMotion ? 0 : [46, -8, 0],
+                    scale: prefersReducedMotion ? 1 : [0.86, 1.06, 1],
+                    clipPath: "inset(0% 0% 0% 0%)",
+                    filter: [
+                      "blur(3px) brightness(0.72)",
+                      "blur(0px) brightness(1.35)",
+                      "blur(0px) brightness(1)",
+                    ],
+                  }}
+                  transition={{
+                    opacity: {
+                      duration: 0.82,
+                      delay: prefersReducedMotion ? 0 : getBrandRevealDelay(index),
+                      ease: premiumBrandEase,
+                    },
+                    y: {
+                      duration: 1.08,
+                      delay: prefersReducedMotion ? 0 : getBrandRevealDelay(index),
+                      ease: premiumBrandEase,
+                    },
+                    scale: {
+                      duration: 1.08,
+                      delay: prefersReducedMotion ? 0 : getBrandRevealDelay(index),
+                      ease: premiumBrandEase,
+                    },
+                    clipPath: {
+                      duration: 1,
+                      delay: prefersReducedMotion ? 0 : getBrandRevealDelay(index),
+                      ease: premiumBrandEase,
+                    },
+                    filter: {
+                      duration: 1.18,
+                      delay: prefersReducedMotion ? 0 : getBrandRevealDelay(index),
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  }}
+                  className="inline-block"
                   style={{
-                    backgroundSize: "200% auto",
+                    backgroundImage: BRAND_GRADIENT,
+                    backgroundSize: `${BRAND_LETTERS.length * 100}% 100%`,
+                    backgroundPosition: `${index * (100 / Math.max(BRAND_LETTERS.length - 1, 1))}% center`,
+                    backgroundClip: "text",
+                    WebkitBackgroundClip: "text",
+                    color: BRAND_LETTER_COLORS[index],
+                  WebkitTextFillColor: "transparent",
+                  textShadow:
+                      "0 0 7px rgba(39,230,255,0.52), 0 0 16px rgba(40,189,233,0.34), 0 0 28px rgba(139,109,255,0.2)",
                   }}
                 >
                   {char}
                 </motion.span>
               ))}
             </span>
+
+            {!prefersReducedMotion && (
+              <motion.span
+                aria-hidden="true"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: [0, 1, 0.92], opacity: [0, 1, 0.6] }}
+                transition={{ duration: 1.22, delay: 0.64, ease: premiumBrandEase }}
+                className="pointer-events-none absolute bottom-2 left-[9%] right-[9%] h-px origin-center"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent, rgba(39,230,255,0.2), rgba(18,219,230,0.95), rgba(139,109,255,0.68), transparent)",
+                  boxShadow:
+                    "0 0 18px rgba(39,230,255,0.72), 0 0 38px rgba(40,189,233,0.32)",
+                }}
+              />
+            )}
           </motion.span>
         </h1>
 

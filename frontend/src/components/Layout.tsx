@@ -104,20 +104,57 @@ export function Layout({ children }: { children: ReactNode }) {
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             to={ROUTE_PATHS.HOME}
-            className="flex items-center gap-2 text-xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:opacity-90 transition-all duration-300 font-orbitron tracking-tight cursor-none animate-pulse-glow"
+            className="flex items-center gap-1.5 text-xl font-black hover:opacity-95 transition-all duration-300 font-orbitron tracking-normal cursor-none"
           >
-            <svg className="w-6 h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 6 L16 9 L10 12 L4 9 Z" fill="#0891b2" opacity="0.8"/>
-              <path d="M4 9 L10 12 V18 L4 15 Z" fill="#0369a1" opacity="0.8"/>
-              <path d="M10 12 L16 9 V15 L10 18 Z" fill="#0284c7" opacity="0.8"/>
-              <path d="M22 6 L28 9 L22 12 L16 9 Z" fill="#a855f7" opacity="0.8"/>
-              <path d="M16 9 L22 12 V18 L16 15 Z" fill="#7e22ce" opacity="0.8"/>
-              <path d="M22 12 L28 9 V15 L22 18 Z" fill="#6b21a8" opacity="0.8"/>
-              <path d="M16 11 L22 14.5 L16 18 L10 14.5 Z" fill="#22d3ee"/>
-              <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
-              <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
+            <svg
+              aria-hidden="true"
+              className="h-8 w-7 shrink-0 overflow-visible drop-shadow-[0_0_6px_rgba(39,230,255,0.38)]"
+              viewBox="0 0 82 94"
+              fill="none"
+            >
+              <defs>
+                <linearGradient id="navRobotShell" x1="13" y1="5" x2="69" y2="85" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#f8fbff" />
+                  <stop offset="0.3" stopColor="#a9bfff" />
+                  <stop offset="0.68" stopColor="#344574" />
+                  <stop offset="1" stopColor="#101729" />
+                </linearGradient>
+                <linearGradient id="navRobotFace" x1="23" y1="30" x2="59" y2="52" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#081322" />
+                  <stop offset="1" stopColor="#0d1630" />
+                </linearGradient>
+                <linearGradient id="navRobotGlow" x1="22" y1="30" x2="60" y2="74" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#27e6ff" />
+                  <stop offset="1" stopColor="#8b6dff" />
+                </linearGradient>
+              </defs>
+              <path d="M31 58H51C58 58 63 63.2 63 70V77C63 84 57.7 88 50.5 88H31.5C24.3 88 19 84 19 77V70C19 63.2 24 58 31 58Z" fill="url(#navRobotShell)" stroke="rgba(206,236,255,0.7)" strokeWidth="1.5" />
+              <rect x="21" y="14" width="40" height="43" rx="19" fill="url(#navRobotShell)" stroke="rgba(226,244,255,0.82)" strokeWidth="1.6" />
+              <path d="M30 13C32.5 6.5 49.5 6.5 52 13C48 15.8 34 15.8 30 13Z" fill="rgba(255,255,255,0.58)" />
+              <rect x="25" y="28" width="32" height="21" rx="9" fill="url(#navRobotFace)" stroke="rgba(39,230,255,0.58)" strokeWidth="1.2" />
+              <rect x="11" y="31" width="9" height="21" rx="4.5" fill="url(#navRobotShell)" stroke="rgba(187,225,255,0.58)" strokeWidth="1.2" />
+              <rect x="62" y="31" width="9" height="21" rx="4.5" fill="url(#navRobotShell)" stroke="rgba(187,225,255,0.58)" strokeWidth="1.2" />
+              <circle cx="34" cy="38.5" r="4" fill="#27e6ff" />
+              <circle cx="48" cy="38.5" r="4" fill="#27e6ff" />
+              <path d="M35 47C37.8 49 44.2 49 47 47" stroke="url(#navRobotGlow)" strokeWidth="1.8" strokeLinecap="round" />
+              <rect x="34" y="69" width="14" height="4" rx="2" fill="url(#navRobotGlow)" />
+              <circle cx="41" cy="64" r="2" fill="#27e6ff" opacity="0.9" />
             </svg>
-            <span>voxeli.ai</span>
+            <span
+              className="bg-clip-text text-transparent drop-shadow-[0_0_7px_rgba(39,230,255,0.32)]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(96deg, #27e6ff 0%, #12dbe6 28%, #28bde9 48%, #557df4 72%, #8b6dff 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                WebkitTextStrokeColor: "rgba(39, 230, 255, 0.22)",
+                WebkitTextStrokeWidth: "0.2px",
+                textShadow:
+                  "0 0 5px rgba(39, 230, 255, 0.42), 0 0 12px rgba(40, 189, 233, 0.26), 0 0 20px rgba(139, 109, 255, 0.16)",
+              }}
+            >
+              Voxeli.AI
+            </span>
           </Link>
 
           {/* Nav list - Underlines slide smoothly across pages */}
