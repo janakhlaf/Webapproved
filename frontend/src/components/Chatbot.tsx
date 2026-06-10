@@ -28,7 +28,7 @@ interface BackendMessage {
 
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
-  text: 'Welcome to Human Mind & AI Logic! How can I assist you today?',
+  text: 'Welcome to voxeli.ai! How can I assist you today?',
   sender: 'bot',
   timestamp: new Date(),
 };

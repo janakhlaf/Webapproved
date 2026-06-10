@@ -140,23 +140,20 @@ export function Layout({ children }: { children: ReactNode }) {
               <rect x="34" y="69" width="14" height="4" rx="2" fill="url(#navRobotGlow)" />
               <circle cx="41" cy="64" r="2" fill="#27e6ff" opacity="0.9" />
             </svg>
-            <span className="font-orbitron text-[15px] sm:text-[17px] font-black tracking-wider flex items-center gap-1 leading-none select-none">
-              <span 
-                className="text-white"
-                style={{
-                  textShadow: "0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)"
-                }}
-              >
-                Human Mind
-              </span>
-              <span 
-                className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500"
-                style={{
-                  textShadow: "0 0 8px rgba(34, 211, 238, 0.4), 0 0 20px rgba(59, 130, 246, 0.2)"
-                }}
-              >
-                & AI Logic
-              </span>
+            <span
+              className="bg-clip-text text-transparent drop-shadow-[0_0_7px_rgba(39,230,255,0.32)] font-orbitron"
+              style={{
+                backgroundImage:
+                  "linear-gradient(96deg, #ffffff 0%, #cbd5e1 45%, #22d3ee 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                WebkitTextStrokeColor: "rgba(39, 230, 255, 0.22)",
+                WebkitTextStrokeWidth: "0.2px",
+                textShadow:
+                  "0 0 5px rgba(39, 230, 255, 0.42), 0 0 12px rgba(40, 189, 233, 0.26), 0 0 20px rgba(139, 109, 255, 0.16)",
+              }}
+            >
+              Voxeli.AI
             </span>
           </Link>
 
@@ -458,10 +455,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   <path d="M10 14.5 L16 18 V25 L10 21.5 Z" fill="#0891b2"/>
                   <path d="M16 18 L22 14.5 V21.5 L16 25 Z" fill="#0e7490"/>
                 </svg>
-                <span className="font-black tracking-wider flex items-center gap-1 select-none">
-                  <span className="text-white">Human Mind</span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">& AI Logic</span>
-                </span>
+                <span>voxeli.ai</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed font-sans font-light">
                 Exploring the cinematic intersection of AI, memory, creativity, and
@@ -495,7 +489,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="mt-8 pt-8 border-t border-white/5 text-center">
             <p className="text-xs text-gray-500 font-mono">
-              © 2026 Human Mind & AI Logic. All rights reserved.
+              © 2026 voxeli.ai. All rights reserved.
             </p>
           </div>
         </div>

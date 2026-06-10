@@ -74,8 +74,8 @@ export default function About() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-4xl mx-auto text-center mb-20"
           >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-slate-300 to-cyan-400 bg-clip-text text-transparent">
-              Human Mind & AI Logic
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              voxeli.ai
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
               A groundbreaking graduation project exploring the intersection of human consciousness and artificial intelligence through cinematic storytelling and interactive 3D experiences.
