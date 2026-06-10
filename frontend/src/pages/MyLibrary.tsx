@@ -495,12 +495,17 @@ export default function MyLibrary() {
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="relative z-10 w-48 h-48 select-none"
+              className="relative z-10 w-56 h-56 select-none flex items-center justify-center"
             >
               <img 
                 src="/library_hologram.png" 
                 alt="Vault Hologram" 
-                className="w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(34,211,238,0.35)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_25px_rgba(34,211,238,0.45)]"
+                style={{
+                  mixBlendMode: "screen",
+                  maskImage: "radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)",
+                  WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)"
+                }}
               />
             </motion.div>
           </div>
@@ -743,25 +748,12 @@ export default function MyLibrary() {
                                 <Button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (item.item_type === "film") {
-                                      if (filmDetails) setSelectedFilm(filmDetails);
-                                    } else {
-                                      handleDownload(item);
-                                    }
+                                    handleDownload(item);
                                   }}
-                                  className="flex-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white border border-cyan-500/20 hover:border-cyan-400/40 font-bold text-xs uppercase tracking-wider h-10 transition-all duration-300 rounded-xl cursor-none"
+                                  className="flex-1 bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs uppercase tracking-wider h-10 transition-all duration-300 rounded-xl cursor-none shadow-[0_0_15px_rgba(0,240,255,0.25)] hover:shadow-[0_0_20px_rgba(0,240,255,0.45)] border-none"
                                 >
-                                  {item.item_type === "film" ? (
-                                    <>
-                                      <Play className="w-3.5 h-3.5 mr-2 fill-cyan-400 text-cyan-400" />
-                                      Watch Now
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Download className="w-3.5 h-3.5 mr-2" />
-                                      Download
-                                    </>
-                                  )}
+                                  <Download className="w-3.5 h-3.5 mr-2" />
+                                  Download
                                 </Button>
 
                                 {/* Options dot dropdown */}
@@ -874,10 +866,10 @@ export default function MyLibrary() {
 
               <Button
                 onClick={() => navigate(ROUTE_PATHS.FILMS)}
-                className="w-full bg-transparent hover:bg-cyan-500/10 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 font-bold text-[10px] uppercase tracking-wider h-10 transition-all duration-300 rounded-xl cursor-none"
+                className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs uppercase tracking-wider h-10 transition-all duration-300 rounded-xl cursor-none shadow-[0_0_15px_rgba(0,240,255,0.25)] hover:shadow-[0_0_20px_rgba(0,240,255,0.45)] border-none"
               >
                 Browse Now
-                <ExternalLink className="w-3 h-3 ml-1.5" />
+                <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </div>
           </div>
