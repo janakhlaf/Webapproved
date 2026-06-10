@@ -97,21 +97,16 @@ const TECH_SHAPES = Array.from({ length: 22 }, (_, i) => {
 });
 
 const premiumBrandEase = [0.22, 1, 0.36, 1] as const;
-const BRAND_NAME = "Voxeli.AI";
+const BRAND_NAME = "Human Mind & AI Logic";
 const BRAND_LETTERS = BRAND_NAME.split("");
 const BRAND_GRADIENT =
   "linear-gradient(96deg, #ffffff 0%, #cbd5e1 50%, #22d3ee 100%)";
-const BRAND_LETTER_COLORS = [
-  "#ffffff",
-  "#ffffff",
-  "#f1f5f9",
-  "#cbd5e1",
-  "#94a3b8",
-  "#64748b",
-  "#475569",
-  "#22d3ee",
-  "#22d3ee",
-];
+const BRAND_LETTER_COLORS = Array.from({ length: BRAND_LETTERS.length }, (_, i) => {
+  const ratio = i / (BRAND_LETTERS.length - 1);
+  if (ratio < 0.5) return "#ffffff";
+  if (ratio < 0.75) return "#cbd5e1";
+  return "#22d3ee";
+});
 const getBrandRevealDelay = (index: number) => {
   return 0.18 + index * 0.055;
 };
