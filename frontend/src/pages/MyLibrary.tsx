@@ -470,41 +470,101 @@ export default function MyLibrary() {
           </div>
 
           {/* Right Column: Floating Holographic Folder Illustration */}
-          <div className="lg:col-span-1 flex flex-col items-center justify-center relative min-h-[200px]">
-            {/* Pedestal Structure Base */}
-            <div className="absolute bottom-[10%] w-48 h-4 bg-transparent border-t border-b border-cyan-500/20 rounded-full flex items-center justify-center animate-pulse">
-              <div className="w-36 h-2 border border-cyan-400/30 rounded-full animate-pulse" />
-            </div>
-
-            {/* Glowing pedestal base circle */}
+          <div className="lg:col-span-1 flex flex-col items-center justify-center relative min-h-[280px] overflow-visible">
+            
+            {/* 1. Volumetric Light Cone projecting upwards */}
             <div 
-              className="absolute bottom-[5%] w-56 h-8 rounded-full pointer-events-none opacity-40 animate-pulse"
+              className="absolute bottom-[10%] w-56 h-56 pointer-events-none z-0"
               style={{
-                background: "radial-gradient(ellipse at center, rgba(34, 211, 238, 0.4) 0%, transparent 70%)"
+                background: "linear-gradient(to top, transparent, rgba(6, 182, 212, 0.08) 50%, rgba(6, 182, 212, 0.15) 100%)",
+                clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+                maskImage: "radial-gradient(ellipse at bottom, black 40%, transparent 90%)",
+                WebkitMaskImage: "radial-gradient(ellipse at bottom, black 40%, transparent 90%)",
               }}
             />
 
-            {/* Futuristic floating container */}
+            {/* 2. Concentric Rotating HUD Rings at the base */}
+            <div className="absolute bottom-[8%] w-64 h-16 pointer-events-none z-0 flex items-center justify-center" style={{ transform: "rotateX(75deg)" }}>
+              {/* Outer Ring */}
+              <motion.div 
+                animate={{ rotate: 365 }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute w-56 h-56 rounded-full border border-dashed border-cyan-500/30"
+              />
+              {/* Mid Ring */}
+              <motion.div 
+                animate={{ rotate: -365 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                className="absolute w-44 h-44 rounded-full border border-double border-purple-500/20"
+              />
+              {/* Inner Ring with Tick marks */}
+              <motion.div 
+                animate={{ rotate: 365 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute w-32 h-32 rounded-full border border-cyan-400/40"
+                style={{ borderStyle: "dashed", borderDasharray: "8 4" }}
+              />
+              {/* Core Glow Center */}
+              <div 
+                className="absolute w-20 h-20 rounded-full blur-md"
+                style={{
+                  background: "radial-gradient(circle, rgba(6, 182, 212, 0.6) 0%, transparent 70%)"
+                }}
+              />
+            </div>
+
+            {/* 3. Rising Light Particles/Sparks */}
+            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#00f0ff]"
+                  initial={{ 
+                    x: `calc(50% + ${Math.random() * 80 - 40}px)`, 
+                    y: "80%", 
+                    opacity: 0, 
+                    scale: 0.5 
+                  }}
+                  animate={{ 
+                    y: ["80%", "20%"], 
+                    opacity: [0, 0.8, 0],
+                    scale: [0.5, 1.2, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 3 + Math.random() * 2, 
+                    repeat: Infinity, 
+                    delay: i * 0.8,
+                    ease: "easeInOut"
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* 4. Futuristic floating image container */}
             <motion.div
               animate={{ 
-                y: [0, -10, 0],
-                rotateZ: [0, 1.5, 0]
+                y: [0, -12, 0],
+                rotateY: [0, 8, 0],
+                rotateZ: [0, 1, 0]
               }}
               transition={{ 
-                duration: 6, 
+                duration: 5, 
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="relative z-10 w-56 h-56 select-none flex items-center justify-center"
+              className="relative z-10 w-52 h-52 select-none flex items-center justify-center"
+              style={{ perspective: "1000px" }}
             >
+              {/* Hexagonal grid border background under image */}
+              <div className="absolute inset-0 bg-[#00f0ff]/5 rounded-3xl blur-xl opacity-20 pointer-events-none" />
               <img 
                 src="/library_hologram.png" 
                 alt="Vault Hologram" 
-                className="w-full h-full object-contain filter drop-shadow-[0_0_25px_rgba(34,211,238,0.45)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_30px_rgba(6,182,212,0.55)] saturate-125 contrast-110"
                 style={{
                   mixBlendMode: "screen",
-                  maskImage: "radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)",
-                  WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)"
+                  maskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 75%)",
+                  WebkitMaskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 75%)"
                 }}
               />
             </motion.div>
