@@ -47,8 +47,6 @@ export async function getFilmsFromDatabase(): Promise<Film[]> {
     mimeType: film.mime_type ?? '',
     sourceType: film.source_type ?? '',
     status: film.status ?? '',
-    rejectionReason: film.rejection_reason ?? '',
-
     downloadable: true,
     duration: film.duration ? `${film.duration} min` : '',
     releaseYear: 2024,
