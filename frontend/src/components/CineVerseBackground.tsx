@@ -993,33 +993,31 @@ export default function CineVerseBackground() {
           </linearGradient>
         </defs>
 
-        <circle cx="27" cy="27" r="18" fill="rgba(2, 6, 23, 0.18)" stroke={primary} strokeWidth="1.2" opacity={ringOpacity} />
+        <circle cx="27" cy="27" r="15" fill="rgba(2, 6, 23, 0.25)" stroke={primary} strokeWidth="1.2" opacity={ringOpacity} />
         <circle
           cx="27"
           cy="27"
-          r="22"
+          r="19"
           stroke={secondary}
-          strokeWidth="0.9"
+          strokeWidth="0.8"
           strokeDasharray={dash}
-          opacity={ringOpacity * 0.78}
+          opacity={ringOpacity * 0.6}
           className="animate-spin-slow"
           style={{ transformOrigin: '27px 27px', animationDuration: state === 'chatbot' ? '8s' : '14s' }}
         />
-        <path d="M27 5V12 M27 42V49 M5 27H12 M42 27H49" stroke={primary} strokeWidth="1.2" strokeLinecap="round" opacity="0.78" />
-        <path d="M16 11H10V17 M38 11H44V17 M16 43H10V37 M38 43H44V37" stroke={accent} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
-        <path d="M27 18L31.5 31.2L27.5 29.4L24.2 36L21.8 34.8L25.1 28.3L21.2 27.6L27 18Z" fill="url(#cursorGlassGrad)" stroke={secondary} strokeWidth="1.15" strokeLinejoin="round" />
-        <circle cx="27" cy="27" r={coreRadius + 7} fill={primary} opacity="0.045" />
+        <path d="M27 16L32.2 28.5L28.2 26.8L25.2 32.8L23 31.8L26 25.8L22 25.2L27 16Z" fill="url(#cursorGlassGrad)" stroke={secondary} strokeWidth="1.15" strokeLinejoin="round" />
+        <circle cx="27" cy="27" r={coreRadius + 5} fill={primary} opacity="0.05" />
         <circle cx="27" cy="27" r={coreRadius} fill="url(#cursorCoreGrad)" className="animate-pulse" />
-        <circle cx="27" cy="27" r="1.1" fill="#ffffff" opacity="0.95" />
+        <circle cx="27" cy="27" r="1" fill="#ffffff" opacity="0.95" />
 
         {state === 'button' && (
-          <path d="M19 27H35 M27 19V35" stroke={secondary} strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+          <path d="M22 27H32 M27 22V32" stroke={secondary} strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
         )}
         {state === 'link' && (
-          <path d="M33 18H40V25 M39 19L29 29" stroke={secondary} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+          <path d="M31 20H37V26 M36 21L28 29" stroke={secondary} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
         )}
         {state === 'chatbot' && (
-          <path d="M17 16C17 13.8 18.8 12 21 12H33C35.2 12 37 13.8 37 16V24C37 26.2 35.2 28 33 28H27L22 32V28H21C18.8 28 17 26.2 17 24V16Z" fill="rgba(2, 6, 23, 0.82)" stroke={primary} strokeWidth="1.1" opacity="0.92" />
+          <path d="M19 18C19 16.5 20.2 15 22.5 15H31.5C33.8 15 35 16.5 35 18V23C35 24.5 33.8 26 31.5 26H27L23 29V26H22.5C20.2 26 19 24.5 19 23V18Z" fill="rgba(2, 6, 23, 0.85)" stroke={primary} strokeWidth="1" opacity="0.9" />
         )}
       </svg>
     );
