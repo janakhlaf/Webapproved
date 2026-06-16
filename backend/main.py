@@ -163,6 +163,7 @@ async def delete_session(session_id: int, user_id: int):
 async def chat(request: ChatRequest):
     user_message = request.message
     intent = classify_intent(user_message)
+    print("INTENT =", intent)
 
     conversation_context = []
 
@@ -175,7 +176,8 @@ async def chat(request: ChatRequest):
         intent,
         user_message,
         request.isAuthenticated,
-        conversation_context
+        conversation_context,
+        request.session_id
     )
 
     if request.user_id and request.session_id:
