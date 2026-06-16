@@ -20,16 +20,12 @@ export const useTheme = () => {
     root.style.setProperty('--border', borderOklch);
     root.style.setProperty('--input', inputOklch);
 
-    // Dynamic primary, secondary, and accent colors for website morphing
-    const primaryOklch = `oklch(0.70 0.28 ${colors.hue})`;
-    const cyanOklch = `oklch(0.75 0.30 ${colors.hue})`;
-    const accentOklch = `oklch(0.68 0.32 ${(colors.hue + 75) % 360})`;
+    root.style.setProperty('--primary', `oklch(0.70 0.28 ${colors.hue})`);
+    root.style.setProperty('--cyan', `oklch(0.75 0.30 ${colors.hue})`);
+    root.style.setProperty('--accent', `oklch(0.68 0.32 ${(colors.hue + 75) % 360})`);
 
-    root.style.setProperty('--primary', primaryOklch);
-    root.style.setProperty('--cyan', cyanOklch);
-    root.style.setProperty('--accent', accentOklch);
-
-    root.style.transition = 'background-color 800ms cubic-bezier(0.4, 0, 0.2, 1), color 800ms cubic-bezier(0.4, 0, 0.2, 1), border-color 800ms cubic-bezier(0.4, 0, 0.2, 1)';
+    root.style.transition =
+      'background-color 800ms cubic-bezier(0.4, 0, 0.2, 1), color 800ms cubic-bezier(0.4, 0, 0.2, 1), border-color 800ms cubic-bezier(0.4, 0, 0.2, 1)';
   }, []);
 
   const detectAndApplyTheme = useCallback((text: string) => {
@@ -39,17 +35,28 @@ export const useTheme = () => {
   }, [applyTheme]);
 
   const resetTheme = useCallback(() => {
-    applyTheme(null);
-  }, [applyTheme]);
+    const root = document.documentElement;
+
+    root.style.removeProperty('--background');
+    root.style.removeProperty('--card');
+    root.style.removeProperty('--popover');
+    root.style.removeProperty('--muted');
+    root.style.removeProperty('--border');
+    root.style.removeProperty('--input');
+    root.style.removeProperty('--primary');
+    root.style.removeProperty('--cyan');
+    root.style.removeProperty('--accent');
+    root.style.transition = '';
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add('dark');
 
     return () => {
-      root.style.transition = '';
+      resetTheme();
     };
-  }, []);
+  }, [resetTheme]);
 
   return {
     applyTheme,

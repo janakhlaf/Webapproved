@@ -46,7 +46,7 @@ export function Chatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { detectAndApplyTheme, resetTheme } = useTheme();
+  const { resetTheme } = useTheme();
   const { isAuthenticated, user } = useAuth();
 
   const previousAuthRef = useRef(isAuthenticated);
@@ -203,9 +203,6 @@ export function Chatbot() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-
-    detectAndApplyTheme(currentMessage);
-
     setInputValue('');
     setIsTyping(true);
 
