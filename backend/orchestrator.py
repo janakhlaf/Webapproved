@@ -81,8 +81,12 @@ def get_response_by_intent(
         "else"
     ]
 
-    if intent == "SIMILAR_REQUEST" or any(word in text for word in follow_up_search_words):
-        return handle_similar(message,is_authenticated,conversation_context)
+    if intent in ["SIMILAR_REQUEST", "MORE_RESULTS"] or any(word in text for word in follow_up_search_words):
+     return handle_similar(
+        message,
+        is_authenticated,
+        conversation_context
+    )
 
     if is_contextual_follow_up(message, conversation_context):
         follow_up_message = with_language_rule(

@@ -12,6 +12,7 @@ INTENTS = [
     "FILM_QUERY",
     "ASSET_QUERY",
     "SIMILAR_REQUEST",
+    "MORE_RESULTS",
     "PURCHASE_INTENT",
     "CART_ACTION",
     "PAYMENT_ACTION",
@@ -42,7 +43,7 @@ def rule_based_intent(message: str) -> str | None:
 ]
 
     if any(word in text for word in follow_up_search_words):
-        return "SIMILAR_REQUEST"
+     return "MORE_RESULTS"
 
     has_page = (
         "صفحه" in text
@@ -70,6 +71,14 @@ def rule_based_intent(message: str) -> str | None:
         or "3d" in text
         or "ثري دي" in text
     )
+    if has_film:
+     return "FILM_QUERY"
+
+    if has_asset:
+        return "ASSET_QUERY"
+    
+    if any(word in text for word in follow_up_search_words):
+     return "MORE_RESULTS"
 
     if has_page and has_film:
         return "FILM_QUERY"

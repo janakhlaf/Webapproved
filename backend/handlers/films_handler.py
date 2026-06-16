@@ -64,6 +64,13 @@ def is_general_films_question(message: str) -> bool:
         "شو في",
         "احكيلي عن الافلام",
         "احكيلي عن الأفلام",
+        "اعطيني افلام",
+        "اعطيني أفلام",
+        "هات افلام",
+        "هات أفلام",
+        "افلام",
+        "أفلام",
+        "فيلم",
     ]
 
     return any(phrase in text for phrase in general_phrases)

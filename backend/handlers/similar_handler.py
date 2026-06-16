@@ -388,6 +388,9 @@ Assets:
     result = response.output_text.strip()
     indexes = extract_indexes(result, len(rows))
 
+    if not indexes:
+        return rows
+
     return [rows[i] for i in indexes]
 
 
@@ -457,6 +460,9 @@ Films:
     result = response.output_text.strip()
     indexes = extract_indexes(result, len(rows))
 
+    if not indexes:
+        return rows
+
     return [rows[i] for i in indexes]
 
 def is_arabic_message(text: str) -> bool:
@@ -496,6 +502,26 @@ def dynamic_no_more_results(message, result_type):
             ]
 
     return random.choice(responses)
+def detect_last_result_type(conversation_context):
+    if not conversation_context:
+        return None
+
+    last_text = ""
+
+    for item in conversation_context[-8:]:
+        if item.get("role") == "assistant":
+            last_text += " " + item.get("content", "").lower()
+
+    film_words = ["فيلم", "أفلام", "افلام", "film", "films", "movie", "movies"]
+    asset_words = ["اسيت", "اسيتس", "أصول", "اصول", "3d", "asset", "assets", "model", "models", "glb", "gltf"]
+
+    if any(word in last_text for word in film_words):
+        return "film"
+
+    if any(word in last_text for word in asset_words):
+        return "asset"
+
+    return None
 def handle_similar(
     message: str,
     is_authenticated: bool = False,
@@ -537,13 +563,23 @@ def handle_similar(
                 break
 
         if last_assistant_reply:
-            for line in last_assistant_reply.splitlines():
-                clean = line.replace("-", "").strip()
-                if clean:
-                    exclude_names.append(clean.lower())
 
-        if last_real_user_message:
-            message = last_real_user_message
+            names = re.findall(
+                r'"([^"]+)"|-\s*([A-Za-z0-9 _.-]+)',
+                last_assistant_reply
+            )
+
+            for item in names:
+
+                name = item[0] or item[1]
+
+                name = name.strip().lower()
+
+                if name:
+                    exclude_names.append(name)
+
+            if last_real_user_message:
+                message = last_real_user_message
 
     intent = analyze_user_request(message)
 
@@ -551,10 +587,19 @@ def handle_similar(
     search_query = intent["search_query"]
 
     if result_type == "unknown":
-        if is_arabic_message(message):
-            return "هل تقصد أفلام أم أصول 3D؟"
-        return "Do you mean films or 3D assets?"
+        last_type = detect_last_result_type(conversation_context)
 
+        if last_type == "film":
+            result_type = "film"
+
+        elif last_type == "asset":
+            result_type = "asset"
+
+        else:
+            if is_arabic_message(message):
+                return "ما قدرت أحدد المطلوب من آخر محادثة. جرّب اكتب: هات أفلام ثانية، أو هات أصول 3D ثانية."
+
+            return "I could not detect the request from the last conversation. Try: show me more films, or show me more 3D assets."
     conn = get_connection()
     cur = conn.cursor()
 
@@ -649,22 +694,27 @@ def handle_similar(
             rows = cur.fetchall()
 
             selected_rows = ai_rerank_films(message, rows)
+            print("ROWS:", len(rows))
+            print("SELECTED:", len(selected_rows))
+            print("EXCLUDED:", exclude_names)
 
             if exclude_names:
                 selected_rows = [
                     row for row in selected_rows
-                    if row[0].lower() not in exclude_names
+                    if row[0].lower().strip() not in exclude_names
                 ]
+                print("EXCLUDE_NAMES =", exclude_names)
+                print("RESULTS_AFTER_FILTER =", len(selected_rows))
 
             if not selected_rows:
-                if is_follow_up:
-                   if not selected_rows:
-                    return dynamic_no_more_results(
-                        message,
-                        "film",
-                        is_follow_up=is_follow_up
-                    )
 
+                if is_follow_up:
+                    if is_arabic_message(message):
+                        return "لا توجد نتائج إضافية حالياً، تم عرض جميع الأفلام المطابقة."
+                    return "No additional matching films were found."
+
+                return dynamic_no_more_results(message, "film")
+                            
             return format_film_results(
                 selected_rows,
                 message,
