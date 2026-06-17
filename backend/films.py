@@ -50,7 +50,7 @@ def get_films():
                 price,           -- row[10]
                 source_type,     -- row[11]
                 status,          -- row[12]
-                thumbnail_basic  -- row[13] (تم تعديله هنا ليصبح 13 بدلاً من 14)
+                thumbnail_basic  -- row[13]
             FROM films
                 WHERE status = 'approved'
                 ORDER BY id DESC
@@ -74,7 +74,7 @@ def get_films():
                 "price": float(row[10]) if row[10] else 0,
                 "source_type": row[11],
                 "status": row[12],
-                "thumbnail_basic": row[13], # التعديل هنا ليتطابق مع الاندكس الصحيح
+                "thumbnail_basic": row[13],
             })
 
         cur.close()
@@ -87,7 +87,7 @@ def get_films():
 
 
 @router.post("/films/upload")
-def upload_film(
+async def upload_film(
     auth_user_id: str = Form(...),
     title: str = Form(...),
     description: str = Form(...),
@@ -103,23 +103,34 @@ def upload_film(
 
     parsed_tags = json.loads(tags)
 
-    # upload film
+    # 1. تجهيز مسارات وأسماء ملف الفيديو
     film_extension = film_file.filename.split(".")[-1].lower()
     film_name = f"{uuid.uuid4()}.{film_extension}"
     film_bucket_path = f"users/{film_name}"
-    film_bytes = film_file.file.read()
+    
+    # 2. قراءة وحفظ الفيديو على أجزاء (Chunks) في ملف مؤقت لحماية الـ RAM
+    total_bytes = 0
     with tempfile.NamedTemporaryFile(delete=False, suffix=f".{film_extension}") as temp_video:
-        temp_video.write(film_bytes)
+        while chunk := await film_file.read(1024 * 1024 * 10):  # قراءة 10 ميجا في كل مرة
+            temp_video.write(chunk)
+            total_bytes += len(chunk)
         temp_video_path = temp_video.name
 
-    clip = VideoFileClip(temp_video_path)
-    duration_seconds = int(clip.duration)
-    clip.close()
+    # 3. حساب مدة الفيديو باستخدام moviepy
+    try:
+        clip = VideoFileClip(temp_video_path)
+        duration_seconds = int(clip.duration)
+        clip.close()
 
-    minutes = duration_seconds // 60
-    seconds = duration_seconds % 60
-    duration = f"{minutes}:{seconds:02d}"
+        minutes = duration_seconds // 60
+        seconds = duration_seconds % 60
+        duration = f"{minutes}:{seconds:02d}"
+    except Exception as moviepy_err:
+        if os.path.exists(temp_video_path):
+            os.remove(temp_video_path)
+        raise HTTPException(status_code=400, detail=f"Invalid video file or metadata extraction failed: {str(moviepy_err)}")
 
+    # 4. رفع الفيديو إلى Supabase تدريجياً (Streaming) من الملف المؤقت
     film_upload_url = f"{supabase_url}/storage/v1/object/{bucket}/{film_bucket_path}"
 
     film_headers = {
@@ -128,11 +139,16 @@ def upload_film(
         "Content-Type": film_file.content_type or "application/octet-stream",
     }
 
-    film_upload_response = requests.post(
-        film_upload_url,
-        headers=film_headers,
-        data=film_bytes
-    )
+    with open(temp_video_path, "rb") as video_data:
+        film_upload_response = requests.post(
+            film_upload_url,
+            headers=film_headers,
+            data=video_data
+        )
+
+    # تنظيف وحذف الملف المؤقت فوراً من السيرفر بعد انتهاء الرفع
+    if os.path.exists(temp_video_path):
+        os.remove(temp_video_path)
 
     if film_upload_response.status_code not in [200, 201]:
         return {
@@ -140,11 +156,11 @@ def upload_film(
             "details": film_upload_response.text
         }
 
-    # upload poster
+    # 5. رفع البوستر (قراءة عادية لأن حجم الصور صغير ولا يجهد الذاكرة)
     poster_extension = poster_file.filename.split(".")[-1].lower()
     poster_name = f"{uuid.uuid4()}.{poster_extension}"
     poster_bucket_path = f"users/{poster_name}"
-    poster_bytes = poster_file.file.read()
+    poster_bytes = await poster_file.read()
 
     poster_upload_url = f"{supabase_url}/storage/v1/object/thumbnail_previw/{poster_bucket_path}"
 
@@ -166,8 +182,9 @@ def upload_film(
             "details": poster_upload_response.text
         }
 
+    # 6. ربط البيانات وحفظ السجل في قاعدة البيانات
     thumbnail_url = f"{supabase_url}/storage/v1/object/public/thumbnail_previw/{poster_bucket_path}"
-    file_size_mb = f"{round(len(film_bytes) / (1024 * 1024), 2)} MB"
+    file_size_mb = f"{round(total_bytes / (1024 * 1024), 2)} MB"
     mime_type = film_file.content_type or f"video/{film_extension}"
 
     embedding_text = build_film_embedding_text(title, description, category)
@@ -238,6 +255,7 @@ def upload_film(
             "status": "pending"
         }
     }
+
 
 @router.patch("/admin/films/{film_id}/approve")
 def approve_film(film_id: int):
@@ -317,6 +335,7 @@ def reject_film(film_id: int):
     return {
         "message": "Film rejected and deleted"
     }
+
 
 @router.delete("/films/{film_id}")
 def delete_user_film(film_id: int, auth_user_id: str):

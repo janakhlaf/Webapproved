@@ -5,6 +5,7 @@ import requests
 import os
 import uuid
 import json
+import tempfile
 
 from ai.embedding_service import (
     create_embedding,
@@ -80,7 +81,7 @@ def get_assets():
 
 
 @router.post("/assets/upload")
-def upload_asset(
+async def upload_asset(
     title: str = Form(...),
     description: str = Form(...),
     category: str = Form(...),
@@ -101,7 +102,13 @@ def upload_asset(
     preview_bucket_path = f"users/{file_name}"
     private_bucket_path = f"users/{file_name}"
 
-    file_bytes = file.file.read()
+    # 1. حفظ الملف على أجزاء (Chunks) لحماية الذاكرة العشوائية RAM
+    total_bytes = 0
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_asset:
+        while chunk := await file.read(1024 * 1024 * 10):  # قراءة 10 ميجا في كل مرة
+            temp_asset.write(chunk)
+            total_bytes += len(chunk)
+        temp_asset_path = temp_asset.name
 
     preview_upload_url = (
         f"{supabase_url}/storage/v1/object/"
@@ -119,17 +126,26 @@ def upload_asset(
         "Content-Type": file.content_type or "application/octet-stream",
     }
 
-    preview_upload_response = requests.post(
-        preview_upload_url,
-        headers=headers,
-        data=file_bytes
-    )
+    # 2. رفع الملف إلى الـ Buckets باستخدام الـ Streaming تدريجياً من الديسك
+    try:
+        with open(temp_asset_path, "rb") as asset_data:
+            preview_upload_response = requests.post(
+                preview_upload_url,
+                headers=headers,
+                data=asset_data
+            )
 
-    private_upload_response = requests.post(
-        private_upload_url,
-        headers=headers,
-        data=file_bytes
-    )
+        # إعادة مؤشر القراءة إلى الصفر لرفع الملف للمكان الثاني
+        with open(temp_asset_path, "rb") as asset_data:
+            private_upload_response = requests.post(
+                private_upload_url,
+                headers=headers,
+                data=asset_data
+            )
+    finally:
+        # تنظيف وحذف الملف المؤقت من السيرفر فوراً لعدم استهلاك المساحة
+        if os.path.exists(temp_asset_path):
+            os.remove(temp_asset_path)
 
     if (
         preview_upload_response.status_code not in [200, 201]
@@ -147,9 +163,9 @@ def upload_asset(
     )
 
     bucket_path = private_bucket_path
+    file_size_mb = round(total_bytes / (1024 * 1024), 2)
 
-    file_size_mb = round(len(file_bytes) / (1024 * 1024), 2)
-
+    # 3. معالجة الـ الـ Embedding والـ Vector للبحث الذكي
     embedding_text = build_asset_embedding_text(
         title,
         description,
@@ -159,59 +175,59 @@ def upload_asset(
 
     embedding = create_embedding(embedding_text)
     pg_vector = embedding_to_pgvector(embedding)
+    
     with get_connection() as conn:
-     with conn.cursor() as cur:
+        with conn.cursor() as cur:
 
-        cur.execute("""
-            SELECT id
-            FROM users
-            WHERE auth_user_id = %s
-        """, (auth_user_id,))
+            cur.execute("""
+                SELECT id
+                FROM users
+                WHERE auth_user_id = %s
+            """, (auth_user_id,))
 
-        user_row = cur.fetchone()
+            user_row = cur.fetchone()
 
-        if not user_row:
-            return {
-                "error": "User not found"
-            }
+            if not user_row:
+                return {
+                    "error": "User not found"
+                }
 
-        user_id = user_row[0]
+            user_id = user_row[0]
 
-        cur.execute("""
-            INSERT INTO assets (
+            cur.execute("""
+                INSERT INTO assets (
+                    user_id,
+                    name,
+                    description,
+                    category,
+                    preview_url,
+                    bucket_path,
+                    file_type,
+                    file_size,
+                    price,
+                    status,
+                    source_type,
+                    tags,
+                    embedding
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', 'user_upload', %s, %s::vector)
+                RETURNING id
+            """, (
                 user_id,
-                name,
+                title,
                 description,
                 category,
                 preview_url,
                 bucket_path,
-                file_type,
-                file_size,
+                file_extension,
+                file_size_mb,
                 price,
-                status,
-                source_type,
-                tags,
-                embedding
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', 'user_upload', %s, %s::vector)
-            RETURNING id
-        """, (
-            user_id,
-            title,
-            description,
-            category,
-            preview_url,
-            bucket_path,
-            file_extension,
-            file_size_mb,
-            price,
-            json.loads(tags),
-            pg_vector
-        ))
+                json.loads(tags),
+                pg_vector
+            ))
 
-        asset_id = cur.fetchone()[0]
-        conn.commit()
-
+            asset_id = cur.fetchone()[0]
+            conn.commit()
 
     return {
         "message": "Asset uploaded and saved successfully",
@@ -230,6 +246,8 @@ def upload_asset(
             "uploader": f"User {user_id}",
         }
     }
+
+
 @router.delete("/assets/{asset_id}")
 def delete_user_asset(asset_id: int, auth_user_id: str):
     supabase_url = os.getenv("SUPABASE_URL")
