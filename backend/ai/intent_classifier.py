@@ -95,7 +95,7 @@ def classify_intent(message: str) -> str:
         return rule_intent
 
     prompt = f"""
-You are an intent classifier for Human Mind & AI Logic.
+You are an intent classifier for voxeli.ai.
 
 Classify the user's message into EXACTLY ONE intent.
 

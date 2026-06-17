@@ -401,7 +401,7 @@ export function Chatbot() {
                     }`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 selection:bg-neutral-600 selection:text-white ${
                         message.sender === 'user'
                           ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
                           : 'bg-muted/80 text-foreground border border-border/30'

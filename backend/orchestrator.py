@@ -135,7 +135,7 @@ def get_response_by_intent(
             message,
             """
 Platform context:
-Human Mind & AI Logic is a platform for cinematic films and interactive 3D assets.
+voxeli.ai is a platform for cinematic films and interactive 3D assets.
 Be welcoming and natural.
 """
         )
@@ -152,7 +152,7 @@ Be welcoming and natural.
         message,
         """
 Important platform context:
-Human Mind & AI Logic contains cinematic films and interactive 3D assets.
+voxeli.ai contains cinematic films and interactive 3D assets.
 All assets are 3D models such as GLB/GLTF assets.
 Assets can be used for animation, games, cinematic scenes, architecture,
 characters, robots, drones, vehicles, props, animals, environments, and creative projects.
