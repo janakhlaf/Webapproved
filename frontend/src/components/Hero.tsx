@@ -232,10 +232,7 @@ export default function Hero() {
         transition={{ duration: 1 }}
         className="relative z-10 text-center px-6"
       >
-        <div className="inline-block mb-6 px-6 py-2 rounded-full border border-cyan-400/50 bg-cyan-400/10 text-cyan-300 text-sm">
-          Graduation Project 2026
-        </div>
-
+       
         <h1 ref={brandHeadingRef} className="min-h-[120px] md:min-h-[156px] select-none font-orbitron leading-none flex items-center justify-center">
           <motion.span
             key={`brand-lockup-${location.key}-${brandAnimationCycle}`}

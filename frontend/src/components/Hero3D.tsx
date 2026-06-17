@@ -163,13 +163,7 @@ export function Hero3D() {
           transition={{ duration: 1, delay: 0.5 }}
           className="space-y-6"
         >
-          <motion.div
-            className="inline-block px-6 py-2 mb-4 rounded-full bg-primary/10 border border-primary/20"
-            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 217, 255, 0.3)' }}
-          >
-            <span className="text-sm font-medium text-primary">Graduation Project 2026</span>
-          </motion.div>
-
+         
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Human Mind
