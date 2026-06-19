@@ -503,7 +503,6 @@ def is_arabic_message(text: str) -> bool:
 
 def dynamic_no_more_results(message, result_type):
     if is_arabic_message(message):
-
         if result_type == "film":
             responses = [
                 "عرضت لك كل الأفلام المطابقة الموجودة حالياً داخل الموقع.",
@@ -516,9 +515,7 @@ def dynamic_no_more_results(message, result_type):
                 "حالياً ما في أصول إضافية مطابقة داخل الموقع.",
                 "هاي كانت جميع الأصول المطابقة المتوفرة حالياً."
             ]
-
     else:
-
         if result_type == "film":
             responses = [
                 "I already showed all matching films available on the platform.",
@@ -531,7 +528,6 @@ def dynamic_no_more_results(message, result_type):
                 "No additional matching assets are currently available.",
                 "These are all matching assets available right now."
             ]
-
     return random.choice(responses)
 def detect_last_result_type(conversation_context):
     if not conversation_context:
@@ -559,7 +555,6 @@ def handle_similar(
     conversation_context: list | None = None,
     session_id=None
 ) -> str:
- 
 
     if not is_authenticated:
         if is_arabic_message(message):
@@ -580,7 +575,6 @@ def handle_similar(
     ]
 
     is_follow_up = any(word in message.lower() for word in follow_up_words)
-   
 
     if conversation_context and is_follow_up:
         last_real_user_message = None
@@ -597,18 +591,13 @@ def handle_similar(
                 break
 
         if last_assistant_reply:
-
             names = re.findall(
                 r'"([^"]+)"|-\s*([A-Za-z0-9 _.-]+)',
                 last_assistant_reply
             )
-
             for item in names:
-
                 name = item[0] or item[1]
-
                 name = name.strip().lower()
-
                 if name:
                     exclude_names.append(name)
 
@@ -616,151 +605,94 @@ def handle_similar(
                 message = last_real_user_message
 
     intent = analyze_user_request(message)
-
     result_type = intent["result_type"]
     search_query = intent["search_query"]
 
     if result_type == "unknown":
         last_type = detect_last_result_type(conversation_context)
-
         if last_type == "film":
             result_type = "film"
-
         elif last_type == "asset":
             result_type = "asset"
-
         else:
             if is_arabic_message(message):
                 return "ما قدرت أحدد المطلوب من آخر محادثة. جرّب اكتب: هات أفلام ثانية، أو هات أصول 3D ثانية."
-
             return "I could not detect the request from the last conversation. Try: show me more films, or show me more 3D assets."
+
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        if result_type == "asset":
-
+       if result_type == "asset":
             if is_all_assets_request(message):
                 return get_all_assets(cur, message, is_authenticated)
-            
 
             search_plan = extract_asset_search_plan(message)
             plan_rows = get_assets_by_search_plan(cur, search_plan)
 
-            if plan_rows:
-              
-
-                key = session_id or "guest"
-               
-               
-               
-
-                state = SEARCH_STATE.get(key, {
-                    "type": None,
-                    "shown_films": set(),
-                    "shown_assets": set()
-                })
-                
-
-                if is_follow_up:
-                    selected_rows = [
-                        row for row in plan_rows
-                        if row[0].lower().strip() not in state["shown_assets"]
-                    ]
-                else:
-                    selected_rows = ai_rerank_assets(message, plan_rows)
-                    if not selected_rows:
-                        selected_rows = plan_rows
-                    state["shown_assets"] = set()
-
-                selected_rows = selected_rows[:3]
-
-                if not selected_rows:
-                    if is_arabic_message(message):
-                        return "لا توجد نتائج إضافية حالياً، تم عرض جميع الأصول المتاحة."
-                    return "No additional assets are available right now."
-
-                state["shown_assets"].update(
-                    row[0].lower().strip() for row in selected_rows
-                )
-
-                state["type"] = "asset"
-                SEARCH_STATE[key] = state
-              
-
-                if selected_rows:
-                    return format_asset_results(
-                        selected_rows,
-                        message,
-                        is_authenticated
-                    )
-
-            query_embedding = create_embedding(search_query)
-            pg_vector = embedding_to_pgvector(query_embedding)
-
-            query = """
-                SELECT
-                    name,
-                    category,
-                    description,
-                    tags,
-                    1 - (embedding <=> %s::vector) AS similarity
-                FROM assets
-                WHERE embedding IS NOT NULL
-                AND status = 'approved'
-                ORDER BY embedding <=> %s::vector
-                LIMIT 20;
-            """
-
-            cur.execute(query, (pg_vector, pg_vector))
-            rows = cur.fetchall()
-
-            
-
             key = session_id or "guest"
-            
-
             state = SEARCH_STATE.get(key, {
                 "type": None,
                 "shown_films": set(),
                 "shown_assets": set()
             })
-           
 
-            if is_follow_up:
-                selected_rows = [
-                    row for row in rows
-                    if row[0].lower().strip() not in state["shown_assets"]
-                ]
+           
+            if plan_rows:
+                if is_follow_up:
+                    selected_rows = [
+                        row for row in plan_rows
+                        if row[0].lower().strip() not in state["shown_assets"] and row[0].lower().strip() not in exclude_names
+                    ]
+                else:
+                    selected_rows = ai_rerank_assets(message, plan_rows)
+                    if not selected_rows or selected_rows == plan_rows:
+                        selected_rows = plan_rows
+                    state["shown_assets"] = set()
             else:
-                selected_rows = ai_rerank_assets(message, rows)
-                if not selected_rows:
-                    selected_rows = rows
-                state["shown_assets"] = set()
+                
+                query_embedding = create_embedding(search_query)
+                pg_vector = embedding_to_pgvector(query_embedding)
+
+                query = """
+                    SELECT
+                        name,
+                        category,
+                        description,
+                        tags,
+                        1 - (embedding <=> %s::vector) AS similarity
+                    FROM assets
+                    WHERE embedding IS NOT NULL
+                    AND status = 'approved'
+                    ORDER BY embedding <=> %s::vector
+                    LIMIT 20;
+                """
+                cur.execute(query, (pg_vector, pg_vector))
+                rows = cur.fetchall()
+
+                if is_follow_up:
+                    selected_rows = [
+                        row for row in rows
+                        if row[0].lower().strip() not in state["shown_assets"] and row[0].lower().strip() not in exclude_names
+                    ]
+                else:
+                    selected_rows = ai_rerank_assets(message, rows)
+                    if not selected_rows or selected_rows == rows:
+                        selected_rows = rows
+                    state["shown_assets"] = set()
+
+           
             selected_rows = selected_rows[:3]
 
+           
             if not selected_rows:
-                if is_arabic_message(message):
-                    return "لا توجد نتائج إضافية حالياً، تم عرض جميع الأصول المتاحة."
-                return "No additional assets are available right now."
+                return dynamic_no_more_results(message, "asset")
 
             state["shown_assets"].update(
                 row[0].lower().strip() for row in selected_rows
             )
-
             state["type"] = "asset"
             SEARCH_STATE[key] = state
-           
-
-            if not selected_rows:
-                if is_follow_up:
-                    if is_arabic_message(message):
-                        return "لا توجد نتائج إضافية حالياً، تم عرض جميع العناصر المطابقة."
-                    return "No additional matching results were found on the platform."
-
-                if is_arabic_message(message):
-                   return dynamic_no_more_results(message, "asset")
-                return dynamic_no_more_results(message, "asset")
 
             return format_asset_results(
                 selected_rows,
@@ -768,7 +700,7 @@ def handle_similar(
                 is_authenticated
             )
 
-        if result_type == "film":
+       if result_type == "film":
             query_embedding = create_embedding(search_query)
             pg_vector = embedding_to_pgvector(query_embedding)
 
@@ -785,18 +717,15 @@ def handle_similar(
                 ORDER BY embedding <=> %s::vector
                 LIMIT 20;
             """
-
             cur.execute(query, (pg_vector, pg_vector))
             rows = cur.fetchall()
 
             key = session_id or "guest"
-           
             state = SEARCH_STATE.get(key, {
                 "type": None,
                 "shown_films": set(),
                 "shown_assets": set()
             })
-           
 
             if is_follow_up:
                 selected_rows = [
@@ -805,34 +734,22 @@ def handle_similar(
                 ]
             else:
                 selected_rows = ai_rerank_films(message, rows)
-                if not selected_rows:
+                if not selected_rows or selected_rows == rows:
                     selected_rows = rows
                 state["shown_films"] = set()
 
+            selected_rows = [r for r in selected_rows if r[0].lower().strip() not in exclude_names]
             selected_rows = selected_rows[:3]
 
             if not selected_rows:
-                if is_arabic_message(message):
-                    return "لا توجد نتائج إضافية حالياً، تم عرض جميع الأفلام المتاحة."
-                return "No additional films are available right now."
+                return dynamic_no_more_results(message, "film")
 
             state["shown_films"].update(
                 row[0].lower().strip() for row in selected_rows
             )
-
             state["type"] = "film"
             SEARCH_STATE[key] = state
-           
 
-            if not selected_rows:
-
-                if is_follow_up:
-                    if is_arabic_message(message):
-                        return "لا توجد نتائج إضافية حالياً، تم عرض جميع الأفلام المطابقة."
-                    return "No additional matching films were found."
-
-                return dynamic_no_more_results(message, "film")
-                            
             return format_film_results(
                 selected_rows,
                 message,

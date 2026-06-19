@@ -71,47 +71,41 @@ def get_response_by_intent(
 )-> str:
     text = message.lower().strip()
 
+    # إضافة "غيره" للقائمة لضمان التقاط سؤالكِ المباشر في المحادثة
     follow_up_search_words = [
         "شو في كمان",
         "في كمان",
         "كمان",
         "غيرهم",
+        "غيره",
         "غير هيك",
         "more",
         "anything else",
         "else"
     ]
 
+    # الشرط الأول: إذا كان الـ intent أو أي كلمة تدل على طلب المزيد، نذهب فوراً لـ handle_similar
     if intent in ["SIMILAR_REQUEST", "MORE_RESULTS"] or any(word in text for word in follow_up_search_words):
-     return handle_similar(
-    message,
-    is_authenticated,
-    conversation_context,
-    session_id
-)
-
-    if is_contextual_follow_up(message, conversation_context):
-        follow_up_message = with_language_rule(
+        return handle_similar(
             message,
-                """
-    The user is asking a follow-up question based on the previous conversation.
-    Use the conversation context to understand what they are referring to.
-    Answer clearly based on the previous assistant and user messages.
-    """
-            )
-
-        return normal_chat(
-            follow_up_message,
             is_authenticated,
-            original_user_message=message,
-            conversation_context=conversation_context
+            conversation_context,
+            session_id
         )
 
-   
+    # الشرط الثاني: إذا كانت دالة الذكاء الاصطناعي تؤكد أنها متابعة لسياق البحث
+    if is_contextual_follow_up(message, conversation_context):
+        # هنا التعديل الجوهري: نوجه المتابعة الدلالية لـ handle_similar لتجلب الأفلام أو الأسيتس التالية
+        return handle_similar(
+            message,
+            is_authenticated,
+            conversation_context,
+            session_id
+        )
+
     if intent == "FILM_QUERY":
         return handle_films(message, is_authenticated)
 
-  
     if intent == "ASSET_QUERY":
         if any(word in text for word in [
             "اعطيني", "هات", "في", "تتعلق", "يشبه", "شبيه",
@@ -126,11 +120,7 @@ def get_response_by_intent(
 
         return handle_assets(message, is_authenticated)
 
-   
-
-   
     if intent == "GREETING":
-
         greeting_context = with_language_rule(
             message,
             """
@@ -141,13 +131,12 @@ Be welcoming and natural.
         )
 
         return normal_chat(
-    greeting_context,
-    is_authenticated,
-    original_user_message=message,
-    conversation_context=conversation_context
-)
+            greeting_context,
+            is_authenticated,
+            original_user_message=message,
+            conversation_context=conversation_context
+        )
 
-   
     enhanced_message = with_language_rule(
         message,
         """
@@ -160,8 +149,9 @@ characters, robots, drones, vehicles, props, animals, environments, and creative
     )
 
     return normal_chat(
-    enhanced_message,
-    is_authenticated,
-    original_user_message=message,
-    conversation_context=conversation_context
-)
+        enhanced_message,
+        is_authenticated,
+        original_user_message=message,
+        conversation_context=conversation_context
+    )
+
