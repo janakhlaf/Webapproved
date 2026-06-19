@@ -68,10 +68,51 @@ def get_response_by_intent(
     is_authenticated=False,
     conversation_context=None,
     session_id=None
-)-> str:
+) -> str:
     text = message.lower().strip()
 
-    # إضافة "غيره" للقائمة لضمان التقاط سؤالكِ المباشر في المحادثة
+    platform_words = [
+        "اسم المنصه",
+        "اسم المنصة",
+        "اسم الموقع",
+        "شو اسم المنصه",
+        "شو اسم المنصة",
+        "شو اسم الموقع",
+        "ما اسم المنصه",
+        "ما اسم المنصة",
+        "ما اسم الموقع",
+        "عن المنصه",
+        "عن المنصة",
+        "عن الموقع",
+        "شو هي المنصه",
+        "شو هي المنصة",
+        "شو هو الموقع",
+        "voxeli",
+        "voxeli.ai",
+        "platform name",
+        "site name",
+        "website name",
+    ]
+
+    if intent == "PLATFORM_INFO" or any(word in text for word in platform_words):
+        platform_context = with_language_rule(
+            message,
+            """
+Platform context:
+The platform name is voxeli.ai.
+It is a cinematic films and interactive 3D assets platform.
+Users can browse films, explore 3D assets, add items to favorites or cart,
+purchase items through checkout, and access purchased items in their library.
+"""
+        )
+
+        return normal_chat(
+            platform_context,
+            is_authenticated,
+            original_user_message=message,
+            conversation_context=conversation_context
+        )
+
     follow_up_search_words = [
         "شو في كمان",
         "في كمان",
@@ -84,18 +125,7 @@ def get_response_by_intent(
         "else"
     ]
 
-    # الشرط الأول: إذا كان الـ intent أو أي كلمة تدل على طلب المزيد، نذهب فوراً لـ handle_similar
     if intent in ["SIMILAR_REQUEST", "MORE_RESULTS"] or any(word in text for word in follow_up_search_words):
-        return handle_similar(
-            message,
-            is_authenticated,
-            conversation_context,
-            session_id
-        )
-
-    # الشرط الثاني: إذا كانت دالة الذكاء الاصطناعي تؤكد أنها متابعة لسياق البحث
-    if is_contextual_follow_up(message, conversation_context):
-        # هنا التعديل الجوهري: نوجه المتابعة الدلالية لـ handle_similar لتجلب الأفلام أو الأسيتس التالية
         return handle_similar(
             message,
             is_authenticated,
@@ -120,6 +150,14 @@ def get_response_by_intent(
 
         return handle_assets(message, is_authenticated)
 
+    if is_contextual_follow_up(message, conversation_context):
+        return normal_chat(
+            with_language_rule(message),
+            is_authenticated,
+            original_user_message=message,
+            conversation_context=conversation_context
+        )
+
     if intent == "GREETING":
         greeting_context = with_language_rule(
             message,
@@ -143,8 +181,6 @@ Be welcoming and natural.
 Important platform context:
 voxeli.ai contains cinematic films and interactive 3D assets.
 All assets are 3D models such as GLB/GLTF assets.
-Assets can be used for animation, games, cinematic scenes, architecture,
-characters, robots, drones, vehicles, props, animals, environments, and creative projects.
 """
     )
 
@@ -154,4 +190,3 @@ characters, robots, drones, vehicles, props, animals, environments, and creative
         original_user_message=message,
         conversation_context=conversation_context
     )
-
